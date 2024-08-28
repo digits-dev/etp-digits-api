@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\DeliveryController;
+use App\Http\Controllers\ItemMasterController;
 use Illuminate\Support\Facades\Route;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -14,5 +17,16 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    // return view('welcome');
+    return redirect('admin/login');
+});
+
+Route::group(['middleware' => ['authapi'],'prefix' => 'api'], function(){
+    //deliveries
+    Route::get('get-deliveries', [DeliveryController::class,'getDeliveries']);
+    //item master
+    Route::get('get-new-items', [ItemMasterController::class,'getNewItems']);
+    Route::get('get-updated-items', [ItemMasterController::class,'getUpdatedItems']);
+    //warehouse master
+
 });

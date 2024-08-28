@@ -4,82 +4,41 @@ namespace App\Http\Controllers;
 
 use App\Models\Delivery;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+
+// use Illuminate\Support\Facades\Request;
 
 class DeliveryController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
+    public function getDeliveries(Request $request){
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
+        try{
+            $request->validate([
+                'datefrom' => ['required', 'date_format:Y-m-d H:i:s', 'before:dateto'],
+                'dateto'   => ['required', 'date_format:Y-m-d H:i:s', 'after:datefrom'],
+            ], [
+                'datefrom.before' => 'The datefrom must be before the dateto.',
+                'dateto.after'    => 'The dateto must be after the datefrom.',
+            ]);
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+            // Proceed with the logic if validation passes
+            $deliveries = [];
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Delivery  $delivery
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Delivery $delivery)
-    {
-        //
-    }
+            return response()->json([
+                'api_status' => 0,
+                'api_message' => 'Test',
+                'data' => $deliveries,
+                'http_status' => 200
+            ],200);
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Delivery  $delivery
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Delivery $delivery)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Delivery  $delivery
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Delivery $delivery)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Delivery  $delivery
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Delivery $delivery)
-    {
-        //
+        }
+        catch(ValidationException $ex){
+            return response()->json([
+                'api_status' => 0,
+                'api_message' => 'Validation failed',
+                'errors' => $ex->errors(),
+                'http_status' => 401
+            ], 401);
+        }
     }
 }
