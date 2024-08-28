@@ -17,7 +17,9 @@ class WarehouseMaster extends Model
             ->whereNull('customer.close_date')
             ->where('customer.channel_code_id','RTL')
             ->select(
-                'customer.customer_code as warehouse_code',
-                'customer.warehouse_name');
+                'customer.customer_code as warehouse_id',
+                'customer.warehouse_name',
+                'customer.building_no as address'
+            );
     }
 }
