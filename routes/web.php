@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\ItemMasterController;
+use App\Http\Controllers\WarehouseMasterController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -28,5 +29,6 @@ Route::group(['middleware' => ['authapi'],'prefix' => 'api'], function(){
     Route::get('get-new-items', [ItemMasterController::class,'getNewItems']);
     Route::get('get-updated-items', [ItemMasterController::class,'getUpdatedItems']);
     //warehouse master
-
+    Route::get('get-new-warehouse', [WarehouseMasterController::class,'getNewWarehouse']);
+    Route::get('get-updated-warehouse', [WarehouseMasterController::class,'getUpdatedWarehouse']);
 });
