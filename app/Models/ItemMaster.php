@@ -18,8 +18,8 @@ class ItemMaster extends Model
             ->leftjoin('sku_statuses','item_masters.sku_statuses_id','sku_statuses.id')
             ->leftjoin('uoms','item_masters.uoms_id','uoms.id')
             ->leftjoin('vendors','item_masters.vendors_id','vendors.id')
-            ->leftjoin('subclasses','item_masters.brands_id','brands.id')
-            ->leftjoin('item_models','item_masters.brands_id','brands.id')
+            ->leftjoin('subclasses','item_masters.subclasses_id','subclasses.id')
+            ->leftjoin('item_models','item_masters.model','item_models.model_description')
             ->whereNotNull('item_masters.digits_code')
             ->whereNotNull('item_masters.approved_at')
             ->select(
@@ -34,13 +34,13 @@ class ItemMaster extends Model
                 'brands.brand_description as brand',
                 'item_masters.brands_id',
                 'item_masters.model',
+                'item_models.id as models_id',
                 'item_masters.compatibility',
                 'subclasses.subclass_description as subclass',
                 'item_masters.subclasses_id',
                 'vendors.vendor_name as vendor',
                 'item_masters.vendors_id',
-                'item_masters.has_serial',
-                'item_models.id as models_id'
+                'item_masters.has_serial'
             );
     }
 }
