@@ -9,6 +9,7 @@ class OracleMaterialTransaction extends Model
 {
     use HasFactory;
 
+    protected $connection = 'oracle';
     protected $table = 'MTL_MATERIAL_TRANSACTIONS';
 
     public function scopeGetShipments($query, $datefrom, $dateto, $org = 'DTO'){
