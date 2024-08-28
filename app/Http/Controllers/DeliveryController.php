@@ -23,13 +23,14 @@ class DeliveryController extends Controller
 
             // Proceed with the logic if validation passes
             $deliveries = [];
+            $deliveries = Delivery::whereBetween('created_at', [$request->datefrom, $request->dateto])->paginate(50);
 
             return response()->json([
-                'api_status' => 0,
-                'api_message' => 'Test',
+                'api_status' => 1,
+                'api_message' => 'success',
                 'data' => $deliveries,
                 'http_status' => 200
-            ],200);
+            ], 200);
 
         }
         catch(ValidationException $ex){

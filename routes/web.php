@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\ItemMasterController;
+use App\Http\Controllers\OraclePullController;
 use App\Http\Controllers\WarehouseMasterController;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +21,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     // return view('welcome');
     return redirect('admin/login');
+});
+
+Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CBBackend'],'prefix' => config('crudbooster.ADMIN_PATH')], function(){
+
+    Route::get('pull-deliveries', [OraclePullController::class,'moveOrderPull']);
 });
 
 Route::group(['middleware' => ['authapi'],'prefix' => 'api'], function(){
