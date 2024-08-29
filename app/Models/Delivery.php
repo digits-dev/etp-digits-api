@@ -20,7 +20,8 @@ class Delivery extends Model
         'shipping_instruction',
         'transaction_type',
         'total_amount',
-        'total_qty'
+        'total_qty',
+        'status'
     ];
 
     public function lines() : HasMany {

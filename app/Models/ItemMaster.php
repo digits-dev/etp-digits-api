@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ItemMaster extends Model
 {
@@ -46,5 +47,10 @@ class ItemMaster extends Model
 
     public function scopeGetPrice($query, $itemCode){
         return $query->where('digits_code', $itemCode)->value('current_srp');
+    }
+
+    public function deliveryLines() : HasMany
+    {
+        return $this->hasMany(DeliveryLine::class, 'digits_code', 'ordered_item');
     }
 }
