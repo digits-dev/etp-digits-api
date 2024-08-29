@@ -33,9 +33,8 @@ class OraclePullController extends Controller
         })->get();
 
         foreach($deliveries as $key => $value){
+            DB::beginTransaction();
             try {
-                DB::transaction();
-                DB::beginTransaction();
 
                 // Step 1: Insert into `delivery_header` table
                 $deliveryHeader = Delivery::firstOrCreate([
