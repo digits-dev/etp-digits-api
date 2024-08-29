@@ -24,10 +24,13 @@ class ItemMasterController extends Controller
                 ->whereBetween('item_masters.approved_at', [$request->datefrom, $request->dateto])
                 ->orderBy('item_masters.digits_code','ASC')->paginate(50);
 
+            $data = $items->toArray();
+            unset($data['links']);
+
             return response()->json([
                 'api_status' => 1,
                 'api_message' => 'success',
-                'records' => $items,
+                'records' => $data,
                 'http_status' => 200
             ],200);
 
@@ -58,10 +61,13 @@ class ItemMasterController extends Controller
                 ->whereBetween('item_masters.updated_at', [$request->datefrom, $request->dateto])
                 ->orderBy('item_masters.digits_code','ASC')->paginate(50);
 
+            $data = $items->toArray();
+            unset($data['links']);
+
             return response()->json([
                 'api_status' => 1,
                 'api_message' => 'success',
-                'data' => $items,
+                'data' => $data,
                 'http_status' => 200
             ],200);
 

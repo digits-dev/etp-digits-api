@@ -24,10 +24,13 @@ class WarehouseMasterController extends Controller
                 ->whereBetween('customer.created_at', [$request->datefrom, $request->dateto])
                 ->paginate(50);
 
+            $data = $warehouse->toArray();
+            unset($data['links']);
+
             return response()->json([
                 'api_status' => 1,
                 'api_message' => 'success',
-                'data' => $warehouse,
+                'data' => $data,
                 'http_status' => 200
             ], 200);
 
@@ -58,10 +61,13 @@ class WarehouseMasterController extends Controller
                 ->whereBetween('customer.updated_at', [$request->datefrom, $request->dateto])
                 ->paginate(50);
 
+            $data = $warehouse->toArray();
+            unset($data['links']);
+
             return response()->json([
                 'api_status' => 1,
                 'api_message' => 'success',
-                'data' => $warehouse,
+                'data' => $data,
                 'http_status' => 200
             ], 200);
 
