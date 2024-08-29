@@ -43,4 +43,8 @@ class ItemMaster extends Model
                 'item_masters.has_serial'
             );
     }
+
+    public function scopeGetPrice($query, $itemCode){
+        return $query->where('digits_code', $itemCode)->value('current_srp');
+    }
 }
