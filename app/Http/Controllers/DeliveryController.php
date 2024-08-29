@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Delivery;
 use App\Models\ItemMaster;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 // use Illuminate\Support\Facades\Request;
@@ -61,6 +63,56 @@ class DeliveryController extends Controller
                 'http_status' => 200
             ], 200);
 
+        }
+        catch(ValidationException $ex){
+            return response()->json([
+                'api_status' => 0,
+                'api_message' => 'Validation failed',
+                'errors' => $ex->errors(),
+                'http_status' => 401
+            ], 401);
+        }
+    }
+
+    public function updateDeliveryStatus(Request $request){
+        try{
+
+            $request->validate([
+                'dr_numbers' => ['required'],
+            ]);
+            $count = 0;
+            foreach ($request->dr_numbers ?? [] as $key => $value) {
+                try{
+                    $order = Delivery::where('dr_number', $value)->first();
+                    if($order){
+                        $order->status = $request->status;
+                        $order->save();
+                        $count++;
+                    }
+                    else{
+                        throw new \Exception("Delivery #{$value} not found in the system!");
+                    }
+                }
+                catch(Exception $ex){
+                    Log::error($ex);
+                    return response()->json([
+                        'api_status' => 0,
+                        'api_message' => 'Update error!',
+                        'errors' => $ex->getMessage(),
+                        'http_status' => 401
+                    ], 401);
+                }
+
+            }
+
+            return response()->json([
+                'api_status' => 1,
+                'api_message' => 'success',
+                'data' => $request->all(),
+                'dr_status' => 'received',
+                'items_updated' => $count,
+                'http_status' => 200
+            ], 200);
         }
         catch(ValidationException $ex){
             return response()->json([
