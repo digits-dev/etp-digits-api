@@ -49,8 +49,8 @@ class OraclePullController extends Controller
                     'transaction_type' => 'MO'
                 ]);
 
-                $rtlItemPrice = ItemMaster::getPrice($value->ordered_item)->current_srp;
-                $gboItemPrice = GashaponItemMaster::getPrice($value->ordered_item)->current_srp;
+                $rtlItemPrice = ItemMaster::getPrice($value->ordered_item);
+                $gboItemPrice = GashaponItemMaster::getPrice($value->ordered_item);
 
                 // Step 2: Insert into `delivery_lines` table
                 $deliveryLine = $deliveryHeader->lines()->create([
