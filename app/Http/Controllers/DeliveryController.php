@@ -85,7 +85,7 @@ class DeliveryController extends Controller
                 try{
                     $order = Delivery::where('dr_number', $value)->first();
                     if($order){
-                        $order->status = $request->status;
+                        $order->status = 2;
                         $order->save();
                         $count++;
                     }
