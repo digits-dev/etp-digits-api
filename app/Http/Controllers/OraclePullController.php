@@ -33,61 +33,7 @@ class OraclePullController extends Controller
             ->orWhere(DB::raw('substr(MTL_ITEM_LOCATIONS.SEGMENT2, -3)'), '=', 'FRA');
         })->get();
 
-        foreach($deliveries as $key => $value){
-            DB::beginTransaction();
-            try {
-
-                // Step 1: Insert into `delivery_header` table
-                $deliveryHeader = Delivery::firstOrCreate([
-                    'dr_number' => $value->dr_number
-                ],[
-                    'order_number' => $value->order_number,
-                    'customer_name' => $value->customer_name,
-                    'dr_number' => $value->dr_number,
-                    'shipping_instruction' => $value->shipping_instruction,
-                    'customer_po' => $value->customer_po,
-                    'locators_id' => $value->locator_id,
-                    'transaction_type' => 'MO'
-                ]);
-
-                $rtlItemPrice = ItemMaster::getPrice($value->ordered_item);
-                $gboItemPrice = GashaponItemMaster::getPrice($value->ordered_item);
-
-                // Step 2: Insert into `delivery_lines` table
-                $deliveryLine = $deliveryHeader->lines()->create([
-                    'line_number' => $value->line_number,
-                    'ordered_item' => $value->ordered_item,
-                    'ordered_item_id' => $value->ordered_item_id,
-                    'shipped_quantity' => $value->shipped_quantity,
-                    'unit_price' => is_null($rtlItemPrice) ? $gboItemPrice : $rtlItemPrice
-                ]);
-
-                // Recalculate totals after adding the line item
-                $deliveryHeader->calculateTotals();
-
-                // Step 3: Insert into `serial` table
-                $serialNumbers = [
-                    $value->serial1, $value->serial2, $value->serial3,
-                    $value->serial4, $value->serial5, $value->serial6,
-                    $value->serial7, $value->serial8, $value->serial9,
-                    $value->serial10
-                ];
-
-                foreach ($serialNumbers as $serial) {
-                    if ($serial !== null) {
-                        $deliveryLine->serials()->create([
-                            'serial_number' => $serial
-                        ]);
-                    }
-                }
-
-                DB::commit();
-
-            } catch (\Exception $ex) {
-                DB::rollBack();
-                Log::error($ex);
-            }
-        }
+        $this->processOrders($deliveries,'MO');
     }
 
     public function salesOrderPull(){
@@ -102,7 +48,11 @@ class OraclePullController extends Controller
                 ->orWhere(DB::raw('substr(HZ_PARTIES.PARTY_NAME, -3)'), '=', 'FRA');
             })->get();
 
-        foreach($salesOrders as $key => $value){
+        $this->processOrders($salesOrders,'SO');
+    }
+
+    private function processOrders($orders, $transactionType='MO'){
+        foreach($orders as $key => $value){
             DB::beginTransaction();
             try {
 
@@ -116,7 +66,8 @@ class OraclePullController extends Controller
                     'shipping_instruction' => $value->shipping_instruction,
                     'customer_po' => $value->customer_po,
                     'locators_id' => $value->locator_id,
-                    'transaction_type' => 'SO'
+                    'transaction_type' => $transactionType,
+                    'status' => ($transactionType == 'MO') ? 1 : 0 //1 processing, 0 pending
                 ]);
 
                 $rtlItemPrice = ItemMaster::getPrice($value->ordered_item);
