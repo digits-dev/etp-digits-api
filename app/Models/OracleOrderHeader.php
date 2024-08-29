@@ -12,7 +12,7 @@ class OracleOrderHeader extends Model
     protected $connection = 'oracle';
     protected $table = 'OE_ORDER_HEADERS_ALL';
 
-    public function scopeGetSalesOrders($query){
+    public function scopeGetSalesOrder($query){
         return $query->join('OE_ORDER_LINES_ALL','OE_ORDER_HEADERS_ALL.HEADER_ID','=','OE_ORDER_LINES_ALL.HEADER_ID')
             ->join('ORG_ORGANIZATION_DEFINITIONS','OE_ORDER_HEADERS_ALL.SHIP_FROM_ORG_ID','=','ORG_ORGANIZATION_DEFINITIONS.ORGANIZATION_ID')
             ->join('WSH_DELIVERY_DETAILS','OE_ORDER_LINES_ALL.LINE_ID','=','WSH_DELIVERY_DETAILS.SOURCE_LINE_ID')
