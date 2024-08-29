@@ -61,6 +61,9 @@ class OraclePullController extends Controller
                     'unit_price' => is_null($rtlItemPrice) ? $gboItemPrice : $rtlItemPrice
                 ]);
 
+                // Recalculate totals after adding the line item
+                $deliveryHeader->calculateTotals();
+
                 // Step 3: Insert into `serial` table
                 $serialNumbers = [
                     $value->serial1, $value->serial2, $value->serial3,
