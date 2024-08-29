@@ -90,7 +90,7 @@ class DeliveryController extends Controller
                         $count++;
                     }
                     else{
-                        throw new \Exception("Delivery #{$value} not found in the system!");
+                        throw new \Exception("Delivery #{$value} was not found in the system!");
                     }
                 }
                 catch(Exception $ex){
