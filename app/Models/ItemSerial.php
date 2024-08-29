@@ -10,6 +10,11 @@ class ItemSerial extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'delivery_lines_id',
+        'serial_number'
+    ];
+
     public function deliveryItem() : BelongsTo {
         return $this->belongsTo(DeliveryLine::class, 'delivery_lines_id', 'id');
     }
