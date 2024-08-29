@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Delivery;
+use App\Models\GashaponItemMaster;
 use App\Models\ItemMaster;
 use App\Models\OracleMaterialTransaction;
 use App\Models\OracleTransactionHeader;
@@ -49,7 +50,8 @@ class OraclePullController extends Controller
                     'transaction_type' => 'MO'
                 ]);
 
-                $itemPrice = ItemMaster::getPrice($value->ordered_item)->current_srp;
+                $rtlItemPrice = ItemMaster::getPrice($value->ordered_item)->current_srp;
+                $gboItemPrice = GashaponItemMaster::getPrice($value->ordered_item)->current_srp;
 
                 // Step 2: Insert into `delivery_lines` table
                 $deliveryLine = $deliveryHeader->lines()->create([
@@ -57,7 +59,7 @@ class OraclePullController extends Controller
                     'ordered_item' => $value->ordered_item,
                     'ordered_item_id' => $value->ordered_item_id,
                     'shipped_quantity' => $value->shipped_quantity,
-                    'unit_price' => is_null($itemPrice) ? 0 : $itemPrice
+                    'unit_price' => is_null($rtlItemPrice) ? $gboItemPrice : $rtlItemPrice
                 ]);
 
                 // Step 3: Insert into `serial` table

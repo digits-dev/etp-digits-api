@@ -15,6 +15,8 @@ class Delivery extends Model
         'dr_number',
         'customer_name',
         'customer_po',
+        'locators_id',
+        'stores_id',
         'shipping_instruction',
         'transaction_type',
         'total_amount',
