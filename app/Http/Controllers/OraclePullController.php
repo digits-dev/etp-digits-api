@@ -88,4 +88,8 @@ class OraclePullController extends Controller
             }
         }
     }
+
+    public function salesOrderPull(){
+
+    }
 }

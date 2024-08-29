@@ -25,6 +25,10 @@ class DeliveryLine extends Model
         return $this->belongsTo(Delivery::class, 'deliveries_id', 'id');
     }
 
+    public function item() : BelongsTo {
+        return $this->belongsTo(ItemMaster::class, 'ordered_item', 'digits_code');
+    }
+
     public function serials() : HasMany {
         return $this->hasMany(ItemSerial::class, 'delivery_lines_id');
     }
