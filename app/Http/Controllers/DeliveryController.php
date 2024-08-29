@@ -85,12 +85,18 @@ class DeliveryController extends Controller
                 try{
                     $order = Delivery::where('dr_number', $value)->first();
                     if($order){
-                        $order->status = 2;
-                        $order->save();
-                        $count++;
+                        if($order->status != 2){
+                            $order->status = 2;
+                            $order->save();
+                            $count++;
+                        }
+                        elseif ($order->status == 2) {
+                            throw new Exception("Delivery #{$value} has already been received!");
+                        }
                     }
+
                     else{
-                        throw new \Exception("Delivery #{$value} was not found in the system!");
+                        throw new Exception("Delivery #{$value} was not found in the system!");
                     }
                 }
                 catch(Exception $ex){
@@ -110,7 +116,7 @@ class DeliveryController extends Controller
                 'api_message' => 'success',
                 'data' => $request->all(),
                 'dr_status' => 'received',
-                'items_updated' => $count,
+                'updated_records' => $count,
                 'http_status' => 200
             ], 200);
         }
