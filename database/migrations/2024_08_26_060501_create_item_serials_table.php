@@ -15,7 +15,6 @@ class CreateItemSerialsTable extends Migration
     {
         Schema::create('item_serials', function (Blueprint $table) {
             $table->id();
-            // $table->foreignId('pullout_lines_id')->constrained()->onDelete('cascade')->nullable();
             $table->foreignId('delivery_lines_id')->constrained()->onDelete('cascade')->nullable();
             $table->string('serial_number');
             $table->unsignedTinyInteger('status')->default(0)->comment('0-pending,1-received');

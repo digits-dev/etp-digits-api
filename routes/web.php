@@ -3,6 +3,7 @@
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\ItemMasterController;
 use App\Http\Controllers\OraclePullController;
+use App\Http\Controllers\PulloutController;
 use App\Http\Controllers\WarehouseMasterController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,11 +33,13 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
 Route::group(['middleware' => ['authapi'],'prefix' => 'api'], function(){
     //deliveries
     Route::get('get-deliveries', [DeliveryController::class,'getDeliveries']);
-    Route::get('update-delivery-status', [DeliveryController::class,'updateDeliveryStatus']);
+    // Route::get('update-delivery-status', [DeliveryController::class,'updateDeliveryStatus']);
     //item master
     Route::get('get-new-items', [ItemMasterController::class,'getNewItems']);
     Route::get('get-updated-items', [ItemMasterController::class,'getUpdatedItems']);
     //warehouse master
     Route::get('get-new-warehouse', [WarehouseMasterController::class,'getNewWarehouse']);
     Route::get('get-updated-warehouse', [WarehouseMasterController::class,'getUpdatedWarehouse']);
+    //pullouts
+    // Route::get('push-pullouts', [PulloutController::class,'pushPullout']);
 });
