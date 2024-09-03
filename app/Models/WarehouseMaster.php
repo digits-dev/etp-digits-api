@@ -18,7 +18,7 @@ class WarehouseMaster extends Model
             ->whereNull('customer.close_date')
             ->whereIn('customer.channel_code_id',['RTL','FRA'])
             ->select(
-                DB::raw('SUBSTRING(customer.customer_code, 4,4) as warehouse_id'),
+                DB::raw('SUBSTRING(customer.customer_code, 5,4) as warehouse_id'),
                 'customer.warehouse_name',
                 DB::raw('(CASE WHEN customer.channel_id = 10 THEN 0 ELSE 1 END) AS warehouse_type'),
                 'customer.building_no as address1',
