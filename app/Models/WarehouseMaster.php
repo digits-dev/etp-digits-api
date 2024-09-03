@@ -18,7 +18,7 @@ class WarehouseMaster extends Model
             ->whereNull('customer.close_date')
             ->whereIn('customer.channel_code_id',['RTL','FRA'])
             ->select(
-                'customer.customer_code as warehouse_id',
+                DB::raw('substr(customer.customer_code, 3,4) as warehouse_id'),
                 'customer.warehouse_name',
                 DB::raw('(CASE WHEN customer.channel_id = 10 THEN 0 ELSE 1 END) AS warehouse_type'),
                 'customer.building_no as address1',
@@ -26,7 +26,7 @@ class WarehouseMaster extends Model
                 'customer.barangay as address3',
                 'customer.area_code_zip_code as postal_code',
                 'customer.city_id as city_code',
-                'customer.state_id as state_code',
+                'customer.state_id as state_code'
             );
     }
 }
