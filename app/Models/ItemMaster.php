@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class ItemMaster extends Model
 {
@@ -31,6 +32,8 @@ class ItemMaster extends Model
                 'item_masters.item_description',
                 'item_masters.digits_code as barcode_id',
                 'item_masters.current_srp',
+                DB::raw('"' . Carbon::now()->startOfYear()->format("Ymd") . '" as valid_from'),
+                DB::raw('(select "29991231") as valid_to'),
                 'categories.category_description as category',
                 'item_masters.categories_id',
                 'sku_statuses.sku_status_description as sku_status',
