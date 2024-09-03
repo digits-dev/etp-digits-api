@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class WarehouseMaster extends Model
 {
@@ -15,11 +16,17 @@ class WarehouseMaster extends Model
     public function scopeGetWarehouse($query){
         return $query->whereNotNull('customer.warehouse_name')
             ->whereNull('customer.close_date')
-            ->where('customer.channel_code_id','RTL')
+            ->whereIn('customer.channel_code_id',['RTL','FRA'])
             ->select(
                 'customer.customer_code as warehouse_id',
                 'customer.warehouse_name',
-                'customer.building_no as address'
+                DB::raw('(CASE WHEN customer.channel_id = 10 THEN 0 ELSE 1 END) AS warehouse_type'),
+                'customer.building_no as address1',
+                'customer.lot_blk_no_streetname as address2',
+                'customer.barangay as address3',
+                'customer.area_code_zip_code as postal_code',
+                'customer.city_id as city_code',
+                'customer.state_id as state_code',
             );
     }
 }
