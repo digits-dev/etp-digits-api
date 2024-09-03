@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Delivery;
 use App\Models\ItemMaster;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +36,8 @@ class DeliveryController extends Controller
                     'ordered_item as digits_code',
                     'unit_price as price',
                     DB::raw("(SELECT 'PCS') as uom"),
-                    'shipped_quantity as qty'
+                    'shipped_quantity as qty',
+                    DB::raw('(SELECT DATE_FORMAT(created_at,"%Y-%m-%d")) as created_date')
                 );
             },'lines.serials' => function ($serialQuery) {
                 $serialQuery->select(
@@ -49,11 +51,12 @@ class DeliveryController extends Controller
                 'deliveries.id',
                 'deliveries.dr_number as reference_code',
                 'deliveries.created_at as transaction_date',
-                DB::raw("(SELECT 'DIGITS WAREHOUSE') as from_warehouse"),
-                'deliveries.customer_name as destination_store',
+                DB::raw("(SELECT '0000') as from_warehouse"), //DIGITS WAREHOUSE
+                'deliveries.to_warehouse_id as destination_store',
                 'deliveries.total_qty',
                 'deliveries.total_amount',
-                'deliveries.customer_po as memo')
+                'deliveries.customer_po as memo',
+                DB::raw('(SELECT DATE_FORMAT(deliveries.created_at,"%Y-%m-%d")) as created_date'))
             ->paginate(50);
 
             //remove links from the response
