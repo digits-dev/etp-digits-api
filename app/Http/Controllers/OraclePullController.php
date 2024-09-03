@@ -8,7 +8,9 @@ use App\Models\ItemMaster;
 use App\Models\OracleMaterialTransaction;
 use App\Models\OracleOrderHeader;
 use App\Models\OracleTransactionHeader;
+use App\Models\WarehouseMaster;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -53,6 +55,13 @@ class OraclePullController extends Controller
 
     private function processOrders($orders, $transactionType='MO'){
         foreach($orders as $key => $value){
+            $warehouse = Cache::remember('warehouse_key'.str_replace(" ","_",$value->customer_name), 3600, function () use ($value) {
+                return WarehouseMaster::where('customer.cutomer_name', $value->customer_name)
+                    ->orWhere('customer.warehouse_mo_name',$value->customer_name)->select(
+                        DB::raw('SUBSTRING(customer.customer_code, 5,4) as warehouse_id')
+                    )->first();
+            });
+
             DB::beginTransaction();
             try {
 
@@ -62,6 +71,7 @@ class OraclePullController extends Controller
                 ],[
                     'order_number' => $value->order_number,
                     'customer_name' => $value->customer_name,
+                    'to_warehouse_id' => $warehouse->warehouse_id,
                     'dr_number' => $value->dr_number,
                     'shipping_instruction' => $value->shipping_instruction,
                     'customer_po' => $value->customer_po,
