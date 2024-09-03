@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class ItemMaster extends Model
 {
@@ -25,7 +26,10 @@ class ItemMaster extends Model
             ->whereNotNull('item_masters.approved_at')
             ->select(
                 'item_masters.digits_code',
+                DB::raw('SUBSTRING(item_masters.item_description, 1, 30) as item_short_name'),
+                DB::raw('SUBSTRING(item_masters.item_description, 1, 60) as item_short_description'),
                 'item_masters.item_description',
+                'item_masters.digits_code as barcode_id',
                 'item_masters.current_srp',
                 'categories.category_description as category',
                 'item_masters.categories_id',
@@ -37,6 +41,7 @@ class ItemMaster extends Model
                 'item_masters.model',
                 'item_models.id as models_id',
                 'item_masters.compatibility',
+                DB::raw("(select '0') as compatibility_id"),
                 'subclasses.subclass_description as subclass',
                 'item_masters.subclasses_id',
                 'vendors.vendor_name as vendor',
