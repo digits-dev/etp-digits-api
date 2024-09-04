@@ -15,7 +15,7 @@ class CreateReasonsTable extends Migration
     {
         Schema::create('reasons', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('transaction_type_id')->length(10)->nullable();
+            $table->unsignedInteger('transaction_types_id')->length(10)->nullable();
             $table->string('bea_mo_reason',100)->nullable();
             $table->string('bea_so_reason',100)->nullable();
             $table->string('pullout_reason',100)->nullable();
