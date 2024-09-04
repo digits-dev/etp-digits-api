@@ -132,7 +132,7 @@ class OraclePullController extends Controller
                 return response()->json([
                     'error' => '1',
                     'message' => 'Delivery Header and Lines encountered an error!',
-                    'errors' => $ex,
+                    'errors' => $ex->getMessage(),
                 ],551)->send();
             }
         }
