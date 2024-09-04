@@ -55,11 +55,12 @@ class OraclePullController extends Controller
 
     private function processOrders($orders, $transactionType='MO'){
         foreach($orders as $key => $value){
-            $warehouse = Cache::remember('warehouse_key'.str_replace(" ","_",$value->customer_name), 3600, function () use ($value) {
+            $whKey = 'warehouse_key'.str_replace(" ","_",$value->customer_name);
+            $warehouse = Cache::remember($whKey, 3600, function () use ($value) {
                 return WarehouseMaster::where('customer.cutomer_name', $value->customer_name)
-                    ->orWhere('customer.warehouse_mo_name',$value->customer_name)->select(
-                        DB::raw('SUBSTRING(customer.customer_code, 5,4) as warehouse_id')
-                    )->first();
+                    ->orWhere('customer.warehouse_mo_name',$value->customer_name)
+                    ->select(DB::raw('SUBSTRING(customer.customer_code, 5,4) as warehouse_id'))
+                    ->first();
             });
 
             DB::beginTransaction();
@@ -80,8 +81,15 @@ class OraclePullController extends Controller
                     'status' => ($transactionType == 'MO') ? 1 : 0 //1 processing, 0 pending
                 ]);
 
-                $rtlItemPrice = ItemMaster::getPrice($value->ordered_item);
-                $gboItemPrice = GashaponItemMaster::getPrice($value->ordered_item);
+                $itemKey = 'dimfs'.$value->ordered_item;
+                $rtlItemPrice = Cache::remember($itemKey, 3600, function() use ($value){
+                    return ItemMaster::getPrice($value->ordered_item);
+                });
+
+                $gboKey = 'gbo'.$value->ordered_item;
+                $gboItemPrice = Cache::remember($gboKey, 3600, function() use ($value){
+                    return GashaponItemMaster::getPrice($value->ordered_item);
+                });
 
                 // Step 2: Insert into `delivery_lines` table
                 $deliveryLine = $deliveryHeader->lines()->create([
@@ -116,6 +124,11 @@ class OraclePullController extends Controller
             } catch (\Exception $ex) {
                 DB::rollBack();
                 Log::error($ex);
+                return response()->json([
+                    'error' => '1',
+                    'message' => 'Delivery Header and Lines encountered an error!',
+                    'errors' => $ex,
+                ],551);
             }
         }
 
