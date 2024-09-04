@@ -12,10 +12,15 @@ class ItemSerial extends Model
 
     protected $fillable = [
         'delivery_lines_id',
+        'pullout_lines_id',
         'serial_number'
     ];
 
     public function deliveryItem() : BelongsTo {
         return $this->belongsTo(DeliveryLine::class, 'delivery_lines_id', 'id');
+    }
+
+    public function pulloutItem() : BelongsTo {
+        return $this->belongsTo(PulloutLine::class, 'pullout_lines_id', 'id');
     }
 }

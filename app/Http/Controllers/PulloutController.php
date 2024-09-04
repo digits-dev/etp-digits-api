@@ -12,18 +12,39 @@ use Illuminate\Validation\ValidationException;
 class PulloutController extends Controller
 {
     public function pushPullout(Request $request){
-  
-        $validator = Validator::make($request->json()->all(),[
-            'data' => 'required|array|min:1',
+
+        // Get the raw JSON content
+        $rawContent = $request->getContent();
+
+        // Manually decode the JSON string
+        $requestData = json_decode($rawContent, true);
+
+        // Check for JSON errors
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return response()->json([
+                'api_status' => 0,
+                'api_message' => 'error',
+                'errors' => 'JSON Error: ' . json_last_error_msg(), $rawContent,
+                'http_status' => 422
+            ], 422)->send();
+        }
+
+        $rules = [
+            'data' => 'required|array',
             'data.*.document_number' => 'required|integer',
             'data.*.wh_from' => 'required|string|max:255',
             'data.*.wh_to' => 'required|string|max:255',
             'data.*.reason' => 'required|string|max:255',
-            'data.*.transaction_type' => 'required|string|in:STW,RMA', // Replace with other valid transaction types
+            'data.*.transaction_type' => 'required|string|in:STW,RTW,OTH', // Assuming STW, RTW, and OTH are valid types
             'data.*.lines.item_code' => 'required|integer',
             'data.*.lines.qty' => 'required|integer|min:1',
             'data.*.lines.price' => 'required|numeric|min:0',
-        ]);
+            'data.*.lines.serials' => 'array',
+            'data.*.lines.serials.*.serial_number' => 'required_if:data.*.lines.qty,>,0|distinct'
+        ];
+
+        // Validate the request
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json([
@@ -31,42 +52,38 @@ class PulloutController extends Controller
                 'api_message' => 'error',
                 'errors' => $validator->errors(),
                 'http_status' => 422
-            ], 422);
+            ], 422)->send();
         }
 
         try{
-            foreach($request->document_number as $headerData){
-              // Create header
-                $header = Pullout::create([
-                    'document_number'  => $headerData,
-                    'wh_from'          => $request->wh_from,
-                    'wh_to'            => $request->wh_to,
-                    'reason'           => $request->reason,
-                    'transaction_type' => $request->transaction_type,
-                    'memo'             => $request->memo,
+            // Iterate over each pullout in the data array
+            foreach ($requestData['data'] as $pullout) {
+                // Save the pullout Header
+                $pulloutHeader = Pullout::create([
+                    'document_number' => $pullout['document_number'],
+                    'wh_from' => $pullout['wh_from'],
+                    'wh_to' => $pullout['wh_to'],
+                    'reason' => $pullout['reason'],
+                    'transaction_type' => $pullout['transaction_type'],
                 ]);
 
-                // Create lines for the header
-                foreach ($headerData['lines'] as $lineData) {
-                    $line = PulloutLine::create([
-                        'pullout_id' => $header->id,
-                        'item_code'  => $lineData['item_code'],
-                        'qty'        => $lineData['qty'],
-                        'unit_price' => $lineData['unit_price'],
-                    ]);
+                // Save the pullout Line
+                $pulloutLine = $pulloutHeader->lines()->create([
+                    'item_code' => $pullout['lines']['item_code'],
+                    'qty' => $pullout['lines']['qty'],
+                    'unit_price' => $pullout['lines']['price'],
+                ]);
 
-                    // Create serials for the line if they exist
-                    if (isset($lineData['serials'])) {
-                        foreach ($lineData['serials'] as $serialData) {
-                            ItemSerial::create([
-                                'pullout_lines_id' => $line->id,
-                                'serial_number'    => $serialData['serial_number'],
-                            ]);
-                        }
+                // Save the Serials if they exist
+                if (!empty($pullout['lines']['serials'])) {
+                    foreach ($pullout['lines']['serials'] as $serial) {
+                        $pulloutLine->serials()->create([
+                            'serial_number' => $serial['serial_number']
+                        ]);
                     }
                 }
             }
-         
+
             return response()->json([
                 'api_status' => 1,
                 'api_message' => 'success',
@@ -83,5 +100,5 @@ class PulloutController extends Controller
             ], 401);
         }
     }
-    
+
 }

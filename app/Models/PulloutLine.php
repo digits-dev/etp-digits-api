@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PulloutLine extends Model
 {
@@ -17,6 +19,18 @@ class PulloutLine extends Model
         'problems',
         'problem_details'
     ];
+
+    public function pullout() : BelongsTo {
+        return $this->belongsTo(Pullout::class, 'pullouts_id', 'id');
+    }
+
+    public function item() : BelongsTo {
+        return $this->belongsTo(ItemMaster::class, 'item_code', 'digits_code');
+    }
+
+    public function serials() : HasMany {
+        return $this->hasMany(ItemSerial::class, 'pullout_lines_id');
+    }
 
     public function scopeGetItems($query){
         return $query->leftJoin('item_serials', 'pullout.id', '=', 'item_serials.pullout_lines_id')

@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pullout extends Model
 {
     use HasFactory;
-    protected $table = 'pullout';
+    protected $table = 'pullouts';
     protected $fillable = [
         'sor_mor_number',
         'document_number',
@@ -23,6 +24,10 @@ class Pullout extends Model
         'stores_id',
         'status'
     ];
+
+    public function lines() : HasMany {
+        return $this->hasMany(PulloutLine::class, 'pullouts_id');
+    }
 
     public function scopeGetItems($query){
         return $query->leftjoin('reason','pullout.reason_id','reason.id')
