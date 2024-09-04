@@ -101,7 +101,8 @@ class OraclePullController extends Controller
                     'ordered_item' => $value->ordered_item,
                     'ordered_item_id' => $value->ordered_item_id,
                     'shipped_quantity' => $value->shipped_quantity,
-                    'unit_price' => is_null($rtlItemPrice) ? $gboItemPrice : $rtlItemPrice
+                    'unit_price' => is_null($rtlItemPrice) ? $gboItemPrice : $rtlItemPrice,
+                    'transaction_date' => $transactionDate
                 ]);
 
                 // Recalculate totals after adding the line item
