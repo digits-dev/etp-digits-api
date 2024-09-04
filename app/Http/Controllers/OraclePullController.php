@@ -10,6 +10,7 @@ use App\Models\OracleOrderHeader;
 use App\Models\OracleTransactionHeader;
 use App\Models\WarehouseMaster;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -126,7 +127,7 @@ class OraclePullController extends Controller
 
                 DB::commit();
 
-            } catch (\Exception $ex) {
+            } catch (Exception $ex) {
                 DB::rollBack();
                 Log::error($ex);
                 return response()->json([
