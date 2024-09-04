@@ -18,6 +18,7 @@ class DeliveryLine extends Model
         'shipped_quantity',
         'unit_price',
         'line_status',
+        'transaction_date',
         'updated_by'
     ];
 

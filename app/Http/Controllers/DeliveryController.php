@@ -37,7 +37,7 @@ class DeliveryController extends Controller
                     'unit_price as price',
                     DB::raw("(SELECT 'PCS') as uom"),
                     'shipped_quantity as qty',
-                    DB::raw('(SELECT DATE_FORMAT(created_at,"%Y-%m-%d")) as created_date')
+                    'transaction_date as created_date'
                 );
             },'lines.serials' => function ($serialQuery) {
                 $serialQuery->select(
@@ -50,13 +50,13 @@ class DeliveryController extends Controller
             ->select(
                 'deliveries.id',
                 'deliveries.dr_number as reference_code',
-                'deliveries.created_at as transaction_date',
+                'deliveries.transaction_date as transaction_date',
                 DB::raw("(SELECT '0000') as from_warehouse"), //DIGITS WAREHOUSE
                 'deliveries.to_warehouse_id as destination_store',
                 'deliveries.total_qty',
                 'deliveries.total_amount',
                 'deliveries.customer_po as memo',
-                DB::raw('(SELECT DATE_FORMAT(deliveries.created_at,"%Y-%m-%d")) as created_date'))
+                'deliveries.transaction_date as created_date')
             ->paginate(50);
 
             //remove links from the response
