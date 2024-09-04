@@ -15,8 +15,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-use function PHPUnit\Framework\isNull;
-
 class OraclePullController extends Controller
 {
     public function moveOrderPull(Request $request){
