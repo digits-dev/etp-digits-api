@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pullout;
 use App\Models\PulloutLine;
 use App\Models\ItemSerial;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
@@ -26,16 +27,16 @@ class PulloutController extends Controller
                 'api_message' => 'error',
                 'errors' => 'JSON Error: ' . json_last_error_msg(), $rawContent,
                 'http_status' => 422
-            ], 422)->send();
+            ], 422);
         }
 
         $rules = [
             'data' => 'required|array',
             'data.*.document_number' => 'required|integer',
             'data.*.wh_from' => 'required|string|max:255',
-            'data.*.wh_to' => 'required|string|max:255',
-            'data.*.reason' => 'required|string|max:255',
-            'data.*.transaction_type' => 'required|string|in:STW,RTW,OTH', // Assuming STW, RTW, and OTH are valid types
+            'data.*.wh_to' => 'required|string|in:0000',
+            'data.*.reason' => 'required|string|exists:reasons,pullout_reason',
+            'data.*.transaction_type' => 'required|string|in:STW,RMA',
             'data.*.lines.item_code' => 'required|integer',
             'data.*.lines.qty' => 'required|integer|min:1',
             'data.*.lines.price' => 'required|numeric|min:0',
@@ -49,21 +50,23 @@ class PulloutController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'api_status' => 0,
-                'api_message' => 'error',
+                'api_message' => 'Validation error!',
                 'errors' => $validator->errors(),
                 'http_status' => 422
-            ], 422)->send();
+            ], 422);
         }
 
         try{
             // Iterate over each pullout in the data array
             foreach ($requestData['data'] as $pullout) {
                 // Save the pullout Header
-                $pulloutHeader = Pullout::create([
+                $pulloutHeader = Pullout::firstOrCreate([
+                    'document_number' => $pullout['document_number']
+                ],[
                     'document_number' => $pullout['document_number'],
                     'wh_from' => $pullout['wh_from'],
                     'wh_to' => $pullout['wh_to'],
-                    'reason' => $pullout['reason'],
+                    'reasons_id' => $pullout['reason'],
                     'transaction_type' => $pullout['transaction_type'],
                 ]);
 
@@ -91,11 +94,11 @@ class PulloutController extends Controller
                 'http_status' => 200
             ], 200);
         }
-        catch(ValidationException $ex){
+        catch(Exception $ex){
             return response()->json([
                 'api_status' => 0,
-                'api_message' => 'Validation failed',
-                'errors' => $ex->errors(),
+                'api_message' => 'Error while saving to database!',
+                'errors' => $ex->getMessage(),
                 'http_status' => 401
             ], 401);
         }
