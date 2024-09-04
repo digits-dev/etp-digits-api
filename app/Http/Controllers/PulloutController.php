@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pullout;
 use App\Models\PulloutLine;
 use App\Models\ItemSerial;
+use App\Models\Reason;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -25,7 +26,7 @@ class PulloutController extends Controller
             return response()->json([
                 'api_status' => 0,
                 'api_message' => 'error',
-                'errors' => 'JSON Error: ' . json_last_error_msg(), $rawContent,
+                'errors' => 'JSON Error: ' . json_last_error_msg(),
                 'http_status' => 422
             ], 422);
         }
@@ -66,7 +67,7 @@ class PulloutController extends Controller
                     'document_number' => $pullout['document_number'],
                     'wh_from' => $pullout['wh_from'],
                     'wh_to' => $pullout['wh_to'],
-                    'reasons_id' => $pullout['reason'],
+                    'reasons_id' => Reason::getReason($pullout['reason'])->id,
                     'transaction_type' => $pullout['transaction_type'],
                 ]);
 
