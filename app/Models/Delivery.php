@@ -22,7 +22,8 @@ class Delivery extends Model
         'transaction_type',
         'total_amount',
         'total_qty',
-        'status'
+        'status',
+        'transaction_date'
     ];
 
     public function lines() : HasMany {

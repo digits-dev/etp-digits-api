@@ -9,6 +9,7 @@ use App\Models\OracleMaterialTransaction;
 use App\Models\OracleOrderHeader;
 use App\Models\OracleTransactionHeader;
 use App\Models\WarehouseMaster;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +36,7 @@ class OraclePullController extends Controller
             ->orWhere(DB::raw('substr(MTL_ITEM_LOCATIONS.SEGMENT2, -3)'), '=', 'FRA');
         })->get();
 
-        $this->processOrders($deliveries,'MO');
+        $this->processOrders($deliveries,'MO', Carbon::parse($request->datefrom)->format("Y-m-d"));
     }
 
     public function salesOrderPull(Request $request){
@@ -50,10 +51,10 @@ class OraclePullController extends Controller
                 ->orWhere(DB::raw('substr(HZ_PARTIES.PARTY_NAME, -3)'), '=', 'FRA');
             })->get();
 
-        $this->processOrders($salesOrders,'SO');
+        $this->processOrders($salesOrders,'SO', Carbon::parse($request->datefrom)->format("Y-m-d"));
     }
 
-    private function processOrders($orders, $transactionType='MO'){
+    private function processOrders($orders, $transactionType='MO', $transactionDate){
         foreach($orders as $key => $value){
             $whKey = 'warehouse_key'.str_replace(" ","_",$value->customer_name);
             $warehouse = Cache::remember($whKey, 3600, function () use ($value) {
@@ -78,6 +79,7 @@ class OraclePullController extends Controller
                     'customer_po' => $value->customer_po,
                     'locators_id' => $value->locator_id,
                     'transaction_type' => $transactionType,
+                    'transaction_date' => $transactionDate,
                     'status' => ($transactionType == 'MO') ? 1 : 0 //1 processing, 0 pending
                 ]);
 
