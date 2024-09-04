@@ -53,7 +53,7 @@ class OraclePullController extends Controller
     }
 
     private function processOrders($orders, $transactionType='MO', $transactionDate){
-
+        $deliveryHeader = [];
         foreach($orders ?? [] as $key => $value){
             $whKey = 'warehouse_key'.str_replace(" ","_",$value->customer_name);
             $warehouse = Cache::remember($whKey, 3600, function () use ($value) {
@@ -133,7 +133,7 @@ class OraclePullController extends Controller
                     'error' => '1',
                     'message' => 'Delivery Header and Lines encountered an error!',
                     'errors' => $ex,
-                ],551);
+                ],551)->send();
             }
         }
 
@@ -142,6 +142,6 @@ class OraclePullController extends Controller
             'message' => 'Delivery Header and Lines created successfully',
             'data' => $deliveryHeader,
             'lines' => $deliveryHeader->lines,
-        ],200);
+        ],200)->send();
     }
 }
