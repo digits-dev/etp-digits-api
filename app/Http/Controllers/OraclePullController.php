@@ -18,13 +18,13 @@ use function PHPUnit\Framework\isNull;
 
 class OraclePullController extends Controller
 {
-    public function moveOrderPull(){
+    public function moveOrderPull(Request $request){
 
-        $datefrom = date("Y-m-d H:i:s", strtotime("-5 hour"));
-        $dateto = date("Y-m-d H:i:s", strtotime("-1 hour"));
+        $date_from = $request->datefrom ?? date("Y-m-d H:i:s", strtotime("-5 hour"));
+        $date_to = $request->dateto ?? date("Y-m-d H:i:s", strtotime("-1 hour"));
 
         $request_numbers = [];
-        $shipment_numbers = OracleMaterialTransaction::getShipments($datefrom,$dateto,'DTO')->get();
+        $shipment_numbers = OracleMaterialTransaction::getShipments($date_from,$date_to,'DTO')->get();
 
         foreach ($shipment_numbers as $key => $value) {
             $request_numbers[] = $value->shipment_number;
@@ -38,13 +38,13 @@ class OraclePullController extends Controller
         $this->processOrders($deliveries,'MO');
     }
 
-    public function salesOrderPull(){
+    public function salesOrderPull(Request $request){
 
-        $datefrom = date("Y-m-d H:i:s", strtotime("-5 hour"));
-        $dateto = date("Y-m-d H:i:s", strtotime("-1 hour"));
+        $date_from = $request->datefrom ?? date("Y-m-d H:i:s", strtotime("-5 hour"));
+        $date_to = $request->dateto ?? date("Y-m-d H:i:s", strtotime("-1 hour"));
 
         $salesOrders = OracleOrderHeader::getSalesOrder()
-            ->whereBetween('WSH_NEW_DELIVERIES.CONFIRM_DATE', [$datefrom, $dateto])
+            ->whereBetween('WSH_NEW_DELIVERIES.CONFIRM_DATE', [$date_from, $date_to])
             ->where(function($query) {
                 $query->where(DB::raw('substr(HZ_PARTIES.PARTY_NAME, -3)'), '=', 'RTL')
                 ->orWhere(DB::raw('substr(HZ_PARTIES.PARTY_NAME, -3)'), '=', 'FRA');
@@ -118,5 +118,12 @@ class OraclePullController extends Controller
                 Log::error($ex);
             }
         }
+
+        return response()->json([
+            'success' => '1',
+            'message' => 'Delivery Header and Lines created successfully',
+            'data' => $deliveryHeader,
+            'lines' => $deliveryHeader->lines,
+        ],200);
     }
 }

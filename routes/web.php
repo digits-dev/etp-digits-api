@@ -26,11 +26,13 @@ Route::get('/', function () {
 
 Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CBBackend'],'prefix' => config('crudbooster.ADMIN_PATH')], function(){
 
-    Route::get('pull-deliveries', [OraclePullController::class,'moveOrderPull']);
-    Route::get('pull-sales-orders', [OraclePullController::class,'salesOrderPull']);
 });
 
 Route::group(['middleware' => ['authapi'],'prefix' => 'api'], function(){
+    //pull deliveries from ERP
+    Route::get('pull-deliveries', [OraclePullController::class,'moveOrderPull']);
+    //pull sales orders from ERP
+    Route::get('pull-sales-orders', [OraclePullController::class,'salesOrderPull']);
     //deliveries
     Route::get('get-deliveries', [DeliveryController::class,'getDeliveries']);
     // Route::get('update-delivery-status', [DeliveryController::class,'updateDeliveryStatus']);
