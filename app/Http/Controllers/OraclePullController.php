@@ -34,7 +34,7 @@ class OraclePullController extends Controller
             ->orWhere(DB::raw('substr(MTL_ITEM_LOCATIONS.SEGMENT2, -3)'), '=', 'FRA');
         })->get();
 
-        $this->processOrders($deliveries,'MO', Carbon::parse($request->datefrom)->format("Y-m-d"));
+        $this->processOrders($deliveries,'MO', Carbon::parse($date_from)->format("Y-m-d"));
     }
 
     public function salesOrderPull(Request $request){
@@ -49,7 +49,7 @@ class OraclePullController extends Controller
                 ->orWhere(DB::raw('substr(HZ_PARTIES.PARTY_NAME, -3)'), '=', 'FRA');
             })->get();
 
-        $this->processOrders($salesOrders,'SO', Carbon::parse($request->datefrom)->format("Y-m-d"));
+        $this->processOrders($salesOrders,'SO', Carbon::parse($date_from)->format("Y-m-d"));
     }
 
     private function processOrders($orders, $transactionType='MO', $transactionDate){
