@@ -53,7 +53,8 @@ class OraclePullController extends Controller
     }
 
     private function processOrders($orders, $transactionType='MO', $transactionDate){
-        foreach($orders as $key => $value){
+
+        foreach($orders ?? [] as $key => $value){
             $whKey = 'warehouse_key'.str_replace(" ","_",$value->customer_name);
             $warehouse = Cache::remember($whKey, 3600, function () use ($value) {
                 return WarehouseMaster::where('customer.cutomer_name', $value->customer_name)
@@ -73,23 +74,26 @@ class OraclePullController extends Controller
                     'customer_name' => $value->customer_name,
                     'to_warehouse_id' => $warehouse->warehouse_id,
                     'dr_number' => $value->dr_number,
-                    'shipping_instruction' => $value->shipping_instruction,
-                    'customer_po' => $value->customer_po,
+                    'shipping_instruction' => trim($value->shipping_instruction),
+                    'customer_po' => trim($value->customer_po),
                     'locators_id' => $value->locator_id,
                     'transaction_type' => $transactionType,
                     'transaction_date' => $transactionDate,
                     'status' => ($transactionType == 'MO') ? 1 : 0 //1 processing, 0 pending
                 ]);
 
-                $itemKey = 'dimfs'.$value->ordered_item;
-                $rtlItemPrice = Cache::remember($itemKey, 3600, function() use ($value){
-                    return ItemMaster::getPrice($value->ordered_item);
-                });
+                // $itemKey = 'dimfs'.$value->ordered_item;
+                // $rtlItemPrice = Cache::remember($itemKey, 3600, function() use ($value){
+                //     return ItemMaster::getPrice($value->ordered_item) ?? null;
+                // });
 
-                $gboKey = 'gbo'.$value->ordered_item;
-                $gboItemPrice = Cache::remember($gboKey, 3600, function() use ($value){
-                    return GashaponItemMaster::getPrice($value->ordered_item);
-                });
+                // $gboKey = 'gbo'.$value->ordered_item;
+                // $gboItemPrice = Cache::remember($gboKey, 3600, function() use ($value){
+                //     return GashaponItemMaster::getPrice($value->ordered_item) ?? null;
+                // });
+
+                $rtlItemPrice = ItemMaster::getPrice($value->ordered_item);
+                $gboItemPrice = GashaponItemMaster::getPrice($value->ordered_item);
 
                 // Step 2: Insert into `delivery_lines` table
                 $deliveryLine = $deliveryHeader->lines()->create([
