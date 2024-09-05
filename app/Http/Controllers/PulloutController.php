@@ -43,7 +43,10 @@ class PulloutController extends Controller
             'data.*.lines.*.qty' => 'required|integer|min:1',
             'data.*.lines.*.price' => 'required|numeric|min:0',
             'data.*.lines.*.serials' => 'nullable|array',
-            'data.*.lines.*.serials.*.serial_number' => 'required_if:data.*.lines.*.qty,>,0|integer'
+            'data.*.lines.*.serials.*.serial_number' => [
+                'required_if:data.*.lines.*.qty,>,0',
+                'regex:/^[a-zA-Z0-9]+$/',
+            ],
         ];
 
         // Validate the request
