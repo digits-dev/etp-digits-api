@@ -31,8 +31,8 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			# START COLUMNS DO NOT REMOVE THIS LINE
 			$this->col = [];
 			$this->col[] = ["label"=>"Transaction Type","name"=>"transaction_types_id","join"=>"transaction_types,transaction_type"];
-			$this->col[] = ["label"=>"Bea Mo Reason","name"=>"bea_mo_reason"];
-			$this->col[] = ["label"=>"Bea So Reason","name"=>"bea_so_reason"];
+			$this->col[] = ["label"=>"SO Reason","name"=>"bea_so_reason"];
+			$this->col[] = ["label"=>"MO Reason","name"=>"bea_mo_reason"];
 			$this->col[] = ["label"=>"Pullout Reason","name"=>"pullout_reason"];
 			$this->col[] = ["label"=>"Status","name"=>"status"];
 			$this->col[] = ["label"=>"Created By","name"=>"created_by","join"=>"cms_users,name"];
@@ -44,8 +44,8 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			# START FORM DO NOT REMOVE THIS LINE
 			$this->form = [];
 			$this->form[] = ['label'=>'Transaction Type','name'=>'transaction_types_id','type'=>'select2','validation'=>'required|integer|min:0','width'=>'col-sm-5','datatable'=>'transaction_types,transaction_type'];
-			$this->form[] = ['label'=>'Bea Mo Reason','name'=>'bea_mo_reason','type'=>'text','validation'=>'required|min:1|max:100','width'=>'col-sm-5'];
-			$this->form[] = ['label'=>'Bea So Reason','name'=>'bea_so_reason','type'=>'text','validation'=>'required|min:1|max:100','width'=>'col-sm-5'];
+			$this->form[] = ['label'=>'SO Reason','name'=>'bea_so_reason','type'=>'text','validation'=>'required|min:1|max:100','width'=>'col-sm-5'];
+			$this->form[] = ['label'=>'MO Reason','name'=>'bea_mo_reason','type'=>'text','validation'=>'required|min:1|max:100','width'=>'col-sm-5'];
 			$this->form[] = ['label'=>'Pullout Reason','name'=>'pullout_reason','type'=>'text','validation'=>'required|min:1|max:100','width'=>'col-sm-5'];
 			if(CRUDBooster::getCurrentMethod() == 'getEdit' || CRUDBooster::getCurrentMethod() == 'postEditSave' || CRUDBooster::getCurrentMethod() == 'getDetail') {
 				$this->form[] = ['label'=>'Status','name'=>'status','type'=>'select','validation'=>'required','width'=>'col-sm-5','dataenum'=>'ACTIVE;INACTIVE'];
