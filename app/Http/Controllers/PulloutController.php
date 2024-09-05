@@ -58,6 +58,7 @@ class PulloutController extends Controller
         }
 
         try{
+            $message = [];
             // Iterate over each pullout in the data array
             foreach ($requestData['data'] as $pullout) {
                 // Save the pullout Header
@@ -70,6 +71,11 @@ class PulloutController extends Controller
                     'reasons_id' => Reason::getReason($pullout['reason'])->id,
                     'transaction_type' => $pullout['transaction_type'],
                 ]);
+
+                if (!$pulloutHeader->wasRecentlyCreated) {
+                    $message[] = "Document # {$pullout['document_number']} already exist in the system!";
+                    continue;
+                }
 
                 // Save the pullout Line
                 $pulloutLine = $pulloutHeader->lines()->create([
@@ -90,7 +96,7 @@ class PulloutController extends Controller
 
             return response()->json([
                 'api_status' => 1,
-                'api_message' => 'success',
+                'api_message' => empty($message) ? 'Success! New records created!' : $message,
                 'records' => $request->all(),
                 'http_status' => 200
             ], 200);
