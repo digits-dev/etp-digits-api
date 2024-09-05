@@ -38,11 +38,12 @@ class PulloutController extends Controller
             'data.*.wh_to' => 'required|string|in:0000',
             'data.*.reason' => 'required|string|exists:reasons,pullout_reason',
             'data.*.transaction_type' => 'required|string|in:STW,RMA',
-            'data.*.lines.item_code' => 'required|integer',
-            'data.*.lines.qty' => 'required|integer|min:1',
-            'data.*.lines.price' => 'required|numeric|min:0',
-            'data.*.lines.serials' => 'array',
-            'data.*.lines.serials.*.serial_number' => 'required_if:data.*.lines.qty,>,0|distinct'
+            'data.*.lines' => 'required|array',
+            'data.*.lines.*.item_code' => 'required|integer',
+            'data.*.lines.*.qty' => 'required|integer|min:1',
+            'data.*.lines.*.price' => 'required|numeric|min:0',
+            'data.*.lines.*.serials' => 'nullable|array',
+            'data.*.lines.*.serials.*.serial_number' => 'required_if:data.*.lines.*.qty,>,0|integer'
         ];
 
         // Validate the request
@@ -78,18 +79,20 @@ class PulloutController extends Controller
                 }
 
                 // Save the pullout Line
-                $pulloutLine = $pulloutHeader->lines()->create([
-                    'item_code' => $pullout['lines']['item_code'],
-                    'qty' => $pullout['lines']['qty'],
-                    'unit_price' => $pullout['lines']['price'],
-                ]);
+                foreach ($pullout['lines'] as $line) {
+                    $pulloutLine = $pulloutHeader->lines()->create([
+                        'item_code' => $line['item_code'],
+                        'qty' => $line['qty'],
+                        'unit_price' => $line['price'],
+                    ]);
 
-                // Save the Serials if they exist
-                if (!empty($pullout['lines']['serials'])) {
-                    foreach ($pullout['lines']['serials'] as $serial) {
-                        $pulloutLine->serials()->create([
-                            'serial_number' => $serial['serial_number']
-                        ]);
+                    // Save the Serials if they exist
+                    if (!empty($line['serials'])) {
+                        foreach ($line['serials'] as $serial) {
+                            $pulloutLine->serials()->create([
+                                'serial_number' => $serial['serial_number']
+                            ]);
+                        }
                     }
                 }
             }
