@@ -26,7 +26,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => null
+                'sorting'           => 3
             ],
             [
                 'name'              => 'Reason',
@@ -51,7 +51,31 @@ class CmsMenuSeeder extends Seeder
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
                 'sorting'           => 2
-            ]
+            ],
+            [
+                'name'              => 'Deliveries',
+                'type'              => 'Route',
+                'path'              => 'AdminDeliveriesControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-file-text-o',
+                'parent_id'         => 0,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 1
+            ],
+            [
+                'name'              => 'Pullouts',
+                'type'              => 'Route',
+                'path'              => 'AdminPulloutsControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-file-text',
+                'parent_id'         => 0,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 2
+            ],
         ];
 
         foreach ($menus as $menu) {

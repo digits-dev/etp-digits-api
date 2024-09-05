@@ -32,6 +32,24 @@ class CmsModuleSeeder extends Seeder
                 'controller'   => 'AdminTransactionTypesController',
                 'is_protected' => 0,
                 'is_active'    => 0
+            ],
+            [
+                'name'         => 'Deliveries',
+                'icon'         => 'fa fa-file-text-o',
+                'path'         => 'deliveries',
+                'table_name'   => 'deliveries',
+                'controller'   => 'AdminDeliveriesController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
+            [
+                'name'         => 'Pullouts',
+                'icon'         => 'fa fa-file-text',
+                'path'         => 'pullouts',
+                'table_name'   => 'pullouts',
+                'controller'   => 'AdminPulloutsController',
+                'is_protected' => 0,
+                'is_active'    => 0
             ]
         ];
 
