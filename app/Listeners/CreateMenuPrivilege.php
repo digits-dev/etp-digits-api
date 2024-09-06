@@ -6,6 +6,7 @@ use App\Events\MenuCreated;
 use App\Models\CmsMenuPrivilege;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Log;
 
 class CreateMenuPrivilege
 {
@@ -27,6 +28,7 @@ class CreateMenuPrivilege
      */
     public function handle(MenuCreated $event)
     {
+        Log::info($event);
         // create a access privilege for the created menu
         CmsMenuPrivilege::create([
             'id_cms_menus' => $event->menu->id,
