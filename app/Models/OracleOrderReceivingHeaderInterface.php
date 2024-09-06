@@ -28,5 +28,6 @@ class OracleOrderReceivingHeaderInterface extends Model
         'SHIP_TO_ORGANIZATION_ID',
         'EXPECTED_RECEIPT_DATE',
         'VALIDATION_FLAG',
+        'CUSTOMER_ID'
     ];
 }
