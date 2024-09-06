@@ -85,12 +85,12 @@ class OraclePullController extends Controller
 
                 // $itemKey = 'dimfs'.$value->ordered_item;
                 // $rtlItemPrice = Cache::remember($itemKey, 3600, function() use ($value){
-                //     return ItemMaster::getPrice($value->ordered_item) ?? null;
+                //     return ItemMaster::getPrice($value->ordered_item);
                 // });
 
                 // $gboKey = 'gbo'.$value->ordered_item;
                 // $gboItemPrice = Cache::remember($gboKey, 3600, function() use ($value){
-                //     return GashaponItemMaster::getPrice($value->ordered_item) ?? null;
+                //     return GashaponItemMaster::getPrice($value->ordered_item);
                 // });
 
                 $rtlItemPrice = ItemMaster::getPrice($value->ordered_item);
@@ -145,8 +145,7 @@ class OraclePullController extends Controller
         return response()->json([
             'success' => '1',
             'message' => 'Delivery Header and Lines created successfully',
-            'data' => $deliveryHeader,
-            'lines' => $deliveryHeader->lines,
+            'data' => $deliveryHeader
         ],200)->send();
     }
 }
