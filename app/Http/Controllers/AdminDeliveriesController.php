@@ -41,7 +41,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
                 return "P ".number_format($row->total_amount,2,".",",");
             }];
 			$this->col[] = ["label"=>"Order Date","name"=>"transaction_date"];
-			$this->col[] = ["label"=>"Status","name"=>"status","join"=>"order_statuses,order_status"];
+			$this->col[] = ["label"=>"Status","name"=>"status","join"=>"order_statuses,style"];
 			# END COLUMNS DO NOT REMOVE THIS LINE
 
 			# START FORM DO NOT REMOVE THIS LINE
