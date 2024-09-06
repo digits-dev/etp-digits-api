@@ -15,7 +15,7 @@ class CreateDeliveryLinesTable extends Migration
     {
         Schema::create('delivery_lines', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('deliveries_id')->nullable();
+            $table->foreignId('deliveries_id')->constrained()->onDelete('cascade');
             $table->unsignedInteger('line_number')->length(10)->nullable();
             $table->string('ordered_item', 60)->nullable();
             $table->unsignedInteger('ordered_item_id')->length(10)->nullable();

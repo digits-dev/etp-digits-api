@@ -97,7 +97,9 @@ class OraclePullController extends Controller
                 $gboItemPrice = GashaponItemMaster::getPrice($value->ordered_item);
 
                 // Step 2: Insert into `delivery_lines` table
-                $deliveryLine = $deliveryHeader->lines()->create([
+                $deliveryLine = $deliveryHeader->lines()->firstOrCreate([
+                    'ordered_item' => $value->ordered_item,
+                ],[
                     'line_number' => $value->line_number,
                     'ordered_item' => $value->ordered_item,
                     'ordered_item_id' => $value->ordered_item_id,
@@ -119,7 +121,9 @@ class OraclePullController extends Controller
 
                 foreach ($serialNumbers as $serial) {
                     if ($serial !== null) {
-                        $deliveryLine->serials()->create([
+                        $deliveryLine->serials()->firstOrCreate([
+                            'serial_number' => $serial
+                        ],[
                             'serial_number' => $serial
                         ]);
                     }
