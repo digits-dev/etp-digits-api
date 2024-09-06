@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class DeliveryLine extends Model
 {
     use HasFactory;
+    protected $orderBy = ['line_number', 'ASC'];
     protected $fillable = [
         'deliveries_id',
         'line_number',
@@ -21,6 +22,7 @@ class DeliveryLine extends Model
         'transaction_date',
         'updated_by'
     ];
+
 
     public function delivery() : BelongsTo {
         return $this->belongsTo(Delivery::class, 'deliveries_id', 'id');
