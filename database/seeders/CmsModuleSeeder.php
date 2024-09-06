@@ -16,6 +16,15 @@ class CmsModuleSeeder extends Seeder
     {
         $modules = [
             [
+                'name'         => 'Order Status',
+                'icon'         => 'fa fa-circle-o',
+                'path'         => 'order_statuses',
+                'table_name'   => 'order_statuses',
+                'controller'   => 'AdminOrderStatusesController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
+            [
                 'name'         => 'Reason',
                 'icon'         => 'fa fa-circle-o',
                 'path'         => 'reasons',

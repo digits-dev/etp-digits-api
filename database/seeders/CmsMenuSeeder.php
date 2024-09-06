@@ -29,6 +29,18 @@ class CmsMenuSeeder extends Seeder
                 'sorting'           => 3
             ],
             [
+                'name'              => 'Order Status',
+                'type'              => 'Route',
+                'path'              => 'AdminOrderStatusesControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-circle-o',
+                'parent_id'         => $submaster,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 1
+            ],
+            [
                 'name'              => 'Reason',
                 'type'              => 'Route',
                 'path'              => 'AdminReasonsControllerGetIndex',
@@ -38,7 +50,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 1
+                'sorting'           => 2
             ],
             [
                 'name'              => 'Transaction Type',
@@ -50,7 +62,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 2
+                'sorting'           => 3
             ],
             [
                 'name'              => 'Deliveries',
