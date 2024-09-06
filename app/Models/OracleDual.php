@@ -27,4 +27,8 @@ class OracleDual extends Model
     public function scopeGetGroupNextValue(){
         return $this->select('rcv_interface_groups_s.nextval')->first();
     }
+
+    public function scopeGetMaterialTransactionNextValue(){
+        return $this->select('mtl_material_transactions_s.nextval')->first();
+    }
 }
