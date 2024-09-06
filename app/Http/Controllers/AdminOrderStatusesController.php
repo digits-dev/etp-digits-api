@@ -41,6 +41,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			# START FORM DO NOT REMOVE THIS LINE
 			$this->form = [];
 			$this->form[] = ['label'=>'Order Status','name'=>'order_status','type'=>'text','validation'=>'required|min:1|max:50','width'=>'col-sm-5'];
+			$this->form[] = ['label'=>'Style','name'=>'style','type'=>'wysiwyg','validation'=>'required','width'=>'col-sm-5'];
 			if(in_array(CRUDBooster::getCurrentMethod(),['getEdit','postEditSave','getDetail'])) {
 				$this->form[] = ['label'=>'Status','name'=>'status','type'=>'select','validation'=>'required','width'=>'col-sm-5','dataenum'=>'ACTIVE;INACTIVE'];
 			}
