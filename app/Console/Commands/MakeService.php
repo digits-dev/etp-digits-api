@@ -36,9 +36,21 @@ class MakeService extends Command
      *
      * @return int
      */
+
+    public function handle()
+    {
+        $name = $this->argument('name');
+        $this->createService($name);
+        $this->info("Service $name created successfully.");
+    }
     protected function createService($name)
     {
-        $path = app_path("Services/{$name}.php");
+        $directory = app_path('Services');
+        $path = $directory . "/{$name}.php";
+
+        if (!File::exists($directory)) {
+            File::makeDirectory($directory, 0755, true);
+        }
 
         if (File::exists($path)) {
             $this->error("Service $name already exists!");
