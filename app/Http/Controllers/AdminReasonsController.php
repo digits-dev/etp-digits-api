@@ -47,7 +47,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			$this->form[] = ['label'=>'SO Reason','name'=>'bea_so_reason','type'=>'text','validation'=>'required|min:1|max:100','width'=>'col-sm-5'];
 			$this->form[] = ['label'=>'MO Reason','name'=>'bea_mo_reason','type'=>'text','validation'=>'required|min:1|max:100','width'=>'col-sm-5'];
 			$this->form[] = ['label'=>'Pullout Reason','name'=>'pullout_reason','type'=>'text','validation'=>'required|min:1|max:100','width'=>'col-sm-5'];
-			if(CRUDBooster::getCurrentMethod() == 'getEdit' || CRUDBooster::getCurrentMethod() == 'postEditSave' || CRUDBooster::getCurrentMethod() == 'getDetail') {
+			if(in_array(CRUDBooster::getCurrentMethod(),['getEdit','postEditSave','getDetail'])) {
 				$this->form[] = ['label'=>'Status','name'=>'status','type'=>'select','validation'=>'required','width'=>'col-sm-5','dataenum'=>'ACTIVE;INACTIVE'];
 			}
             # END FORM DO NOT REMOVE THIS LINE
