@@ -17,11 +17,11 @@ class WarehouseMaster extends Model
         return $query->leftJoin('cities','customer.city_id','cities.id')
             ->whereNotNull('customer.warehouse_name')
             ->whereNull('customer.close_date')
-            ->whereIn('customer.channel_code_id',['RTL','FRA'])
+            ->whereIn('customer.channel_code_id',['RTL','FRA','DTC','SVC'])
             ->select(
                 DB::raw('SUBSTRING(customer.customer_code, 5,4) as warehouse_id'),
                 'customer.warehouse_name',
-                DB::raw("(select '0') as warehouse_type"),
+                'customer.warehouse_type',
                 'customer.building_no as address1',
                 'customer.lot_blk_no_streetname as address2',
                 'customer.barangay as address3',
