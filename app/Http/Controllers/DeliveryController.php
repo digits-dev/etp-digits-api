@@ -51,7 +51,7 @@ class DeliveryController extends Controller
                 'deliveries.id',
                 'deliveries.dr_number as reference_code',
                 'deliveries.transaction_date as transaction_date',
-                DB::raw("(SELECT '0000') as from_warehouse"), //DIGITS WAREHOUSE
+                DB::raw("(SELECT '0311') as from_warehouse"), //DIGITS WAREHOUSE
                 'deliveries.to_warehouse_id as destination_store',
                 'deliveries.total_qty',
                 'deliveries.total_amount',
