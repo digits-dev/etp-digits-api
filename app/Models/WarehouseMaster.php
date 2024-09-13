@@ -21,7 +21,7 @@ class WarehouseMaster extends Model
             ->select(
                 DB::raw('SUBSTRING(customer.customer_code, 5,4) as warehouse_id'),
                 'customer.warehouse_name',
-                DB::raw('(CASE WHEN customer.channel_id = 10 THEN 0 ELSE 1 END) AS warehouse_type'),
+                DB::raw('select "0" AS warehouse_type'),
                 'customer.building_no as address1',
                 'customer.lot_blk_no_streetname as address2',
                 'customer.barangay as address3',
