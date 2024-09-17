@@ -185,7 +185,7 @@ class OraclePullController extends Controller
                 DB::beginTransaction();
                 try {
                     Delivery::where('order_number',$dr->order_number)
-                    ->update(['status' => 'PENDING']);
+                    ->update(['status' => Delivery::PENDING]);
                     DB::commit();
                 } catch (Exception $ex) {
                     DB::rollBack();
@@ -205,7 +205,7 @@ class OraclePullController extends Controller
                     Pullout::where('document_number', $pullout->document_number)
                     ->update([
                         'sor_mor_number' => $pullout->document_number,
-                        'status' => 'FOR RECEIVING'
+                        'status' => Pullout::FOR_RECEIVING
                     ]);
                     DB::commit();
                 } catch (Exception $ex) {
@@ -223,10 +223,10 @@ class OraclePullController extends Controller
                 $orders = OracleOrderHeader::getOrderReturns($pullout->sor_mor_number);
                 $pulloutDetails['received_date'] = date('Y-m-d');
                 if(!empty($orders) && $orders->sum_qty_shipped > 0 && $orders->sum_qty_shipped == $orders->sum_qty_ordered){
-                    $pulloutDetails['status'] = 'RECEIVED';
+                    $pulloutDetails['status'] = Pullout::RECEIVED;
                 }
                 if(!empty($orders) && $orders->sum_qty_shipped > 0 && $orders->sum_qty_shipped < $orders->sum_qty_ordered){
-                    $pulloutDetails['status'] = 'PARTIALLY RECEIVED';
+                    $pulloutDetails['status'] = Pullout::PARTIALLY_RECEIVED;
                 }
                 DB::beginTransaction();
                 try {

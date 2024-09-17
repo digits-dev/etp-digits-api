@@ -10,6 +10,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Delivery extends Model
 {
     use HasFactory;
+
+    const PENDING = 0;
+    const PROCESSING = 1;
+    const RECEIVED = 2;
+
     protected $fillable = [
         'order_number',
         'dr_number',
