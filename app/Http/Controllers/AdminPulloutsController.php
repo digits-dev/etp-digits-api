@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pullout;
+use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
 	class AdminPulloutsController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -47,6 +49,17 @@ namespace App\Http\Controllers;
 
         public function getDetail($id) {
 
+            if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
+                CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
+            }
+
+            $data = [];
+            $data['page_title'] = "Pullout Details";
+            $data['pullouts'] = Pullout::with(['reason','lines' => function ($query) {
+                $query->orderBy('id','ASC');
+            },'lines.serials'])->find($id);
+
+            return view('pullouts.detail', $data);
         }
 
 	}

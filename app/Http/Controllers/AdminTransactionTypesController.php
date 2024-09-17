@@ -55,22 +55,21 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
 	    public function actionButtonSelected($id_selected,$button_name) {
 
-            $status = '';
-            switch ($button_name) {
-                case 'set_status_inactive':
-                    $status = 'INACTIVE';
-                    break;
-                default:
-                    $status = 'ACTIVE';
-                    break;
-            }
-
-            TransactionType::whereIn('id', $id_selected)->update([
-                'status' => $status,
+            $value = [
                 'updated_at' => date('Y-m-d H:i:s'),
                 'updated_by' => CRUDBooster::myId()
-            ]);
-
+            ];
+            switch ($button_name) {
+                case 'set_status_inactive':
+                    $value['status'] = 'INACTIVE';
+                    break;
+                case 'set_status_active':
+                    $value['status'] = 'ACTIVE';
+                    break;
+                default:
+                    break;
+            }
+            TransactionType::whereIn('id', $id_selected)->update($value);
 	    }
 
 	    public function hook_before_add(&$postdata) {
