@@ -104,15 +104,7 @@ class CmsMenuSeeder extends Seeder
         ];
 
         foreach ($menus as $menu) {
-            $menu = CmsMenu::updateOrCreate(['name' => $menu['name']], $menu);
-
-            $menuPrivelege = DB::table('cms_menus_privileges')->where('id_cms_menus',$menu->id)->first();
-            if(empty($menuPrivelege)){
-                DB::table('cms_menus_privileges')->create([
-                    'id_cms_menus' => $menu->id,
-                    'id_cms_privileges' => 1,
-                ]);
-            }
+            CmsMenu::updateOrCreate(['name' => $menu['name']], $menu);
         }
 
         $this->command->info('Seeder finished seeding menus.');
