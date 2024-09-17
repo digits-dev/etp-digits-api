@@ -4,11 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Pullout extends Model
 {
     use HasFactory;
+
+    const FOR_RECEIVING = 5;
+    const PENDING = 0;
+    const APPROVED = 1;
+    const PROCESSING = 2;
+    const RECEIVED = 3;
+    const PARTIALLY_RECEIVED = 4;
+
     protected $table = 'pullouts';
     protected $fillable = [
         'sor_mor_number',
@@ -22,11 +31,26 @@ class Pullout extends Model
         'reasons_id',
         'channels_id',
         'stores_id',
+        'received_date',
+        'total_amount',
+        'total_qty',
         'status'
     ];
 
     public function lines() : HasMany {
         return $this->hasMany(PulloutLine::class, 'pullouts_id');
+    }
+
+    public function whFrom() : BelongsTo {
+        return $this->belongsTo(WarehouseMaster::class, 'wh_from', 'customer_code');
+    }
+
+    public function whTo() : BelongsTo {
+        return $this->belongsTo(WarehouseMaster::class, 'wh_to', 'customer_code');
+    }
+
+    public function reason() : BelongsTo {
+        return $this->belongsTo(Reason::class, 'reasons_id');
     }
 
     public function scopeGetItems($query){
@@ -40,5 +64,18 @@ class Pullout extends Model
                 'pullout.transaction_type',
                 'pullout.memo',
             );
+    }
+
+    public function scopeGetProcessing(){
+        return $this->where('status', 'FOR PROCESSING')
+            ->select('document_number','transaction_type')
+            ->orderBy('created_at','asc')->get();
+    }
+
+    public function scopeGetReceivingReturns(){
+        return $this->where('transaction_type', 'STR')
+            ->where('status','FOR RECEIVING')
+            ->select('sor_mor_number','document_number')
+            ->orderBy('created_at','asc')->get();
     }
 }
