@@ -65,8 +65,21 @@ class OraclePushController extends Controller
         $this->processPushtoOrderRcvInterface('SOR', $request->toArray());
     }
 
-    public function pushSorLineInterface(){
+    public function pushSorLineInterface(Request $request){
+        //validate request
+        $request->validate([
+            'quantity' => ['required','integer'],
+            'item_id' => ['required','integer'],
+            'org_id' => ['required','integer'],
+            'branch' => ['required','string'],
+            'dr_number' => ['required','string'],
+            'customer_id' => ['required','integer'],
+            'oe_order_header_id' => ['required','integer'],
+            'oe_order_line_id' => ['required','integer'],
+            'customer_site_id' => ['required','integer']
+        ]);
 
+        $this->processPushtoOrderRcvLineInterface('SOR', $request->toArray());
     }
 
     private function processPushtoOrderRcvInterface($transactionType, $data=[]){
