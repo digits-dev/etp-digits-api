@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Http\Controllers\OraclePullController;
+use App\Services\ItemSyncService;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -33,7 +34,11 @@ class Kernel extends ConsoleKernel
             $oracle = new OraclePullController();
             $oracle->moveOrderPull(request());
             $oracle->salesOrderPull(request());
+
+            app(ItemSyncService::class)->syncNewItems(request());
+            app(ItemSyncService::class)->syncUpdatedItems(request());
         })->hourly();
+
     }
 
     /**

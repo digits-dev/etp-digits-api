@@ -5,6 +5,7 @@ use App\Http\Controllers\ItemMasterController;
 use App\Http\Controllers\OraclePullController;
 use App\Http\Controllers\PulloutController;
 use App\Http\Controllers\WarehouseMasterController;
+use App\Services\ItemSyncService;
 use Illuminate\Support\Facades\Route;
 
 
@@ -44,4 +45,8 @@ Route::group(['middleware' => ['authapi'],'prefix' => 'api'], function(){
     Route::get('get-updated-warehouse', [WarehouseMasterController::class,'getUpdatedWarehouse']);
     //pullouts
     // Route::get('push-pullouts', [PulloutController::class,'pushPullout']);
+
+    //sync items
+    Route::get('sync-new-items', [ItemSyncService::class,'syncNewItems']);
+    Route::get('sync-updated-items', [ItemSyncService::class,'syncUpdatedItems']);
 });
