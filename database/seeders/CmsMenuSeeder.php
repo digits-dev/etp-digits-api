@@ -104,7 +104,7 @@ class CmsMenuSeeder extends Seeder
         ];
 
         foreach ($menus as $menu) {
-            $menu = CmsMenu::updateOrInsert(['name' => $menu['name']], $menu);
+            $menu = CmsMenu::updateOrCreate(['name' => $menu['name']], $menu);
 
             $menuPrivelege = DB::table('cms_menus_privileges')->where('id_cms_menus',$menu->id)->first();
             if(empty($menuPrivelege)){
