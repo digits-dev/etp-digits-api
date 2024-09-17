@@ -21,6 +21,7 @@ class Item extends Model
         'item_description',
         'brand',
         'has_serial',
+        'current_srp',
         'updated_by'
     ];
 

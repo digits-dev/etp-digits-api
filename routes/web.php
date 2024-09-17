@@ -26,7 +26,10 @@ Route::get('/', function () {
 });
 
 Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CBBackend'],'prefix' => config('crudbooster.ADMIN_PATH')], function(){
-
+    Route::group(['prefix'=>'items'], function () {
+        Route::get('sync-new-items', [ItemSyncService::class,'syncNewItems'])->name('items.pull-new-item');
+        Route::get('sync-updated-items', [ItemSyncService::class,'syncUpdatedItems'])->name('items.pull-updated-item');
+    });
 });
 
 Route::group(['middleware' => ['authapi'],'prefix' => 'api'], function(){
@@ -44,7 +47,7 @@ Route::group(['middleware' => ['authapi'],'prefix' => 'api'], function(){
     Route::get('get-new-warehouse', [WarehouseMasterController::class,'getNewWarehouse']);
     Route::get('get-updated-warehouse', [WarehouseMasterController::class,'getUpdatedWarehouse']);
     //pullouts
-    // Route::get('push-pullouts', [PulloutController::class,'pushPullout']);
+    Route::get('push-pullouts', [PulloutController::class,'pushPullout']);
 
     //sync items
     Route::get('sync-new-items', [ItemSyncService::class,'syncNewItems']);
