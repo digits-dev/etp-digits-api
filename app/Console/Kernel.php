@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Http\Controllers\OraclePullController;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -21,6 +22,18 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
+        $schedule->call(function(){
+            $oracle = new OraclePullController();
+            $oracle->processOrgTransfers();
+            $oracle->processReturnTransactions();
+            $oracle->updateOracleItemId();
+        })->everyFiveMinutes();
+
+        $schedule->call(function(){
+            $oracle = new OraclePullController();
+            $oracle->moveOrderPull(request());
+            $oracle->salesOrderPull(request());
+        })->hourly();
     }
 
     /**
