@@ -59,7 +59,17 @@ class CmsModuleSeeder extends Seeder
                 'controller'   => 'AdminPulloutsController',
                 'is_protected' => 0,
                 'is_active'    => 0
+            ],
+            [
+                'name'         => 'Items',
+                'icon'         => 'fa fa-circle-o',
+                'path'         => 'items',
+                'table_name'   => 'items',
+                'controller'   => 'AdminItemsController',
+                'is_protected' => 0,
+                'is_active'    => 0
             ]
+
         ];
 
         foreach ($modules as $module) {

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\CmsMenu;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class CmsMenuSeeder extends Seeder
 {
@@ -29,6 +30,18 @@ class CmsMenuSeeder extends Seeder
                 'sorting'           => 3
             ],
             [
+                'name'              => 'Items',
+                'type'              => 'Route',
+                'path'              => 'AdminItemsControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-circle-o',
+                'parent_id'         => $submaster,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 1
+            ],
+            [
                 'name'              => 'Order Status',
                 'type'              => 'Route',
                 'path'              => 'AdminOrderStatusesControllerGetIndex',
@@ -38,7 +51,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 1
+                'sorting'           => 2
             ],
             [
                 'name'              => 'Reason',
@@ -50,7 +63,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 2
+                'sorting'           => 3
             ],
             [
                 'name'              => 'Transaction Type',
@@ -62,7 +75,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 3
+                'sorting'           => 4
             ],
             [
                 'name'              => 'Deliveries',
@@ -91,7 +104,15 @@ class CmsMenuSeeder extends Seeder
         ];
 
         foreach ($menus as $menu) {
-            CmsMenu::updateOrInsert(['name' => $menu['name']], $menu);
+            $menu = CmsMenu::updateOrInsert(['name' => $menu['name']], $menu);
+
+            $menuPrivelege = DB::table('cms_menus_privileges')->where('id_cms_menus',$menu->id)->first();
+            if(empty($menuPrivelege)){
+                DB::table('cms_menus_privileges')->create([
+                    'id_cms_menus' => $menu->id,
+                    'id_cms_privileges' => 1,
+                ]);
+            }
         }
 
         $this->command->info('Seeder finished seeding menus.');
