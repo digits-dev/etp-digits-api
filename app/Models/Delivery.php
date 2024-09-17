@@ -39,4 +39,11 @@ class Delivery extends Model
         });
         $this->save();
     }
+
+    public function scopeGetPending(){
+        return $this->where('status', 'PROCESSING')
+            ->select('order_number')
+            ->orderBy('transaction_date','asc')
+            ->get();
+    }
 }

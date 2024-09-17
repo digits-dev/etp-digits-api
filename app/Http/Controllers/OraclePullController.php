@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Delivery;
 use App\Models\GashaponItemMaster;
+use App\Models\Item;
 use App\Models\ItemMaster;
+use App\Models\OracleItem;
 use App\Models\OracleMaterialTransaction;
 use App\Models\OracleOrderHeader;
+use App\Models\OracleShipmentHeader;
 use App\Models\OracleTransactionHeader;
+use App\Models\Pullout;
 use App\Models\WarehouseMaster;
 use Carbon\Carbon;
 use Exception;
@@ -18,39 +22,63 @@ use Illuminate\Support\Facades\Log;
 
 class OraclePullController extends Controller
 {
+    protected $moveOrders = [
+        '224' => 'DTO',
+        '225' => 'RMA',
+        '263' => 'DEO',
+        '243' => 'ADM',
+    ];
+
+    protected $salesOrders = [
+        '224' => 'DTO',
+        '243' => 'ADM',
+    ];
+
     public function moveOrderPull(Request $request){
 
         $date_from = $request->datefrom ?? date("Y-m-d H:i:s", strtotime("-5 hour"));
         $date_to = $request->dateto ?? date("Y-m-d H:i:s", strtotime("-1 hour"));
 
         $request_numbers = [];
-        $shipment_numbers = OracleMaterialTransaction::getShipments($date_from,$date_to,'DTO')->get();
+        foreach ($this->moveOrders as $key => $org) {
 
-        foreach ($shipment_numbers as $key => $value) {
-            $request_numbers[] = $value->shipment_number;
+            $shipment_numbers = OracleMaterialTransaction::getShipments($date_from, $date_to, $org)->get();
+
+            foreach ($shipment_numbers as $key => $value) {
+                $request_numbers[] = $value->shipment_number;
+            }
+
+            $deliveries = OracleTransactionHeader::getMoveOrders($request_numbers, $org)->where(function($query) {
+                $query->where(DB::raw('substr(MTL_ITEM_LOCATIONS.SEGMENT2, -3)'), '=', 'RTL')
+                ->orWhere(DB::raw('substr(MTL_ITEM_LOCATIONS.SEGMENT2, -3)'), '=', 'FRA');
+            })->get();
+
+            $this->processOrders($deliveries,'MO', Carbon::parse($date_from)->format("Y-m-d"));
         }
-
-        $deliveries = OracleTransactionHeader::getMoveOrders($request_numbers,'DTO')->where(function($query) {
-            $query->where(DB::raw('substr(MTL_ITEM_LOCATIONS.SEGMENT2, -3)'), '=', 'RTL')
-            ->orWhere(DB::raw('substr(MTL_ITEM_LOCATIONS.SEGMENT2, -3)'), '=', 'FRA');
-        })->get();
-
-        $this->processOrders($deliveries,'MO', Carbon::parse($date_from)->format("Y-m-d"));
     }
 
     public function salesOrderPull(Request $request){
 
         $date_from = $request->datefrom ?? date("Y-m-d H:i:s", strtotime("-5 hour"));
         $date_to = $request->dateto ?? date("Y-m-d H:i:s", strtotime("-1 hour"));
+        foreach ($this->salesOrders as $key => $org) {
 
-        $salesOrders = OracleOrderHeader::getSalesOrder()
-            ->whereBetween('WSH_NEW_DELIVERIES.CONFIRM_DATE', [$date_from, $date_to])
-            ->where(function($query) {
-                $query->where(DB::raw('substr(HZ_PARTIES.PARTY_NAME, -3)'), '=', 'RTL')
-                ->orWhere(DB::raw('substr(HZ_PARTIES.PARTY_NAME, -3)'), '=', 'FRA');
-            })->get();
+            $order = OracleOrderHeader::getSalesOrder($org)
+                ->whereBetween('WSH_NEW_DELIVERIES.CONFIRM_DATE', [$date_from, $date_to])
+                ->where(function($query) {
+                    $query->where(DB::raw('substr(HZ_PARTIES.PARTY_NAME, -3)'), '=', 'RTL')
+                    ->orWhere(DB::raw('substr(HZ_PARTIES.PARTY_NAME, -3)'), '=', 'FRA');
+                });
 
-        $this->processOrders($salesOrders,'SO', Carbon::parse($date_from)->format("Y-m-d"));
+            if($org == 'ADM'){
+                $order->join('OE_TRANSACTION_TYPES_TL','OE_ORDER_HEADERS_ALL.ORDER_TYPE_ID','=','OE_TRANSACTION_TYPES_TL.TRANSACTION_TYPE_ID')
+                    ->where('OE_TRANSACTION_TYPES_TL.NAME','ADMIN PAPER BAGS');
+            }
+
+            $orders = $order->get();
+            $this->processOrders($orders,'SO', Carbon::parse($date_from)->format("Y-m-d"));
+        }
+
     }
 
     private function processOrders($orders, $transactionType='MO', $transactionDate){
@@ -83,12 +111,12 @@ class OraclePullController extends Controller
                     'status' => ($transactionType == 'MO') ? 1 : 0 //1 processing, 0 pending
                 ]);
 
-                // $itemKey = 'dimfs'.$value->ordered_item;
+                // $itemKey = "dimfs{$value->ordered_item}";
                 // $rtlItemPrice = Cache::remember($itemKey, 3600, function() use ($value){
                 //     return ItemMaster::getPrice($value->ordered_item);
                 // });
 
-                // $gboKey = 'gbo'.$value->ordered_item;
+                // $gboKey = "gbo{$value->ordered_item}";
                 // $gboItemPrice = Cache::remember($gboKey, 3600, function() use ($value){
                 //     return GashaponItemMaster::getPrice($value->ordered_item);
                 // });
@@ -135,7 +163,7 @@ class OraclePullController extends Controller
                 DB::rollBack();
                 Log::error($ex);
                 return response()->json([
-                    'error' => '1',
+                    'status' => 'error',
                     'message' => 'Delivery Header and Lines encountered an error!',
                     'errors' => $ex->getMessage(),
                 ],551)->send();
@@ -143,9 +171,92 @@ class OraclePullController extends Controller
         }
 
         return response()->json([
-            'success' => '1',
+            'status' => 'success',
             'message' => 'Delivery Header and Lines created successfully',
             'data' => $deliveryHeader
         ],200)->send();
+    }
+
+    public function processOrgTransfers(){
+        $deliveries = Delivery::getPending();
+        foreach ($deliveries as $key => $dr) {
+            $orders = OracleShipmentHeader::getShipmentByRef($dr->order_number);
+            if($orders){
+                DB::beginTransaction();
+                try {
+                    Delivery::where('order_number',$dr->order_number)
+                    ->update(['status' => 'PENDING']);
+                    DB::commit();
+                } catch (Exception $ex) {
+                    DB::rollBack();
+                    Log::error($ex->getMessage());
+                }
+            }
+        }
+    }
+
+    public function processReturnTransactions(){
+        $pullouts = Pullout::getProcessing();
+        foreach ($pullouts as $key => $pullout) {
+            $orders = OracleShipmentHeader::getShipmentByRef($pullout->document_number);
+            if($orders){
+                DB::beginTransaction();
+                try {
+                    Pullout::where('document_number', $pullout->document_number)
+                    ->update([
+                        'sor_mor_number' => $pullout->document_number,
+                        'status' => 'FOR RECEIVING'
+                    ]);
+                    DB::commit();
+                } catch (Exception $ex) {
+                    DB::rollBack();
+                    Log::error($ex->getMessage());
+                }
+            }
+        }
+    }
+
+    public function updateReturnTransactions(){
+        $pullouts = Pullout::getReceivingReturns();
+        foreach ($pullouts as $key => $pullout) {
+            if(!is_null($pullout->sor_mor_number)){
+                $orders = OracleOrderHeader::getOrderReturns($pullout->sor_mor_number);
+                $pulloutDetails['received_date'] = date('Y-m-d');
+                if(!empty($orders) && $orders->sum_qty_shipped > 0 && $orders->sum_qty_shipped == $orders->sum_qty_ordered){
+                    $pulloutDetails['status'] = 'RECEIVED';
+                }
+                if(!empty($orders) && $orders->sum_qty_shipped > 0 && $orders->sum_qty_shipped < $orders->sum_qty_ordered){
+                    $pulloutDetails['status'] = 'PARTIALLY RECEIVED';
+                }
+                DB::beginTransaction();
+                try {
+                    Pullout::where('document_number', $pullout->document_number)
+                    ->update($pulloutDetails);
+                    DB::commit();
+                } catch (Exception $ex) {
+                    DB::rollBack();
+                    Log::error($ex->getMessage());
+                }
+            }
+            $pulloutDetails=[];
+        }
+    }
+
+    public function updateOracleItemId(){
+        $items = Item::getForOracleUpdate();
+        foreach ($items as $key => $item) {
+            $oracleItem = OracleItem::getItemByCode($item->digits_code);
+
+            DB::beginTransaction();
+            try {
+                Item::where('digits_code', $item->digits_code)->update([
+                    'beach_item_id' => $oracleItem->inventory_item_id
+                ]);
+                DB::commit();
+            } catch (Exception $ex) {
+                DB::rollBack();
+                Log::error($ex->getMessage());
+            }
+        }
     }
 }

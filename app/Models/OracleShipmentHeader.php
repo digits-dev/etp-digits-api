@@ -12,7 +12,7 @@ class OracleShipmentHeader extends Model
     protected $connection = 'oracle';
     protected $table = 'RCV_SHIPMENT_HEADERS';
 
-    public function scopeGetShipmentByDelivery($query, $dr_number){
-        return $query->where('order_number',$dr_number)->first();
+    public function scopeGetShipmentByRef($query, $order_number){
+        return $query->where('shipment_num', $order_number)->first();
     }
 }
