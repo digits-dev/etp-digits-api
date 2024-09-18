@@ -25,19 +25,20 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')->hourly();
         $schedule->call(function(){
             $oracle = new OraclePullController();
-            $oracle->processOrgTransfers();
-            $oracle->processReturnTransactions();
-            $oracle->updateOracleItemId();
-        })->everyFiveMinutes();
-
-        $schedule->call(function(){
-            $oracle = new OraclePullController();
             $oracle->moveOrderPull(request());
             $oracle->salesOrderPull(request());
 
             app(ItemSyncService::class)->syncNewItems(request());
             app(ItemSyncService::class)->syncUpdatedItems(request());
         })->hourly();
+
+        $schedule->call(function(){
+            $oracle = new OraclePullController();
+            $oracle->processOrgTransfers();
+            $oracle->processReturnTransactions();
+            $oracle->updateOracleItemId();
+        })->everyFiveMinutes();
+
 
     }
 
