@@ -247,15 +247,17 @@ class OraclePullController extends Controller
         foreach ($items as $key => $item) {
             $oracleItem = OracleItem::getItemByCode($item->digits_code);
 
-            DB::beginTransaction();
-            try {
-                Item::where('digits_code', $item->digits_code)->update([
-                    'beach_item_id' => $oracleItem->inventory_item_id
-                ]);
-                DB::commit();
-            } catch (Exception $ex) {
-                DB::rollBack();
-                Log::error($ex->getMessage());
+            if(!empty($oracleItem)){
+                DB::beginTransaction();
+                try {
+                    Item::where('digits_code', $item->digits_code)->update([
+                        'beach_item_id' => $oracleItem->inventory_item_id
+                    ]);
+                    DB::commit();
+                } catch (Exception $ex) {
+                    DB::rollBack();
+                    Log::error($ex->getMessage());
+                }
             }
         }
     }
