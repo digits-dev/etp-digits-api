@@ -67,15 +67,15 @@ class Pullout extends Model
     }
 
     public function scopeGetProcessing(){
-        return $this->where('status', 'FOR PROCESSING')
-            ->select('document_number','transaction_type')
-            ->orderBy('created_at','asc')->get();
+        return $this->where('status', self::PROCESSING)
+            ->select('document_number', 'transaction_type')
+            ->orderBy('created_at', 'asc')->get();
     }
 
     public function scopeGetReceivingReturns(){
         return $this->where('transaction_type', 'STR')
-            ->where('status','FOR RECEIVING')
-            ->select('sor_mor_number','document_number')
-            ->orderBy('created_at','asc')->get();
+            ->where('status', self::FOR_RECEIVING)
+            ->select('sor_mor_number', 'document_number')
+            ->orderBy('created_at', 'asc')->get();
     }
 }

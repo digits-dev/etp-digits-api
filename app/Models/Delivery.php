@@ -46,7 +46,7 @@ class Delivery extends Model
     }
 
     public function scopeGetPending(){
-        return $this->where('status', 'PROCESSING')
+        return $this->where('status', self::PROCESSING)
             ->select('order_number')
             ->orderBy('transaction_date','asc')
             ->get();
