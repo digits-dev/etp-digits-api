@@ -180,8 +180,8 @@ class OraclePullController extends Controller
     public function processOrgTransfers(){
         $deliveries = Delivery::getPending();
         foreach ($deliveries as $key => $dr) {
-            $orders = OracleShipmentHeader::getShipmentByRef($dr->order_number);
-            if($orders){
+            $orders = OracleShipmentHeader::query()->getShipmentByRef($dr->order_number);
+            if($orders->getModel()->exists){
                 DB::beginTransaction();
                 try {
                     Delivery::where('order_number',$dr->order_number)
@@ -198,8 +198,8 @@ class OraclePullController extends Controller
     public function processReturnTransactions(){
         $pullouts = Pullout::getProcessing();
         foreach ($pullouts as $key => $pullout) {
-            $orders = OracleShipmentHeader::getShipmentByRef($pullout->document_number);
-            if($orders){
+            $orders = OracleShipmentHeader::query()->getShipmentByRef($pullout->document_number);
+            if($orders->getModel()->exists){
                 DB::beginTransaction();
                 try {
                     Pullout::where('document_number', $pullout->document_number)
@@ -220,13 +220,15 @@ class OraclePullController extends Controller
         $pullouts = Pullout::getReceivingReturns();
         foreach ($pullouts as $key => $pullout) {
             if(!is_null($pullout->sor_mor_number)){
-                $orders = OracleOrderHeader::getOrderReturns($pullout->sor_mor_number);
+                $orders = OracleOrderHeader::query()->getOrderReturns($pullout->sor_mor_number);
                 $pulloutDetails['received_date'] = date('Y-m-d');
-                if(!empty($orders) && $orders->sum_qty_shipped > 0 && $orders->sum_qty_shipped == $orders->sum_qty_ordered){
-                    $pulloutDetails['status'] = Pullout::RECEIVED;
-                }
-                if(!empty($orders) && $orders->sum_qty_shipped > 0 && $orders->sum_qty_shipped < $orders->sum_qty_ordered){
-                    $pulloutDetails['status'] = Pullout::PARTIALLY_RECEIVED;
+                if($orders->getModel()->exists){
+                    if($orders->sum_qty_shipped > 0 && $orders->sum_qty_shipped == $orders->sum_qty_ordered){
+                        $pulloutDetails['status'] = Pullout::RECEIVED;
+                    }
+                    if($orders->sum_qty_shipped > 0 && $orders->sum_qty_shipped < $orders->sum_qty_ordered){
+                        $pulloutDetails['status'] = Pullout::PARTIALLY_RECEIVED;
+                    }
                 }
                 DB::beginTransaction();
                 try {
