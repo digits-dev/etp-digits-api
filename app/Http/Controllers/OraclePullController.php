@@ -245,9 +245,9 @@ class OraclePullController extends Controller
     public function updateOracleItemId(){
         $items = Item::getForOracleUpdate();
         foreach ($items as $key => $item) {
-            $oracleItem = OracleItem::getItemByCode($item->digits_code);
+            $oracleItem = OracleItem::query()->getItemByCode($item->digits_code);
 
-            if(!empty($oracleItem)){
+            if($oracleItem->getModel()->exists){
                 DB::beginTransaction();
                 try {
                     Item::where('digits_code', $item->digits_code)->update([
