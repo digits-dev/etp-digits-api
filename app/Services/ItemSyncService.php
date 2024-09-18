@@ -22,15 +22,18 @@ class ItemSyncService
         $xAuthorizationToken = md5( $secretKey . $uniqueString . $userAgent);
         $xAuthorizationTime = $uniqueString;
 
+        $datefrom = $parameters['datefrom'] ?? date("Y-m-d");
+        $dateto = $parameters['dateto'] ?? date("Y-m-d");
+
         $apiItems = Http::withHeaders([
             'X-Authorization-Token' => $xAuthorizationToken,
             'X-Authorization-Time' => $xAuthorizationTime,
             'User-Agent' => $userAgent
         ])->get($url,[
-            'page' => 1,
-			'limit' => 1000,
-            'datefrom' => $parameters['datefrom'].' 00:00:00',
-            'dateto' => $parameters['dateto'].' 23:59:59'
+            'page' => $parameters['page'] ?? 1,
+			'limit' => $parameters['limit'] ?? 100,
+            'datefrom' => $datefrom.' 00:00:00',
+            'dateto' => $dateto.' 23:59:59'
         ]);
 
         return json_decode($apiItems->body(), true);
@@ -50,6 +53,7 @@ class ItemSyncService
             //     'message_type'=>"danger",
             //     'message'=> $validation->getMessageBag()
             // ]);
+            Log::error($validation->getMessageBag());
             return response()->json([
                 'status' => 'error',
                 'message' => $validation->getMessageBag()
@@ -58,8 +62,12 @@ class ItemSyncService
         //pull new items from api
         $newItems = $this->getApiData(config('item-api.api_create_item_url'), [
             'datefrom' => $request->datefrom,
-            'dateto'   => $request->dateto,
+            'dateto' => $request->dateto,
+            'limit' => $request->limit,
+            'page' => $request->page
         ]);
+
+        Log::info(json_encode($newItems));
 
         foreach ($newItems['data'] ?? [] as $key => $value) {
             DB::beginTransaction();
@@ -97,6 +105,7 @@ class ItemSyncService
             //     'message_type'=>"danger",
             //     'message'=> $validation->getMessageBag()
             // ]);
+            Log::error($validation->getMessageBag());
             return response()->json([
                 'status' => 'error',
                 'message' => $validation->getMessageBag()
@@ -106,6 +115,8 @@ class ItemSyncService
         $updatedItems = $this->getApiData(config('item-api.api_update_item_url'), [
             'datefrom' => $request->datefrom,
             'dateto'   => $request->dateto,
+            'limit' => $request->limit,
+            'page' => $request->page
         ]);
 
         foreach ($updatedItems['data'] ?? [] as $key => $value) {

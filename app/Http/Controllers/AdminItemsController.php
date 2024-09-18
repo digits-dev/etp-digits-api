@@ -106,6 +106,20 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
                                 <label>Date To</label>
                                 <input type='text' name='dateto' class='form-control dateInput' required />
                             </div>
+                            <div class='row'>
+                                <div class='col-md-6'>
+                                    <div class='form-group'>
+                                    <label>Page</label>
+                                    <input type='number' name='page' class='form-control' required value='1'/>
+                                    </div>
+                                </div>
+                                <div class='col-md-6'>
+                                    <div class='form-group'>
+                                    <label>Limit</label>
+                                    <input type='number' name='limit' class='form-control' required value='500'/>
+                                    </div>
+                                </div>
+                            </div>
 						</div>
 						<div class='modal-footer' align='right'>
                             <button class='btn btn-default' type='button' data-dismiss='modal'>Close</button>

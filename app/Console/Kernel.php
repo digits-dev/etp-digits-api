@@ -28,8 +28,9 @@ class Kernel extends ConsoleKernel
             $oracle->moveOrderPull(request());
             $oracle->salesOrderPull(request());
 
-            app(ItemSyncService::class)->syncNewItems(request());
-            app(ItemSyncService::class)->syncUpdatedItems(request());
+            $sync = new ItemSyncService();
+            $sync->syncNewItems(request());
+            $sync->syncUpdatedItems(request());
         })->hourly();
 
         $schedule->call(function(){
