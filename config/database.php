@@ -80,15 +80,20 @@ return [
 
         'sqlsrv' => [
             'driver' => 'sqlsrv',
-            'url' => env('DATABASE_URL'),
-            'host' => env('DB_HOST', 'localhost'),
-            'port' => env('DB_PORT', '1433'),
-            'database' => env('DB_DATABASE', 'forge'),
-            'username' => env('DB_USERNAME', 'forge'),
-            'password' => env('DB_PASSWORD', ''),
-            'charset' => 'utf8',
-            'prefix' => '',
+            'host'     => env('DB_HOST_ETP', 'localhost'),
+            'port'     => env('DB_PORT_ETP', '1433'),
+            'database' => env('DB_DATABASE_ETP', 'forge'),
+            'username' => env('DB_USERNAME_ETP', 'forge'),
+            'password' => env('DB_PASSWORD_ETP', ''),
+            'charset'  => 'utf8',
+            'prefix'   => '',
             'prefix_indexes' => true,
+            'encrypt'  => env('DB_ENCRYPT_ETP', 'no'),  // Optional: Set this to 'no' if you're not using encryption
+            'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE_ETP', 'true'), // Optional
+            'options'  => [
+                'TrustServerCertificate' => true,
+                'MultipleActiveResultSets' => true,
+            ],
         ],
 
         'oracle' => [
