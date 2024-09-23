@@ -91,9 +91,9 @@ class WarehouseMasterController extends Controller
     private function populateStoreMaster($data){
         foreach ($data ?? [] as $key => $value) {
             $details = [
-                'warehouse_code' => $value->warehouse_id,
-                'warehouse_type' => $value->warehouse_type,
-                'store_name' => $value->warehouse_name,
+                'warehouse_code' => $value['warehouse_id'],
+                'warehouse_type' => $value['warehouse_type'],
+                'store_name' => $value['warehouse_name'],
                 'status' => 'ACTIVE',
             ];
 
