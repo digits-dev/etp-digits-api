@@ -67,8 +67,6 @@ class ItemSyncService
             'page' => $request->page
         ]);
 
-        Log::info(json_encode($newItems));
-
         foreach ($newItems['data'] ?? [] as $key => $value) {
             DB::beginTransaction();
             try {
@@ -85,9 +83,10 @@ class ItemSyncService
         //     'message' => 'Pull new items done!',
         //     'message_type' => 'info'
         // ]);
+        $count = count($newItems['data']);
         return response()->json([
             'status' => 'success',
-            'message' => "Pull new items done!"
+            'message' => "Pull new items done! {$count} records!"
         ], 200);
     }
 
@@ -135,9 +134,10 @@ class ItemSyncService
         //     'message' => 'Pull updated items done!',
         //     'message_type' => 'info'
         // ]);
+        $count = count($updatedItems['data']);
         return response()->json([
             'status' => 'success',
-            'message' => "Pull updated items done!"
+            'message' => "Pull updated items done! {$count} records!"
         ], 200);
     }
 }
