@@ -42,11 +42,11 @@ class Pullout extends Model
     }
 
     public function whFrom() : BelongsTo {
-        return $this->belongsTo(WarehouseMaster::class, 'wh_from', 'customer_code');
+        return $this->belongsTo(StoreMaster::class, 'wh_from', 'warehouse_code');
     }
 
     public function whTo() : BelongsTo {
-        return $this->belongsTo(WarehouseMaster::class, 'wh_to', 'customer_code');
+        return $this->belongsTo(StoreMaster::class, 'wh_to', 'warehouse_code');
     }
 
     public function reason() : BelongsTo {

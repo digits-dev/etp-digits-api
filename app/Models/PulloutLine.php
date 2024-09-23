@@ -25,7 +25,7 @@ class PulloutLine extends Model
     }
 
     public function item() : BelongsTo {
-        return $this->belongsTo(ItemMaster::class, 'item_code', 'digits_code');
+        return $this->belongsTo(Item::class, 'item_code', 'digits_code');
     }
 
     public function serials() : HasMany {

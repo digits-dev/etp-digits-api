@@ -82,7 +82,7 @@
                                     <b>From:</b>
                                 </td>
                                 <td>
-                                    {{ $pullouts->whFrom->warehouse_name }}
+                                    {{ $pullouts->whFrom->store_name }}
                                 </td>
                             </tr>
                             <tr>
@@ -90,7 +90,7 @@
                                     <b>To:</b>
                                 </td>
                                 <td>
-                                    {{ $pullouts->whTo->warehouse_name }}
+                                    {{ $pullouts->whTo->store_name }}
                                 </td>
                             </tr>
                         </tbody>
