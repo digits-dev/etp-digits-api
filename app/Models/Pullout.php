@@ -37,6 +37,14 @@ class Pullout extends Model
         'status'
     ];
 
+    public function calculateTotals(){
+        $this->total_qty = $this->lines->sum('qty');
+        $this->total_amount = $this->lines->sum(function ($line) {
+            return $line->qty * $line->unit_price;
+        });
+        $this->save();
+    }
+
     public function lines() : HasMany {
         return $this->hasMany(PulloutLine::class, 'pullouts_id');
     }

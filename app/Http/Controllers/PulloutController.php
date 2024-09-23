@@ -98,6 +98,8 @@ class PulloutController extends Controller
                         }
                     }
                 }
+
+                $pulloutHeader->calculateTotals();
             }
 
             return response()->json([

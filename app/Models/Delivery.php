@@ -36,8 +36,7 @@ class Delivery extends Model
     }
 
     // Calculate and update totals
-    public function calculateTotals()
-    {
+    public function calculateTotals(){
         $this->total_qty = $this->lines->sum('shipped_quantity');
         $this->total_amount = $this->lines->sum(function ($line) {
             return $line->shipped_quantity * $line->unit_price;
