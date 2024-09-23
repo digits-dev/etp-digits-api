@@ -89,7 +89,8 @@ class WarehouseMasterController extends Controller
     }
 
     private function populateStoreMaster($data){
-        foreach ($data ?? [] as $key => $value) {
+
+        foreach ($data['data'] ?? [] as $key => $value) {
             $details = [
                 'warehouse_code' => $value['warehouse_id'],
                 'warehouse_type' => $value['warehouse_type'],
@@ -99,7 +100,9 @@ class WarehouseMasterController extends Controller
 
             try {
                 DB::beginTransaction();
-                StoreMaster::create($details);
+                StoreMaster::firstOrCreate([
+                    'warehouse_code' => $value['warehouse_id']
+                ],$details);
                 DB::commit();
             } catch (Exception $ex) {
                 DB::rollBack();
