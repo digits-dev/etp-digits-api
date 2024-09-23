@@ -27,6 +27,6 @@ class Item extends Model
 
     public function scopeGetForOracleUpdate(){
         return $this->whereNull('beach_item_id')
-            ->select('digits_code')->get();
+            ->select('digits_code')->limit(500)->get();
     }
 }
