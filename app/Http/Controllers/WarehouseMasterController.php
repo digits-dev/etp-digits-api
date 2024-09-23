@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\StoreMaster;
 use App\Models\WarehouseMaster;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class WarehouseMasterController extends Controller
@@ -26,6 +30,8 @@ class WarehouseMasterController extends Controller
 
             $data = $warehouse->toArray();
             unset($data['links']);
+
+            $this->populateStoreMaster($data);
 
             return response()->json([
                 'api_status' => 1,
@@ -79,6 +85,27 @@ class WarehouseMasterController extends Controller
                 'errors' => $ex->errors(),
                 'http_status' => 401
             ], 401);
+        }
+    }
+
+    private function populateStoreMaster($data){
+        foreach ($data ?? [] as $key => $value) {
+            $details = [
+                'warehouse_code' => $value->warehouse_id,
+                'warehouse_type' => $value->warehouse_type,
+                'store_name' => $value->warehouse_name,
+                'status' => 'ACTIVE',
+            ];
+
+            try {
+                DB::beginTransaction();
+                StoreMaster::create($details);
+                DB::commit();
+            } catch (Exception $ex) {
+                DB::rollBack();
+                Log::error($ex->getMessage());
+            }
+
         }
     }
 }
