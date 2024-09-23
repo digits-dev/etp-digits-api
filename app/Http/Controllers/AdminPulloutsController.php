@@ -39,6 +39,11 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			$this->col[] = ["label"=>"WH From","name"=>"wh_from","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
 			$this->col[] = ["label"=>"WH To","name"=>"wh_to","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
 			$this->col[] = ["label"=>"Reason","name"=>"reasons_id","join"=>"reasons,pullout_reason"];
+            $this->col[] = ["label"=>"Total Qty","name"=>"total_qty"];
+			$this->col[] = ["label"=>"Total Amount","name"=>"total_amount","callback"=>function ($row){
+                return "P ".number_format($row->total_amount,2,".",",");
+            }];
+			$this->col[] = ["label"=>"Status","name"=>"status","join"=>"order_statuses,style"];
 			# END COLUMNS DO NOT REMOVE THIS LINE
 
 			# START FORM DO NOT REMOVE THIS LINE
