@@ -35,7 +35,7 @@ class PulloutController extends Controller
             'data' => 'required|array',
             'data.*.document_number' => 'required|integer',
             'data.*.wh_from' => 'required|string|max:255',
-            'data.*.wh_to' => 'required|string|in:0000',
+            'data.*.wh_to' => 'required|string|in:0311,0312',
             'data.*.reason' => 'required|string|exists:reasons,pullout_reason',
             'data.*.transaction_type' => 'required|string|in:STW,STR',
             'data.*.lines' => 'required|array',

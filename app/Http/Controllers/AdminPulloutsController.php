@@ -36,8 +36,8 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			$this->col[] = ["label"=>"Picklist Date","name"=>"picklist_date"];
 			$this->col[] = ["label"=>"Pick Confirm Date","name"=>"pickconfirm_date"];
 			$this->col[] = ["label"=>"Transaction Type","name"=>"transaction_type"];
-			$this->col[] = ["label"=>"WH From","name"=>"wh_from"];
-			$this->col[] = ["label"=>"WH To","name"=>"wh_to"];
+			$this->col[] = ["label"=>"WH From","name"=>"wh_from","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
+			$this->col[] = ["label"=>"WH To","name"=>"wh_to","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
 			$this->col[] = ["label"=>"Reason","name"=>"reasons_id","join"=>"reasons,pullout_reason"];
 			# END COLUMNS DO NOT REMOVE THIS LINE
 

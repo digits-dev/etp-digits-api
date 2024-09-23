@@ -51,7 +51,7 @@ Route::group(['middleware' => ['authapi'],'prefix' => 'api'], function(){
     Route::get('get-new-warehouse', [WarehouseMasterController::class,'getNewWarehouse']);
     Route::get('get-updated-warehouse', [WarehouseMasterController::class,'getUpdatedWarehouse']);
     //pullouts
-    Route::get('push-pullouts', [PulloutController::class,'pushPullout']);
+    // Route::get('push-pullouts', [PulloutController::class,'pushPullout']);
 
     //sync items
     Route::get('sync-new-items', [ItemSyncService::class,'syncNewItems']);
