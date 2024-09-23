@@ -48,10 +48,17 @@ class OraclePullController extends Controller
                 $request_numbers[] = $value->shipment_number;
             }
 
-            $deliveries = OracleTransactionHeader::getMoveOrders($request_numbers, $org)->where(function($query) {
-                $query->where(DB::raw('substr(MTL_ITEM_LOCATIONS.SEGMENT2, -3)'), '=', 'RTL')
-                ->orWhere(DB::raw('substr(MTL_ITEM_LOCATIONS.SEGMENT2, -3)'), '=', 'FRA');
-            })->get();
+            switch($org){
+                case 'DTO': case 'RMA': case 'ADM':
+                    $deliveries = OracleTransactionHeader::getMoveOrders($request_numbers, $org)->where(function($query) {
+                        $query->where(DB::raw('substr(MTL_ITEM_LOCATIONS.SEGMENT2, -3)'), '=', 'RTL')
+                        ->orWhere(DB::raw('substr(MTL_ITEM_LOCATIONS.SEGMENT2, -3)'), '=', 'FRA');
+                    })->get();
+                    break;
+                case 'DEO':
+                    $deliveries = OracleTransactionHeader::getMoveOrders($request_numbers, $org)->get();
+                    break;
+            }
 
             $this->processOrders($deliveries,'MO', Carbon::parse($date_from)->format("Y-m-d"));
         }
@@ -103,12 +110,12 @@ class OraclePullController extends Controller
                     'customer_name' => $value->customer_name,
                     'to_warehouse_id' => $warehouse->warehouse_id,
                     'dr_number' => $value->dr_number,
-                    'shipping_instruction' => trim($value->shipping_instruction),
-                    'customer_po' => trim($value->customer_po),
+                    'shipping_instruction' => preg_replace('/[[:space:]]+/u', ' ', trim($value->shipping_instruction)),
+                    'customer_po' => preg_replace('/[[:space:]]+/u', ' ', trim($value->customer_po)),
                     'locators_id' => $value->locator_id,
                     'transaction_type' => $transactionType,
                     'transaction_date' => $transactionDate,
-                    'status' => ($transactionType == 'MO') ? 1 : 0 //1 processing, 0 pending
+                    'status' => ($transactionType == 'MO') ? Delivery::PROCESSING : Delivery::PENDING
                 ]);
 
                 // $itemKey = "dimfs{$value->ordered_item}";
@@ -161,7 +168,7 @@ class OraclePullController extends Controller
 
             } catch (Exception $ex) {
                 DB::rollBack();
-                Log::error($ex);
+                Log::error($ex->getMessage());
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Delivery Header and Lines encountered an error!',
