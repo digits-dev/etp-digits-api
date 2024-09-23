@@ -30,6 +30,10 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::get('sync-new-items', [ItemSyncService::class,'syncNewItems'])->name('items.pull-new-item');
         Route::get('sync-updated-items', [ItemSyncService::class,'syncUpdatedItems'])->name('items.pull-updated-item');
     });
+    Route::group(['prefix'=>'store_masters'], function () {
+        Route::get('sync-new-stores', [ItemSyncService::class,'syncNewItems'])->name('stores.pull-new-store');
+        Route::get('sync-updated-stores', [ItemSyncService::class,'syncUpdatedItems'])->name('stores.pull-updated-store');
+    });
 });
 
 Route::group(['middleware' => ['authapi'],'prefix' => 'api'], function(){

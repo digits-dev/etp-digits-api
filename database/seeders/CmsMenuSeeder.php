@@ -66,6 +66,18 @@ class CmsMenuSeeder extends Seeder
                 'sorting'           => 3
             ],
             [
+                'name'              => 'Stores',
+                'type'              => 'Route',
+                'path'              => 'AdminStoreMastersControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-circle-o',
+                'parent_id'         => $submaster,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 4
+            ],
+            [
                 'name'              => 'Transaction Type',
                 'type'              => 'Route',
                 'path'              => 'AdminTransactionTypesControllerGetIndex',
@@ -75,7 +87,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 4
+                'sorting'           => 5
             ],
             [
                 'name'              => 'Deliveries',

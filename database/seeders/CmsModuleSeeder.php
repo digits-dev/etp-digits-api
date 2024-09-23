@@ -68,7 +68,16 @@ class CmsModuleSeeder extends Seeder
                 'controller'   => 'AdminItemsController',
                 'is_protected' => 0,
                 'is_active'    => 0
-            ]
+            ],
+            [
+                'name'         => 'Stores',
+                'icon'         => 'fa fa-circle-o',
+                'path'         => 'store_masters',
+                'table_name'   => 'store_masters',
+                'controller'   => 'AdminStoreMastersController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
 
         ];
 
