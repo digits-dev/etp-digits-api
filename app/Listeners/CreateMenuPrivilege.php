@@ -28,7 +28,7 @@ class CreateMenuPrivilege
      */
     public function handle(MenuCreated $event)
     {
-        Log::info($event);
+        // Log::info($event);
         // create a access privilege for the created menu
         CmsMenuPrivilege::create([
             'id_cms_menus' => $event->menu->id,
