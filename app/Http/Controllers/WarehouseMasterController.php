@@ -31,7 +31,7 @@ class WarehouseMasterController extends Controller
             $data = $warehouse->toArray();
             unset($data['links']);
 
-            $this->populateStoreMaster($data);
+            // $this->populateStoreMaster($data);
 
             return response()->json([
                 'api_status' => 1,
