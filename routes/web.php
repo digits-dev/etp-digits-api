@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\AdminCmsUsersController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\ItemMasterController;
 use App\Http\Controllers\OraclePullController;
 use App\Http\Controllers\PulloutController;
 use App\Http\Controllers\WarehouseMasterController;
 use App\Services\ItemSyncService;
+use App\Services\WarehouseSyncService;
 use Illuminate\Support\Facades\Route;
 
 
@@ -31,8 +33,14 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::get('sync-updated-items', [ItemSyncService::class,'syncUpdatedItems'])->name('items.pull-updated-item');
     });
     Route::group(['prefix'=>'store_masters'], function () {
-        Route::get('sync-new-stores', [ItemSyncService::class,'syncNewItems'])->name('stores.pull-new-store');
-        Route::get('sync-updated-stores', [ItemSyncService::class,'syncUpdatedItems'])->name('stores.pull-updated-store');
+        Route::get('sync-new-stores', [WarehouseSyncService::class,'syncNewWarehouse'])->name('stores.pull-new-store');
+        Route::get('sync-updated-stores', [WarehouseSyncService::class,'syncUpdatedWarehouse'])->name('stores.pull-updated-store');
+    });
+
+    Route::group(['prefix' => 'users'], function () {
+        Route::get('change-password',[AdminCmsUsersController::class,'showChangePasswordForm'])->name('show-change-password');
+        Route::post('change-password',[AdminCmsUsersController::class,'changePassword'])->name('change-password');
+        Route::post('waive-change-password',[AdminCmsUsersController::class,'waiveChangePassword'])->name('waive-change-password');
     });
 });
 
