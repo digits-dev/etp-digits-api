@@ -4,13 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CmsUser extends Model
+class CmsPrivilege extends Model
 {
     use HasFactory;
-    // use SoftDeletes;
 
-    protected $table = 'cms_users';
+    protected $table = 'cms_privileges';
     protected $guarded = [];
 }

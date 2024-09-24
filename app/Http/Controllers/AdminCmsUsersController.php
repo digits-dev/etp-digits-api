@@ -1,11 +1,13 @@
 <?php namespace App\Http\Controllers;
 
+use App\Imports\UserImport;
 use App\Models\CmsUser;
 use crocodicstudio\crudbooster\controllers\CBController;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AdminCmsUsersController extends CBController {
 
@@ -22,23 +24,95 @@ class AdminCmsUsersController extends CBController {
 
 		# START COLUMNS DO NOT REMOVE THIS LINE
 		$this->col = array();
-		$this->col[] = array("label"=>"Name","name"=>"name");
-		$this->col[] = array("label"=>"Email","name"=>"email");
-		$this->col[] = array("label"=>"Privilege","name"=>"id_cms_privileges","join"=>"cms_privileges,name");
-		$this->col[] = array("label"=>"Photo","name"=>"photo","image"=>1);
+		$this->col[] = ["label"=>"Name","name"=>"name"];
+		$this->col[] = ["label"=>"Email","name"=>"email"];
+		$this->col[] = ["label"=>"Privilege","name"=>"id_cms_privileges","join"=>"cms_privileges,name"];
+		$this->col[] = ["label"=>"Photo","name"=>"photo","image"=>1];
+        $this->col[] = ["label"=>"Status","name"=>"status"];
 		# END COLUMNS DO NOT REMOVE THIS LINE
 
 		# START FORM DO NOT REMOVE THIS LINE
 		$this->form = array();
-		$this->form[] = array("label"=>"Name","name"=>"name",'required'=>true,'validation'=>'required|alpha_spaces|min:3');
-		$this->form[] = array("label"=>"Email","name"=>"email",'required'=>true,'type'=>'email','validation'=>'required|email|unique:cms_users,email,'.CRUDBooster::getCurrentId());
-		$this->form[] = array("label"=>"Photo","name"=>"photo","type"=>"upload","help"=>"Recommended resolution is 200x200px",'required'=>true,'validation'=>'required|image|max:1000','resize_width'=>90,'resize_height'=>90);
-		$this->form[] = array("label"=>"Privilege","name"=>"id_cms_privileges","type"=>"select","datatable"=>"cms_privileges,name",'required'=>true);
-		// $this->form[] = array("label"=>"Password","name"=>"password","type"=>"password","help"=>"Please leave empty if not change");
-		$this->form[] = array("label"=>"Password","name"=>"password","type"=>"password","help"=>"Please leave empty if not change");
-		$this->form[] = array("label"=>"Password Confirmation","name"=>"password_confirmation","type"=>"password","help"=>"Please leave empty if not change");
-		# END FORM DO NOT REMOVE THIS LINE
+		$this->form[] = ["label"=>"Name","name"=>"name",'validation'=>'required|alpha_spaces|min:3','width'=>'col-sm-5'];
+		$this->form[] = ["label"=>"Email","name"=>"email",'type'=>'email','validation'=>'required|email|unique:cms_users,email,'.CRUDBooster::getCurrentId(),'width'=>'col-sm-5'];
+		$this->form[] = ["label"=>"Photo","name"=>"photo","type"=>"upload","help"=>"Recommended resolution is 200x200px",'validation'=>'required|image|max:1000','resize_width'=>90,'resize_height'=>90,'width'=>'col-sm-5'];
+		$this->form[] = ["label"=>"Privilege","name"=>"id_cms_privileges","type"=>"select",'validation'=>'required',"datatable"=>"cms_privileges,name",'width'=>'col-sm-5'];
+		$this->form[] = ["label"=>"Password","name"=>"password","type"=>"password","help"=>"Please leave empty if not changed",'width'=>'col-sm-5'];
+		if((CRUDBooster::isSuperadmin() || CRUDBooster::myPrivilegeName() == "ADMIN") && (in_array(CRUDBooster::getCurrentMethod(),['getEdit','postEditSave']))){
+		    $this->form[] = ["label"=>"Status","name"=>"status","type"=>"select","validation"=>"required","width"=>"col-sm-5","dataenum"=>"ACTIVE;INACTIVE"];
+		}
+        # END FORM DO NOT REMOVE THIS LINE
 
+        $this->button_selected = array();
+		if(CRUDBooster::isUpdate()) {
+			$this->button_selected[] = ["label"=>"Set Status ACTIVE ","icon"=>"fa fa-check-circle","name"=>"set_status_ACTIVE"];
+			$this->button_selected[] = ["label"=>"Set Status INACTIVE","icon"=>"fa fa-times-circle","name"=>"set_status_INACTIVE"];
+			$this->button_selected[] = ["label"=>"Reset Password","icon"=>"fa fa-refresh","name"=>"reset_password"];
+		}
+
+        $this->table_row_color = array();
+        $this->table_row_color[] = ["condition"=>"[status] == 'INACTIVE'","color"=>"danger"];
+
+        $this->index_button = array();
+        if(CRUDBooster::isSuperAdmin()){
+            $this->index_button[] = ["label"=>"Upload Users","url"=>"javascript:uploadUsers()","icon"=>"fa fa-upload","color"=>"warning"];
+        }
+
+        $this->script_js = "
+            function uploadUsers() {
+                $('#modal-upload-users').modal('show');
+            }
+        ";
+
+        $this->post_index_html = "
+			<div class='modal fade' tabindex='-1' role='dialog' id='modal-upload-users'>
+				<div class='modal-dialog'>
+					<div class='modal-content'>
+						<div class='modal-header bg-aqua'>
+							<button class='close' aria-label='Close' type='button' data-dismiss='modal'>
+								<span aria-hidden='true'>×</span></button>
+							<h4 class='modal-title'><i class='fa fa-download'></i> Upload Users</h4>
+						</div>
+
+						<form method='post' target='_blank' action=".route('users.upload')." enctype='multipart/form-data'>
+                        <input type='hidden' name='_token' value=".csrf_token().">
+                        <div class='modal-body'>
+                            <div class='form-group'>
+                                <label for='file'>Excel File</label>
+                                <input type='file' id='file' name='import_file' class='form-control' required accept='.csv' />
+                            </div>
+                            <a href=".route('users.template')." class='btn btn-info'><i class='fa fa-download'> </i> Download Template</a>
+						</div>
+						<div class='modal-footer' align='right'>
+                            <button class='btn btn-default' type='button' data-dismiss='modal'>Close</button>
+                            <button class='btn btn-success btn-submit' type='submit'><i class='fa fa-save'> </i> Submit</button>
+                        </div>
+                        </form>
+					</div>
+				</div>
+			</div>
+            ";
+
+	}
+
+    public function actionButtonSelected($id_selected,$button_name) {
+		//Your code here
+		$data = ['updated_at' => date('Y-m-d H:i:s')];
+		switch ($button_name) {
+			case 'set_status_ACTIVE':
+				$data['status'] = 'ACTIVE';
+				break;
+			case 'set_status_INACTIVE':
+				$data['status'] = 'INACTIVE';
+				break;
+			case 'reset_password':
+                $data['password'] = bcrypt('qwerty');
+				break;
+			default:
+				break;
+		}
+
+		CmsUser::whereIn('id',$id_selected)->update($data);
 	}
 
 	public function getProfile() {
@@ -56,11 +130,17 @@ class AdminCmsUsersController extends CBController {
         return $this->view('crudbooster::default.form',$data);
 	}
 	public function hook_before_edit(&$postdata,$id) {
-		unset($postdata['password_confirmation']);
 	}
+
 	public function hook_before_add(&$postdata) {
-	    unset($postdata['password_confirmation']);
 	}
+
+    public function hook_before_delete($id) {
+		$user = CmsUser::find($id);
+		$user->deleted_by = CRUDBooster::myId();
+		$user->status = 'INACTIVE';
+		$user->save();
+    }
 
     public function showChangePasswordForm() {
 		if (CRUDBooster::myId()) {
@@ -114,5 +194,29 @@ class AdminCmsUsersController extends CBController {
             return response()->json(['success' => false, 'message' => $ex->getMessage()]);
         }
         return response()->json(['success' => true]);
+    }
+
+    public function importUsers(Request $request){
+        $request->validate([
+            'import_file' => 'required|file|mimes:xlsx,csv',
+        ]);
+        try {
+            $import = new UserImport();
+            $import->import($request->file('import_file'));
+            // Check for any failures
+            if ($import->failures()->isNotEmpty()) {
+                return back()->withFailures($import->failures());
+            }
+            return redirect()->back()->with(['message_type'=>'success', 'message'=>'Users imported successfully.']);
+        } catch (Exception $e) {
+            return back()->with('error', 'There was an issue with the import: ' . $e->getMessage());
+        }
+
+    }
+
+    public function importUsersTemplate(){
+        $path = storage_path('app/templates/user-import-template.csv');
+        $datefile = date("YmdHis");
+        return response()->download($path, "user-import-template-{$datefile}.csv");
     }
 }

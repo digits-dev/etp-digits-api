@@ -41,6 +41,8 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::get('change-password',[AdminCmsUsersController::class,'showChangePasswordForm'])->name('show-change-password');
         Route::post('change-password',[AdminCmsUsersController::class,'changePassword'])->name('change-password');
         Route::post('waive-change-password',[AdminCmsUsersController::class,'waiveChangePassword'])->name('waive-change-password');
+        Route::post('users-import',[AdminCmsUsersController::class,'importUsers'])->name('users.upload');
+        Route::get('users-import-template',[AdminCmsUsersController::class,'importUsersTemplate'])->name('users.template');
     });
 });
 
