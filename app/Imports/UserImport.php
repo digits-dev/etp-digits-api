@@ -19,13 +19,14 @@ class UserImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValidat
     use Importable, SkipsFailures;
     public function model(array $row) {
         // Map Excel row data to your User model
-        $priv = Cache::remember($row['privilege'], 3600, function() use ($row){
+        $priv = Cache::remember("user_{$row['privilege']}", 3600, function() use ($row){
             return CmsPrivilege::where('name', $row['privilege'])->value('id');
         });
 
-        Log::info("rows {$row}");
+        $json = json_encode($row);
+        Log::info("rows {$json}");
 
-        return new CmsUser([
+        return CmsUser::firstOrCreate(['name' => $row['name']],[
             'name' => $row['name'],
             'email' => $row['email'],
             'id_cms_privileges' => $priv,
@@ -33,25 +34,26 @@ class UserImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValidat
         ]);
     }
 
-    // Define the validation rules for the import
     public function rules(): array
     {
         return [
             'name' => 'required',
             'privilege' => 'required',
-            'email' => 'required|email|unique:cms_users,email', // Validating the email
+            'email' => 'required|email|unique:cms_users,email',
             'status' => 'required|in:ACTIVE,INACTIVE'
         ];
     }
 
-    // Optionally, customize failure handling
     public function onFailure(Failure ...$failures)
     {
-        // Handle failures (log them, notify, etc.)
+        $errors = [];
+        Log::error("User import failed!");
         foreach ($failures as $failure) {
-            // Log the failure (row number and error message)
-            Log::error('Failed row: ' . $failure->row());
-            Log::error('Error: ' . json_encode($failure->errors()));
+            $row = $failure->row();
+            $message = json_encode($failure->errors());
+            $attribute = $failure->attribute();
+            Log::error("Failed at row# {$row} on column {$attribute} => {$message}");
+            $errors[] = "Failed at row# {$row} => {$message}";
         }
     }
 }
