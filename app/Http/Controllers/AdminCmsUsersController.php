@@ -6,8 +6,9 @@ use crocodicstudio\crudbooster\controllers\CBController;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
-use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\ValidationException;
 
 class AdminCmsUsersController extends CBController {
 
@@ -62,6 +63,10 @@ class AdminCmsUsersController extends CBController {
             function uploadUsers() {
                 $('#modal-upload-users').modal('show');
             }
+            $('#import-user-form').submit(function() {
+                $('#btnImport').prop('disabled', true);
+                $('#loading-spinner').css('display', 'inline-block');
+            });
         ";
 
         $this->post_index_html = "
@@ -74,7 +79,7 @@ class AdminCmsUsersController extends CBController {
 							<h4 class='modal-title'><i class='fa fa-download'></i> Upload Users</h4>
 						</div>
 
-						<form method='post' target='_blank' action=".route('users.upload')." enctype='multipart/form-data'>
+						<form id='import-user-form' method='post' action=".route('users.upload')." enctype='multipart/form-data'>
                         <input type='hidden' name='_token' value=".csrf_token().">
                         <div class='modal-body'>
                             <div class='form-group'>
@@ -85,7 +90,8 @@ class AdminCmsUsersController extends CBController {
 						</div>
 						<div class='modal-footer' align='right'>
                             <button class='btn btn-default' type='button' data-dismiss='modal'>Close</button>
-                            <button class='btn btn-success btn-submit' type='submit'><i class='fa fa-save'> </i> Submit</button>
+                            <button class='btn btn-success btn-submit' type='submit' id='btnImport'><i class='fa fa-save'> </i> Submit</button>
+                            <span id='loading-spinner' class='spinner-border spinner-border-sm' role='status' aria-hidden='true' style='display: none;'></span>
                         </div>
                         </form>
 					</div>
@@ -169,6 +175,7 @@ class AdminCmsUsersController extends CBController {
                 'last_password_updated_at' => date("Y-m-d H:i:s"),
                 'waive_count' => 0,
             ]);
+            Session::put('check-user-password',false);
         } catch (Exception $ex) {
             return response()->json(['success' => false, 'message' => $ex->getMessage()]);
         }
@@ -190,6 +197,7 @@ class AdminCmsUsersController extends CBController {
                 'waive_count' => $request->waive,
                 'last_password_updated_at' => date("Y-m-d H:i:s")
             ]);
+            Session::put('check-user-password',false);
         } catch (Exception $ex) {
             return response()->json(['success' => false, 'message' => $ex->getMessage()]);
         }
@@ -198,18 +206,26 @@ class AdminCmsUsersController extends CBController {
 
     public function importUsers(Request $request){
         $request->validate([
-            'import_file' => 'required|file|mimes:xlsx,csv',
+            'import_file' => 'required|file|mimes:csv,txt',
         ]);
         try {
             $import = new UserImport();
             $import->import($request->file('import_file'));
             // Check for any failures
-            if ($import->failures()->isNotEmpty()) {
-                return back()->withFailures($import->failures());
+            if($import->failures()->isNotEmpty()) {
+                $errors = [];
+                foreach ($import->failures() as $failure) {
+                    $errors[] = 'row #'.$failure->row() . ' failed because: ' . json_encode($failure->errors());
+                }
+                return back()->with(['message_type'=>'danger','message'=>$errors]);
             }
-            return redirect()->back()->with(['message_type'=>'success', 'message'=>'Users imported successfully.']);
-        } catch (Exception $e) {
-            return back()->with('error', 'There was an issue with the import: ' . $e->getMessage());
+            return back()->with(['message_type'=>'success', 'message'=>'Users imported successfully.']);
+        } catch (ValidationException $e) {
+            $errors = [];
+            foreach ($e->failures() as $failure) {
+                $errors[] = 'row #'.$failure->row() . ' failed because: ' . json_encode($failure->errors());
+            }
+            return back()->with(['message_type'=>'danger', 'message'=>$errors]);
         }
 
     }

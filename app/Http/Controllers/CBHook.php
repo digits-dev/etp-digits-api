@@ -32,6 +32,7 @@ class CBHook extends Controller {
 
         if($needsPasswordChange){
             Log::debug("message: {$needsPasswordChange}");
+            Session::put('check-user-password',true);
             return redirect()->route('show-change-password')->send();
         }
 	}
