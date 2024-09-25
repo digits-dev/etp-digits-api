@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Delivery;
+use App\Models\EtpDelivery;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
 	class AdminDeliveriesController extends \crocodicstudio\crudbooster\controllers\CBController {
@@ -47,6 +48,46 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			# START FORM DO NOT REMOVE THIS LINE
 			$this->form = [];
             # END FORM DO NOT REMOVE THIS LINE
+
+            $this->index_button = array();
+            if(CRUDBooster::isSuperAdmin()){
+                $this->index_button[] = ["label"=>"Get ETP Delivery","url"=>"javascript:pullDeliveries()","icon"=>"fa fa-download","color"=>"warning"];
+            }
+
+            $this->load_js[] = asset("js/delivery.js");
+
+            $this->post_index_html = "
+            <div class='modal fade' id='deliveryModal' tabindex='-1' role='dialog' aria-labelledby='deliveryModalLabel'>
+                <div class='modal-dialog modal-lg' role='document'>
+                    <div class='modal-content'>
+                    <div class='modal-header bg-aqua'>
+                        <h4 class='modal-title' id='deliveryModalLabel'>ETP Delivery Information</h4>
+                    </div>
+                    <div class='modal-body'>
+                        <input type='text' id='searchInput' class='form-control' placeholder='Search...' style='margin: 5px 0;'>
+
+                        <table class='table table-bordered mt-3' id='deliveryTable'>
+                        <thead>
+                            <tr>
+                            <th>From Warehouse</th>
+                            <th>To Warehouse</th>
+                            <th>Delivery Number</th>
+                            <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id='deliveryTableBody'>
+                            <!-- Dynamic content will be populated here -->
+                        </tbody>
+                        </table>
+                    </div>
+                    <div class='modal-footer'>
+                        <button type='button' class='btn btn-secondary' data-dismiss='modal'>Close</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+            ";
+
 	    }
 
 	    public function actionButtonSelected($id_selected,$button_name) {
@@ -67,6 +108,19 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
             },'lines.serials'])->find($id);
 
             return view('deliveries.detail', $data);
+        }
+
+        public function getDeliveredTransactions(){
+            $data = [];
+            $data['deliveries'] = EtpDelivery::getReceivedDelivery()->with([
+                'fromWh',
+                'toWh',
+                'status',
+                'lines',
+                'lines.item'
+            ])->get();
+
+            return response()->json($data);
         }
 
 	}

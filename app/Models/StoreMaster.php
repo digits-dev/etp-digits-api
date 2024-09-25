@@ -9,6 +9,8 @@ class StoreMaster extends Model
 {
     use HasFactory;
 
+    protected $table = 'store_masters';
+    protected $connection = 'mysql';
     protected $fillable = [
         'warehouse_code',
         'warehouse_type',

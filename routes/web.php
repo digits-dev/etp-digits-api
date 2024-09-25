@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminCmsUsersController;
+use App\Http\Controllers\AdminDeliveriesController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\ItemMasterController;
 use App\Http\Controllers\OraclePullController;
@@ -47,6 +48,11 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
     Route::group(['prefix' => 'users'], function () {
         Route::post('users-import',[AdminCmsUsersController::class,'importUsers'])->name('users.upload');
         Route::get('users-import-template',[AdminCmsUsersController::class,'importUsersTemplate'])->name('users.template');
+    });
+
+    Route::group(['prefix' => 'deliveries'], function(){
+        Route::get('etp-delivered-dr', [AdminDeliveriesController::class,'getDeliveredTransactions'])->name('get-etp-deliveries');
+        Route::get('etp-delivered-by-dr/{drnumber}', [AdminDeliveriesController::class,'getDeliveredTransactionsByNumber']);
     });
 });
 
