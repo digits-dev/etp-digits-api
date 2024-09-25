@@ -60,7 +60,8 @@ class OraclePullController extends Controller
                     break;
             }
 
-            $this->processOrders($deliveries,'MO', Carbon::parse($date_from)->format("Y-m-d"));
+            $transaction_date = Carbon::parse($date_from)->format("Y-m-d");
+            $this->processOrders($deliveries, 'MO', $transaction_date);
         }
     }
 
@@ -228,8 +229,8 @@ class OraclePullController extends Controller
         foreach ($pullouts as $key => $pullout) {
             if(!is_null($pullout->sor_mor_number)){
                 $orders = OracleOrderHeader::query()->getOrderReturns($pullout->sor_mor_number);
-                $pulloutDetails['received_date'] = date('Y-m-d');
                 if($orders->getModel()->exists){
+                    $pulloutDetails['received_date'] = date('Y-m-d');
                     if($orders->sum_qty_shipped > 0 && $orders->sum_qty_shipped == $orders->sum_qty_ordered){
                         $pulloutDetails['status'] = Pullout::RECEIVED;
                     }
@@ -239,8 +240,10 @@ class OraclePullController extends Controller
                 }
                 DB::beginTransaction();
                 try {
-                    Pullout::where('document_number', $pullout->document_number)
-                    ->update($pulloutDetails);
+                    if(!empty($pulloutDetails)){
+                        Pullout::where('document_number', $pullout->document_number)
+                            ->update($pulloutDetails);
+                    }
                     DB::commit();
                 } catch (Exception $ex) {
                     DB::rollBack();
