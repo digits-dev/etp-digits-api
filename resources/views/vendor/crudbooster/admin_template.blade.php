@@ -107,11 +107,10 @@
                     <!--Now you can define $page_icon alongside $page_tite for custom forms to follow CRUDBooster theme style -->
                     <i class='{!! ($page_icon)?:$module->icon !!}'></i> {!! ucwords(($page_title)?:$module->name) !!} &nbsp;&nbsp;
 
-                    <!--START BUTTON -->
 
                     @if(CRUDBooster::getCurrentMethod() == 'getIndex')
                         @if($button_show)
-                            <a href="{{ CRUDBooster::mainpath().'?'.http_build_query(array_filter(Request::all())) }}" id='btn_show_data' class="btn btn-sm btn-primary"
+                            <a href="{{ CRUDBooster::mainpath().'?'.http_build_query(array_filter(Request::all())) }}" id='btn_show_data' class="btn btn-sm btn-primary btn-refresh-table"
                                title="{{cbLang('action_show_data')}}">
                                 <i class="fa fa-table"></i> {{cbLang('action_show_data')}}
                             </a>
@@ -119,12 +118,11 @@
 
                         @if($button_add && CRUDBooster::isCreate())
                             <a href="{{ CRUDBooster::mainpath('add').'?return_url='.urlencode(Request::fullUrl()).'&parent_id='.g('parent_id').'&parent_field='.$parent_field }}"
-                               id='btn_add_new_data' class="btn btn-sm btn-success" title="{{cbLang('action_add_data')}}">
+                               id='btn_add_new_data' class="btn btn-sm btn-success btn-create" title="{{cbLang('action_add_data')}}">
                                 <i class="fa fa-plus-circle"></i> {{cbLang('action_add_data')}}
                             </a>
                         @endif
                     @endif
-
 
                     @if($button_export && CRUDBooster::getCurrentMethod() == 'getIndex')
                         <a href="javascript:void(0)" id='btn_export_data' data-url-parameter='{{$build_query}}' title='Export Data'
@@ -140,25 +138,21 @@
                         </a>
                     @endif
 
-                <!--ADD ACTIon-->
                     @if(!empty($index_button))
 
                         @foreach($index_button as $ib)
-                            <a href='{{$ib["url"]}}' id='{{str_slug($ib["label"])}}' class='btn {{($ib['color'])?'btn-'.$ib['color']:'btn-primary'}} btn-sm'
-                               @if($ib['onClick']) onClick='return {{$ib["onClick"]}}' @endif
-                               @if($ib['onMouseOver']) onMouseOver='return {{$ib["onMouseOver"]}}' @endif
-                               @if($ib['onMouseOut']) onMouseOut='return {{$ib["onMouseOut"]}}' @endif
-                               @if($ib['onKeyDown']) onKeyDown='return {{$ib["onKeyDown"]}}' @endif
-                               @if($ib['onLoad']) onLoad='return {{$ib["onLoad"]}}' @endif
+                            <a href='{{$ib["url"]}}' id='{{str_slug($ib["label"])}}' class='btn {{($ib["color"])?'btn-'.$ib["color"]:"btn-primary"}} btn-sm'
+                            @if($ib["onClick"]) onClick='return {{$ib["onClick"]}}' @endif
+                            @if($ib["onMouseOver"]) onMouseOver='return {{$ib["onMouseOver"]}}' @endif
+                            @if($ib["onMouseOut"]) onMouseOut='return {{$ib["onMouseOut"]}}' @endif
+                            @if($ib["onKeyDown"]) onKeyDown='return {{$ib["onKeyDown"]}}' @endif
+                            @if($ib["onLoad"]) onLoad='return {{$ib["onLoad"]}}' @endif
                             >
                                 <i class='{{$ib["icon"]}}'></i> {{$ib["label"]}}
                             </a>
-                    @endforeach
-                @endif
-                <!-- END BUTTON -->
+                        @endforeach
+                    @endif
                 </h1>
-
-
                 <ol class="breadcrumb">
                     <li><a href="{{CRUDBooster::adminPath()}}"><i class="fa fa-dashboard"></i> {{ cbLang('home') }}</a></li>
                     <li class="active">{{$module->name}}</li>

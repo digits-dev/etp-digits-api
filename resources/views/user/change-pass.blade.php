@@ -224,7 +224,7 @@
                 data: {
                     password: password,
                     password_confirmation: confirmPassword,
-                    _token: $('meta[name="csrf-token"]').attr('content')
+                    _token: "{{ csrf_token() }}"
                 },
                 success: function(response) {
                     $('#spinner').hide();
@@ -289,7 +289,7 @@
                 type: 'POST',
                 data: {
                     waive: newWaive,
-                    _token: $('meta[name="csrf-token"]').attr('content')
+                    _token: "{{ csrf_token() }}"
                 },
                 success: function(response) {
                     $('#tos-modal').modal('hide');
