@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\OracleOrderReceivingHeaderInterface;
 use App\Models\OracleOrderReceivingLineInterface;
+use App\Models\OracleTransactionInterface;
 use App\Services\OracleInterfaceService;
 use Exception;
 use Illuminate\Http\Request;
@@ -177,6 +178,76 @@ class OraclePushController extends Controller
         try {
             DB::beginTransaction();
             OracleOrderReceivingLineInterface::create($details);
+            DB::commit();
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error($e->getMessage());
+        }
+    }
+
+    private function processTransferInterface($transactionType, $data=[]){
+
+        $details = [
+            'CREATION_DATE' => $this->sysDate,
+            'CREATED_BY' => 0,
+            'LAST_UPDATE_DATE' => $this->sysDate,
+            'LAST_UPDATED_BY' => 0,
+            'SOURCE_LINE_ID' => 1,
+            'SOURCE_HEADER_ID' => 1,
+            'PROCESS_FLAG' => 1,
+            'INVENTORY_ITEM_ID' => $data['item_id'],
+            'ORGANIZATION_ID' => $data['org_id'],
+            'SUBINVENTORY_CODE' => $data['from_subinventory'], //'STAGINGMO',
+            'TRANSACTION_UOM' => 'Pc',
+            'TRANSACTION_DATE' => $this->sysDate,
+            'TRANSFER_ORGANIZATION' => $data['transfer_org_id'], //223,263,224
+            'TRANSFER_SUBINVENTORY' => $data['transfer_subinventory'],
+            'TRANSACTION_MODE' => 3,
+        ];
+
+        switch ($transactionType) {
+            case 'DOT':
+                $details['SOURCE_CODE'] = 'BEAPOSMW';
+                $details['REVISION'] = '';
+                $details['TRANSACTION_TYPE_ID'] = 21;
+                $details['TRANSACTION_QUANTITY'] = ($data['quantity'])*(-1);
+                $details['LOCATOR_ID'] = $data['locator_id'];
+                $details['SHIPMENT_NUMBER'] = $data['dr_number'];
+            break;
+            case 'MOR':
+                $details['SOURCE_CODE'] = 'MIDDLEWARE';
+                $details['REVISION'] = '';
+                $details['TRANSACTION_TYPE_ID'] = 21;
+                $details['TRANSACTION_QUANTITY'] = $data['quantity'];
+                $details['REASON_ID'] = $data['reason_id'];
+                $details['SHIPMENT_NUMBER'] = $data['dr_number'];
+            break;
+            case 'SIT':
+                $details['SOURCE_CODE'] = 'INV';
+                $details['TRANSACTION_TYPE_ID'] = 2;
+                $details['TRANSACTION_QUANTITY'] = $data['quantity'];
+                $details['LOCATOR_ID'] = $data['locator_id'];
+                $details['TRANSACTION_INTERFACE_ID'] = $this->matertialTrx;
+                $details['TRANSACTION_HEADER_ID'] = $this->matertialTrx;
+                $details['TRANSACTION_COST'] = 0;
+                $details['LAST_UPDATE_LOGIN'] = 0;
+                $details['TRANSACTION_SOURCE_TYPE_ID'] = 13;
+                $details['TRANSACTION_ACTION_ID'] = 2;
+                $details['LOCK_FLAG'] = 2;
+                $details['FLOW_SCHEDULE'] = 'Y';
+                $details['SCHEDULED_FLAG'] = 2;
+                $details['TRANSACTION_REFERENCE'] = $$data['dr_number'];
+                $details['TRANSACTION_SOURCE_NAME'] = $$data['dr_number'];
+            break;
+
+            default:
+                # code...
+                break;
+        }
+
+        try {
+            DB::beginTransaction();
+            OracleTransactionInterface::create($details);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
