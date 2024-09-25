@@ -88,27 +88,4 @@ class WarehouseMasterController extends Controller
         }
     }
 
-    private function populateStoreMaster($data){
-
-        foreach ($data['data'] ?? [] as $key => $value) {
-            $details = [
-                'warehouse_code' => $value['warehouse_id'],
-                'warehouse_type' => $value['warehouse_type'],
-                'store_name' => $value['warehouse_name'],
-                'status' => 'ACTIVE',
-            ];
-
-            try {
-                DB::beginTransaction();
-                StoreMaster::firstOrCreate([
-                    'warehouse_code' => $value['warehouse_id']
-                ],$details);
-                DB::commit();
-            } catch (Exception $ex) {
-                DB::rollBack();
-                Log::error($ex->getMessage());
-            }
-
-        }
-    }
 }

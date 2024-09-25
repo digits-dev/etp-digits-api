@@ -4,6 +4,7 @@ namespace App\Console;
 
 use App\Http\Controllers\OraclePullController;
 use App\Services\ItemSyncService;
+use App\Services\WarehouseSyncService;
 use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -35,6 +36,9 @@ class Kernel extends ConsoleKernel
             $sync = new ItemSyncService();
             $sync->syncNewItems(request()->merge(['datefrom'=>$datefrom,'dateto'=>$dateto]));
             $sync->syncUpdatedItems(request()->merge(['datefrom'=>$datefrom,'dateto'=>$dateto]));
+
+            $whSync = new WarehouseSyncService();
+            $whSync->syncNewWarehouse(request()->merge(['datefrom'=>$datefrom,'dateto'=>$dateto]));
         })->hourly();
 
         $schedule->call(function(){
