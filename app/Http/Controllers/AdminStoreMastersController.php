@@ -35,6 +35,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			$this->col[] = ["label"=>"MO Store Name","name"=>"bea_mo_store_name"];
 			$this->col[] = ["label"=>"DOO Subinventory","name"=>"doo_subinventory"];
 			$this->col[] = ["label"=>"SIT Subinventory","name"=>"sit_subinventory"];
+            $this->col[] = ["label"=>"ORG Subinventory","name"=>"org_subinventory"];
 			$this->col[] = ["label"=>"Status","name"=>"status"];
             $this->col[] = ["label"=>"Created By","name"=>"created_by","join"=>"cms_users,name"];
 			$this->col[] = ["label"=>"Created Date","name"=>"created_at"];
