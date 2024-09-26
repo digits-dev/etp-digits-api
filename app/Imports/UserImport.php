@@ -26,7 +26,7 @@ class UserImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValidat
         $json = json_encode($row);
         Log::info("rows {$json}");
 
-        return CmsUser::upsert(['name' => $row['name']],[
+        return CmsUser::firstOrCreate(['name' => $row['name']],[
             'name' => $row['name'],
             'email' => $row['email'],
             'id_cms_privileges' => $priv,
