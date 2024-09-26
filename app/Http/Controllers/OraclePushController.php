@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Delivery;
+use App\Models\DeliveryLine;
 use App\Models\OracleOrderReceivingHeaderInterface;
 use App\Models\OracleOrderReceivingLineInterface;
 use App\Models\OracleTransactionInterface;
+use App\Services\DeliveryInterfaceService;
 use App\Services\OracleInterfaceService;
 use Exception;
 use Illuminate\Http\Request;
@@ -27,6 +30,23 @@ class OraclePushController extends Controller
         $this->nextRcv = $oracleService->getHeaderNextValue();
         $this->nextGroup = $oracleService->getGroupNextValue();
         $this->matertialTrx = $oracleService->getMaterialTransactionNextValue();
+    }
+
+    public function pushDotInterface(DeliveryInterfaceService $deliveryInterface){
+        foreach ($deliveryInterface->getProcessingDeliveryLines() ?? [] as $key => $value) {
+            self::processTransferInterface('DOT', $value);
+            //update interface flag
+            $drline = DeliveryLine::find($value['line_id']);
+            $drline->interface_flag = 1;
+            $drline->save();
+        }
+
+        //update interface flag to headers
+        foreach ($deliveryInterface->getProcessingDelivery() ?? [] as $key => $value) {
+            $drline = Delivery::where('order_number', $value['order_number'])->first();
+            $drline->interface_flag = 1;
+            $drline->save();
+        }
     }
 
     public function pushMorInterface(Request $request){
@@ -186,7 +206,6 @@ class OraclePushController extends Controller
     }
 
     private function processTransferInterface($transactionType, $data=[]){
-
         $details = [
             'CREATION_DATE' => $this->sysDate,
             'CREATED_BY' => 0,
@@ -197,10 +216,10 @@ class OraclePushController extends Controller
             'PROCESS_FLAG' => 1,
             'INVENTORY_ITEM_ID' => $data['item_id'],
             'ORGANIZATION_ID' => $data['org_id'],
-            'SUBINVENTORY_CODE' => $data['from_subinventory'], //'STAGINGMO',
+            'SUBINVENTORY_CODE' => $data['from_subinventory'],
             'TRANSACTION_UOM' => 'Pc',
             'TRANSACTION_DATE' => $this->sysDate,
-            'TRANSFER_ORGANIZATION' => $data['transfer_org_id'], //223,263,224
+            'TRANSFER_ORGANIZATION' => $data['transfer_org_id'],
             'TRANSFER_SUBINVENTORY' => $data['transfer_subinventory'],
             'TRANSACTION_MODE' => 3,
         ];
@@ -244,10 +263,9 @@ class OraclePushController extends Controller
                 # code...
                 break;
         }
-
         try {
             DB::beginTransaction();
-            OracleTransactionInterface::create($details);
+            OracleTransactionInterface::insert($details);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();

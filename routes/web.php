@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminDeliveriesController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\ItemMasterController;
 use App\Http\Controllers\OraclePullController;
+use App\Http\Controllers\OraclePushController;
 use App\Http\Controllers\WarehouseMasterController;
 use App\Services\ItemSyncService;
 use App\Services\WarehouseSyncService;
@@ -53,6 +54,7 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
     Route::group(['prefix' => 'deliveries'], function(){
         Route::get('etp-delivered-dr', [AdminDeliveriesController::class,'getDeliveredTransactions'])->name('get-etp-deliveries');
         Route::get('etp-delivered-by-dr/{drnumber}', [AdminDeliveriesController::class,'getDeliveredTransactionsByNumber']);
+        Route::get('processing-dr', [OraclePushController::class,'pushDotInterface']);
     });
 });
 

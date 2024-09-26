@@ -31,8 +31,7 @@ class EtpDelivery extends Model
     }
 
     public function scopeGetReceivedDelivery($query){
-        return $query->where('OrderNumber', '36832948')
-            ->where('Company', 100)
+        return $query->where('Company', 100)
             ->where('Division', 100)
             ->where('TransactionStatus', 1) //received
             ->where('ToWarehouse', '0921')

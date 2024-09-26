@@ -199,7 +199,7 @@ class OraclePullController extends Controller
     }
 
     public function processOrgTransfers(){
-        $deliveries = Delivery::getPending();
+        $deliveries = Delivery::getProcessing()->get();
         foreach ($deliveries as $key => $dr) {
             $orders = OracleShipmentHeader::query()->getShipmentByRef($dr->order_number);
             if($orders->getModel()->exists){

@@ -3,6 +3,7 @@
 namespace App\Console;
 
 use App\Http\Controllers\OraclePullController;
+use App\Http\Controllers\OraclePushController;
 use App\Services\ItemSyncService;
 use App\Services\WarehouseSyncService;
 use Carbon\Carbon;
@@ -14,6 +15,8 @@ class Kernel extends ConsoleKernel
 
     protected $commands = [
         \App\Console\Commands\MakeService::class,
+        \App\Console\Commands\PushDotInterfaceCommand::class,
+        // \App\Console\Commands\TaskOraclePullCommand::class,
     ];
 
     /**
@@ -24,8 +27,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        // $schedule->command('task:orderpull')->hourly();
+        $schedule->command('interface:push-dot')->everyMinute();
+
         $schedule->call(function(){
+
             $oracle = new OraclePullController();
             $oracle->moveOrderPull(request());
             $oracle->salesOrderPull(request());
@@ -46,7 +52,8 @@ class Kernel extends ConsoleKernel
             $oracle->processOrgTransfers();
             $oracle->processReturnTransactions();
             $oracle->updateOracleItemId();
-        })->everyFiveMinutes();
+        })->everyMinute();
+
 
 
     }

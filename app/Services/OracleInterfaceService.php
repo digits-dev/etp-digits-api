@@ -7,11 +7,11 @@ use App\Models\OracleDual;
 class OracleInterfaceService
 {
     public function getGroupNextValue() {
-        return OracleDual::getGroupNextValue()->nextval;
+        return OracleDual::getGroupNextValue();
     }
 
     public function getHeaderNextValue() {
-        return OracleDual::getHeaderNextValue()->nextval;
+        return OracleDual::getHeaderNextValue();
     }
 
     public function getSysdate() {
@@ -19,10 +19,10 @@ class OracleInterfaceService
     }
 
     public function getTransactionNextValue() {
-        return OracleDual::getTransactionNextValue()->nextval;
+        return OracleDual::getTransactionNextValue();
     }
 
     public function getMaterialTransactionNextValue() {
-        return OracleDual::getMaterialTransactionNextValue()->nextval;
+        return OracleDual::getMaterialTransactionNextValue();
     }
 }
