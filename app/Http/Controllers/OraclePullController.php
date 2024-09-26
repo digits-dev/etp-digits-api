@@ -12,6 +12,7 @@ use App\Models\OracleOrderHeader;
 use App\Models\OracleShipmentHeader;
 use App\Models\OracleTransactionHeader;
 use App\Models\Pullout;
+use App\Models\StoreMaster;
 use App\Models\WarehouseMaster;
 use Carbon\Carbon;
 use Exception;
@@ -40,12 +41,12 @@ class OraclePullController extends Controller
         $date_to = $request->dateto ?? date("Y-m-d H:i:s", strtotime("-1 hour"));
 
         $request_numbers = [];
-        foreach ($this->moveOrders as $key => $org) {
+        foreach ($this->moveOrders as $key_org => $org) {
 
             $shipment_numbers = OracleMaterialTransaction::getShipments($date_from, $date_to, $org)->get();
 
-            foreach ($shipment_numbers as $key => $value) {
-                $request_numbers[] = $value->shipment_number;
+            foreach ($shipment_numbers as $key_shipment => $shipment) {
+                $request_numbers[] = $shipment->shipment_number;
             }
 
             switch($org){
@@ -61,7 +62,12 @@ class OraclePullController extends Controller
             }
 
             $transaction_date = Carbon::parse($date_from)->format("Y-m-d");
-            $this->processOrders($deliveries, 'MO', $transaction_date);
+            $transactions_attr = [
+                'type' => 'MO',
+                'from_org' => $key_org,
+                'to_org' => 223
+            ];
+            $this->processOrders($deliveries, $transactions_attr, $transaction_date);
         }
     }
 
@@ -69,7 +75,7 @@ class OraclePullController extends Controller
 
         $date_from = $request->datefrom ?? date("Y-m-d H:i:s", strtotime("-5 hour"));
         $date_to = $request->dateto ?? date("Y-m-d H:i:s", strtotime("-1 hour"));
-        foreach ($this->salesOrders as $key => $org) {
+        foreach ($this->salesOrders as $key_org => $org) {
 
             $order = OracleOrderHeader::getSalesOrder($org)
                 ->whereBetween('WSH_NEW_DELIVERIES.CONFIRM_DATE', [$date_from, $date_to])
@@ -84,19 +90,22 @@ class OraclePullController extends Controller
             }
 
             $orders = $order->get();
-            $this->processOrders($orders,'SO', Carbon::parse($date_from)->format("Y-m-d"));
+            $transactions_attr = [
+                'type' => 'SO'
+            ];
+            $this->processOrders($orders, $transactions_attr, Carbon::parse($date_from)->format("Y-m-d"));
         }
 
     }
 
-    private function processOrders($orders, $transactionType='MO', $transactionDate){
+    private function processOrders($orders, $transactionAttr=[], $transactionDate){
         $deliveryHeader = [];
         foreach($orders ?? [] as $key => $value){
             $whKey = 'warehouse_key'.str_replace(" ","_",$value->customer_name);
             $warehouse = Cache::remember($whKey, 3600, function () use ($value) {
-                return WarehouseMaster::where('customer.cutomer_name', $value->customer_name)
-                    ->orWhere('customer.warehouse_mo_name',$value->customer_name)
-                    ->select(DB::raw('SUBSTRING(customer.customer_code, 5,4) as warehouse_id'))
+                return StoreMaster::where('bea_mo_store_name', $value->customer_name)
+                    ->orWhere('bea_so_store_name', $value->customer_name)
+                    ->select('id as store_id','warehouse_code as warehouse_id',)
                     ->first();
             });
 
@@ -110,27 +119,31 @@ class OraclePullController extends Controller
                     'order_number' => $value->order_number,
                     'customer_name' => $value->customer_name,
                     'to_warehouse_id' => $warehouse->warehouse_id,
+                    'stores_id' => $warehouse->store_id,
                     'dr_number' => $value->dr_number,
                     'shipping_instruction' => preg_replace('/[[:space:]]+/u', ' ', trim($value->shipping_instruction)),
                     'customer_po' => preg_replace('/[[:space:]]+/u', ' ', trim($value->customer_po)),
-                    'locators_id' => $value->locator_id,
-                    'transaction_type' => $transactionType,
+                    'locators_id' => $value->locator_id ?? null,
+                    'from_org_id' => $transactionAttr['from_org'] ?? null,
+                    'to_org_id' => $transactionAttr['to_org'] ?? null,
+                    'transaction_type' => $transactionAttr['type'],
                     'transaction_date' => $transactionDate,
-                    'status' => ($transactionType == 'MO') ? Delivery::PROCESSING : Delivery::PENDING
+                    'status' => ($transactionAttr['type'] == 'MO') ? Delivery::PROCESSING : Delivery::PENDING
                 ]);
 
-                // $itemKey = "dimfs{$value->ordered_item}";
-                // $rtlItemPrice = Cache::remember($itemKey, 3600, function() use ($value){
-                //     return ItemMaster::getPrice($value->ordered_item);
-                // });
+                $orderedItem = $value->ordered_item;
 
-                // $gboKey = "gbo{$value->ordered_item}";
-                // $gboItemPrice = Cache::remember($gboKey, 3600, function() use ($value){
-                //     return GashaponItemMaster::getPrice($value->ordered_item);
-                // });
+                $itemKey = "dimfs{$orderedItem}";
+                $rtlItemPrice = Cache::remember($itemKey, 3600, function() use ($orderedItem){
+                    $price = ItemMaster::getPrice($orderedItem);
+                    if(!$price){
+                        $price = GashaponItemMaster::getPrice($orderedItem);
+                    }
+                    return serialize($price);
+                });
 
-                $rtlItemPrice = ItemMaster::getPrice($value->ordered_item);
-                $gboItemPrice = GashaponItemMaster::getPrice($value->ordered_item);
+                // $rtlItemPrice = ItemMaster::getPrice($value->ordered_item);
+                // $gboItemPrice = GashaponItemMaster::getPrice($value->ordered_item);
 
                 // Step 2: Insert into `delivery_lines` table
                 $deliveryLine = $deliveryHeader->lines()->firstOrCreate([
@@ -140,7 +153,7 @@ class OraclePullController extends Controller
                     'ordered_item' => $value->ordered_item,
                     'ordered_item_id' => $value->ordered_item_id,
                     'shipped_quantity' => $value->shipped_quantity,
-                    'unit_price' => is_null($rtlItemPrice) ? $gboItemPrice : $rtlItemPrice,
+                    'unit_price' => (floatval($rtlItemPrice)) ?? '0.00',
                     'transaction_date' => $transactionDate
                 ]);
 

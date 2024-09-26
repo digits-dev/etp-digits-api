@@ -13,6 +13,7 @@ class GashaponItemMaster extends Model
     protected $table = 'gacha_item_masters';
 
     public function scopeGetPrice($query, $itemCode){
-        return $query->where('digits_code', $itemCode)->value('current_srp');
+        $item = $query->where('digits_code', $itemCode)->value('current_srp');
+        return $item ?? null;
     }
 }

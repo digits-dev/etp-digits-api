@@ -54,7 +54,8 @@ class ItemMaster extends Model
     }
 
     public function scopeGetPrice($query, $itemCode){
-        return $query->where('digits_code', $itemCode)->value('current_srp');
+        $item = $query->where('digits_code', $itemCode)->value('current_srp');
+        return $item ?? null;
     }
 
     public function deliveryLines() : HasMany
