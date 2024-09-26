@@ -1,18 +1,38 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Show the spinner and hide the table while fetching
+    document.getElementById('spinner').style.display = 'block';
+    document.getElementById('deliveryTable').style.display = 'none';
     // Function to fetch data from the route
     function fetchDeliveries() {
-        fetch('deliveries/etp-delivered-dr')  // Replace with your actual route
-            .then(response => response.json())
+        fetch('deliveries/etp-delivered-dr')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 populateTable(data.deliveries);
             })
-            .catch(error => console.error('Error fetching delivery data:', error));
+            .catch(error => {
+                displayErrorMessage('Failed to fetch delivery data. Please try again later.');
+                console.error('Error fetching delivery data:', error);
+            })
+            .finally(() => {
+                // Hide the spinner after the fetch completes
+                document.getElementById('spinner').style.display = 'none';
+            });
     }
 
     // Function to populate the table with data
     function populateTable(deliveries) {
         const tableBody = document.getElementById('deliveryTableBody');
         tableBody.innerHTML = ''; // Clear any existing content
+
+        if (deliveries.length === 0) {
+            displayErrorMessage('No delivery records found.');
+            return;
+        }
 
         deliveries.forEach(delivery => {
             const row = `
@@ -25,6 +45,22 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             tableBody.innerHTML += row;
         });
+
+        // Show the table after data is loaded
+        document.getElementById('deliveryTable').style.display = 'table';
+    }
+
+    // Function to display an error message in the table body
+    function displayErrorMessage(message) {
+        const tableBody = document.getElementById('deliveryTableBody');
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center text-danger">${message}</td>
+            </tr>
+        `;
+
+        // Show the table (even with an error message)
+        document.getElementById('deliveryTable').style.display = 'table';
     }
 
     // Function to filter the table based on search input
