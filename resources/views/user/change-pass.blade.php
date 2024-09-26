@@ -76,10 +76,10 @@
                         </div>
                     </div>
                     <ul class="list-unstyled mt-2">
-                        <li id="lengthRequirement" style="color: red;">At least 8 characters</li>
-                        <li id="uppercaseRequirement" style="color: red;">At least one uppercase letter</li>
-                        <li id="numberRequirement" style="color: red;">At least one number</li>
-                        <li id="specialCharRequirement" style="color: red;">At least one special character</li>
+                        <li id="lengthRequirement" style="color: red;">* Use at least 8 characters</li>
+                        <li id="uppercaseRequirement" style="color: red;">* Include at least one uppercase letter (A-Z)</li>
+                        <li id="numberRequirement" style="color: red;">* Add at least one number (0-9)</li>
+                        <li id="specialCharRequirement" style="color: red;">* Include at least one special character (like !, @, #, $)</li>
                     </ul>
                 </div>
                 <div class="mb-3">
