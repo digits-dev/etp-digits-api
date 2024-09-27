@@ -31,10 +31,13 @@ class Pullout extends Model
         'reasons_id',
         'channels_id',
         'stores_id',
+        'to_org_id',
         'received_date',
         'total_amount',
         'total_qty',
-        'status'
+        'status',
+        'transaction_date',
+        'interface_flag'
     ];
 
     public function calculateTotals(){
