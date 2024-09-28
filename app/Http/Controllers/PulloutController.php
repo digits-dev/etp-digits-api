@@ -3,13 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Pullout;
-use App\Models\PulloutLine;
-use App\Models\ItemSerial;
 use App\Models\Reason;
+use App\Models\StoreMaster;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
 
 class PulloutController extends Controller
 {
@@ -34,7 +33,7 @@ class PulloutController extends Controller
         $rules = [
             'data' => 'required|array',
             'data.*.document_number' => 'required|integer',
-            'data.*.wh_from' => 'required|string|max:255',
+            'data.*.wh_from' => 'required|string|exists:store_masters,warehouse_code',
             'data.*.wh_to' => 'required|string|in:0311,0312',
             'data.*.reason' => 'required|string|exists:reasons,pullout_reason',
             'data.*.transaction_type' => 'required|string|in:STW,STR',
@@ -66,12 +65,19 @@ class PulloutController extends Controller
             // Iterate over each pullout in the data array
             foreach ($requestData['data'] as $pullout) {
                 // Save the pullout Header
+                $store = Cache::remember("org{$pullout['wh_from']}", 3600, function() use ($pullout){
+                    return StoreMaster::getPulloutDetails($pullout['wh_from'])->toArray();
+                });
+
                 $pulloutHeader = Pullout::firstOrCreate([
                     'document_number' => $pullout['document_number']
                 ],[
                     'document_number' => $pullout['document_number'],
                     'wh_from' => $pullout['wh_from'],
                     'wh_to' => $pullout['wh_to'],
+                    'to_org_id' => $store['to_org_id'] ?? 223,
+                    'channels_id' => $store['channels_id'],
+                    'stores_id' => $store['id'],
                     'reasons_id' => Reason::getReason($pullout['reason'])->id,
                     'transaction_type' => $pullout['transaction_type'],
                 ]);
