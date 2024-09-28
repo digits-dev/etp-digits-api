@@ -23,6 +23,9 @@ class CBHook extends Controller {
                 Session::flush();
                 return redirect()->route('getLogin')->with('message', 'The user does not exist!');
             }
+
+            Session::put('store_id', $users->store_masters_id);
+            Session::put('channel_id', $users->channels_id);
         }
 
         $today = Carbon::now()->format('Y-m-d H:i:s');

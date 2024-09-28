@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Delivery;
 use App\Models\EtpDelivery;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use Illuminate\Support\Facades\Session;
 
 	class AdminDeliveriesController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -99,6 +100,14 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 	        //Your code here
 
 	    }
+
+        public function hook_query_index(&$query){
+            if(!CRUDBooster::isSuperadmin()){
+                $storeAccess = Session::get('store_id');
+                $channelAccess = Session::get('channel_id');
+                $query->where('stores_id',$storeAccess);
+            }
+        }
 
         public function getDetail($id){
 

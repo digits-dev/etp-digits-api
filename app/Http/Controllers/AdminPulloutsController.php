@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Pullout;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use Illuminate\Support\Facades\Session;
 
 	class AdminPulloutsController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -51,6 +52,14 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
             # END FORM DO NOT REMOVE THIS LINE
 
 	    }
+
+        public function hook_query_index(&$query){
+            if(!CRUDBooster::isSuperadmin()){
+                $storeAccess = Session::get('store_id');
+                $channelAccess = Session::get('channel_id');
+                $query->where('stores_id',$storeAccess);
+            }
+        }
 
         public function getDetail($id) {
 
