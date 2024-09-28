@@ -17,7 +17,7 @@ class CreateChannelsTable extends Migration
             $table->id();
             $table->string('channel_code',5)->nullable();
             $table->string('channel_description',20)->nullable();
-            $table->enum('status',['ACTIVE','INACTIVE'])->default('ACTIVE')->nullable();
+            $table->string('status',10)->default('ACTIVE')->nullable();
             $table->integer('created_by')->unsigned()->nullable();
             $table->integer('updated_by')->unsigned()->nullable();
             $table->timestamps();

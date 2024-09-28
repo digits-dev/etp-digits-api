@@ -12,4 +12,8 @@ class Channel extends Model
     use SoftDeletes;
 
     protected $guarded = [];
+
+    public function scopeActive(){
+        return $this->where('status','ACTIVE');
+    }
 }
