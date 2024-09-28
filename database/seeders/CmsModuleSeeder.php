@@ -78,6 +78,15 @@ class CmsModuleSeeder extends Seeder
                 'is_protected' => 0,
                 'is_active'    => 0
             ],
+            [
+                'name'         => 'Channel',
+                'icon'         => 'fa fa-circle-o',
+                'path'         => 'channels',
+                'table_name'   => 'channels',
+                'controller'   => 'AdminChannelsController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
 
         ];
 
