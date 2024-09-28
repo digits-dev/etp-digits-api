@@ -129,6 +129,26 @@ return [
             ]) : [],
         ],
 
+        'aimfs' => [
+            'driver' => 'mysql',
+            'url' => env('DATABASE_URL_AIMFS'),
+            'host' => env('DB_HOST_AIMFS', '127.0.0.1'),
+            'port' => env('DB_PORT_AIMFS', '3306'),
+            'database' => env('DB_DATABASE_AIMFS', 'forge'),
+            'username' => env('DB_USERNAME_AIMFS', 'forge'),
+            'password' => env('DB_PASSWORD_AIMFS', ''),
+            'unix_socket' => env('DB_SOCKET_AIMFS', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
         'masterfile' => [
             'driver' => 'mysql',
             'url' => env('DATABASE_URL_MASTER'),

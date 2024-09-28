@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminItem;
+use App\Models\GashaponItemMaster;
 use App\Models\ItemMaster;
+use App\Models\RmaItem;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
 
 class ItemMasterController extends Controller
@@ -19,13 +23,49 @@ class ItemMasterController extends Controller
             ]);
 
             // Proceed with the logic if validation passes
-            $items = [];
             $items = ItemMaster::getItems()
                 ->whereBetween('item_masters.approved_at', [$request->datefrom, $request->dateto])
                 ->orderBy('item_masters.digits_code','ASC')->paginate(50);
 
-            $data = $items->toArray();
-            unset($data['links']);
+            $gachaItems = GashaponItemMaster::getItems()
+                ->whereBetween('gacha_item_masters.approved_at', [$request->datefrom, $request->dateto])
+                ->orderBy('gacha_item_masters.digits_code','ASC')->paginate(50);
+
+            //add rma items
+            $rmaItems = RmaItem::getItems()
+                ->whereBetween('rma_item_masters.approved_at', [$request->datefrom, $request->dateto])
+                ->orderBy('rma_item_masters.digits_code','ASC')->paginate(50);
+
+            //add admin items
+            $adminItems = AdminItem::getItems()
+                ->whereBetween('digits_imfs.is_approved_at', [$request->datefrom, $request->dateto])
+                ->orderBy('digits_imfs.digits_code','ASC')->paginate(50);
+
+            // $data = $items->toArray();
+            // unset($data['links']);
+
+            // Combine the data arrays, but handle the pagination metadata separately
+            $combinedData = array_merge(
+                $items->items(),
+                $gachaItems->items(),
+                $rmaItems->items(),
+                $adminItems->items()
+            );
+
+            // Create a new paginator with the combined data
+            $perPage = 50;
+            $total = $items->total() + $gachaItems->total() + $rmaItems->total() + $adminItems->total(); // Total items from both paginators
+
+            $data = new LengthAwarePaginator(
+                $combinedData,                    // Combined items array
+                $total,                           // Total items count
+                $perPage,                         // Items per page
+                $items->currentPage(),            // Use current page of the first paginator
+                ['path' => $request->url()]       // Set the base URL for pagination links
+            );
+
+            // Optionally: If you need to unset or modify specific fields like 'links'
+            // $data->unset('links'); // Not necessary for the paginator
 
             return response()->json([
                 'api_status' => 1,
