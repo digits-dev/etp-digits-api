@@ -1,9 +1,16 @@
 <?php namespace App\Http\Controllers;
 
 use App\Models\StoreMaster;
+use App\Services\ChannelService;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
 	class AdminStoreMastersController extends \crocodicstudio\crudbooster\controllers\CBController {
+
+        protected $activeChannel;
+
+        public function __construct(ChannelService $channelService) {
+            $this->activeChannel = $channelService->getChannels();
+        }
 
 	    public function cbInit() {
 
@@ -31,6 +38,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			$this->col[] = ["label"=>"Warehouse Code","name"=>"warehouse_code"];
 			$this->col[] = ["label"=>"Warehouse Type","name"=>"warehouse_type"];
 			$this->col[] = ["label"=>"Store Name","name"=>"store_name"];
+            $this->col[] = ["label"=>"Channel","name"=>"channels_id","join"=>"channels,channel_description"];
 			$this->col[] = ["label"=>"SO Store Name","name"=>"bea_so_store_name"];
 			$this->col[] = ["label"=>"MO Store Name","name"=>"bea_mo_store_name"];
 			$this->col[] = ["label"=>"DOO Subinventory","name"=>"doo_subinventory"];
@@ -67,6 +75,9 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
             if(CRUDBooster::isUpdate() && CRUDBooster::isSuperadmin()) {
                 $this->button_selected[] = ['label'=>'Set Status ACTIVE','icon'=>'fa fa-check-circle','name'=>'set_status_active'];
 				$this->button_selected[] = ['label'=>'Set Status INACTIVE','icon'=>'fa fa-times-circle','name'=>'set_status_inactive'];
+                foreach ($this->activeChannel as $keyChannel => $valueChannel) {
+                    $this->button_selected[] = ["label"=>"Set Channel as {$valueChannel->channel_code}","icon"=>"fa fa-check-circle","name"=>"set_channel_{$valueChannel->channel_code}"];
+                }
             }
 
 	        $this->script_js = "
@@ -182,7 +193,13 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
                     $value['status'] = 'INACTIVE';
                     break;
                 default:
-                    # code...
+                    {
+                        foreach ($this->activeChannel as $keyChannel => $valueChannel) {
+                            if($button_name == "set_channel_{$valueChannel->channel_code}"){
+                                $value['channels_id'] = $valueChannel->id;
+                            }
+                        }
+                    }
                     break;
             }
 
