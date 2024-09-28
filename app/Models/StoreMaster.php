@@ -24,4 +24,10 @@ class StoreMaster extends Model
         'created_by',
         'updated_by'
     ];
+
+    public function scopeGetPulloutDetails($query, $whCode){
+        return $query->select(['id','channels_id','to_org_id'])
+            ->where('warehouse_code', $whCode)
+            ->first();
+    }
 }
