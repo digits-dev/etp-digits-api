@@ -2,6 +2,7 @@
 
 use App\Imports\UserImport;
 use App\Models\CmsUser;
+use App\Services\ChannelService;
 use crocodicstudio\crudbooster\controllers\CBController;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Exception;
@@ -12,6 +13,11 @@ use Maatwebsite\Excel\Validators\ValidationException;
 
 class AdminCmsUsersController extends CBController {
 
+    protected $activeChannel;
+
+    public function __construct(ChannelService $channelService) {
+        $this->activeChannel = $channelService->getChannels();
+    }
 
 	public function cbInit() {
 		# START CONFIGURATION DO NOT REMOVE THIS LINE
@@ -28,6 +34,8 @@ class AdminCmsUsersController extends CBController {
 		$this->col[] = ["label"=>"Name","name"=>"name"];
 		$this->col[] = ["label"=>"Email","name"=>"email"];
 		$this->col[] = ["label"=>"Privilege","name"=>"id_cms_privileges","join"=>"cms_privileges,name"];
+		$this->col[] = ["label"=>"Channel","name"=>"channels_id","join"=>"channels,channel_code"];
+		$this->col[] = ["label"=>"Store","name"=>"store_masters_id","join"=>"store_masters,bea_so_store_name"];
 		$this->col[] = ["label"=>"Photo","name"=>"photo","image"=>1];
         $this->col[] = ["label"=>"Status","name"=>"status"];
 		# END COLUMNS DO NOT REMOVE THIS LINE
@@ -38,6 +46,8 @@ class AdminCmsUsersController extends CBController {
 		$this->form[] = ["label"=>"Email","name"=>"email",'type'=>'email','validation'=>'required|email|unique:cms_users,email,'.CRUDBooster::getCurrentId(),'width'=>'col-sm-5'];
 		$this->form[] = ["label"=>"Photo","name"=>"photo","type"=>"upload","help"=>"Recommended resolution is 200x200px",'validation'=>'required|image|max:1000','resize_width'=>90,'resize_height'=>90,'width'=>'col-sm-5'];
 		$this->form[] = ["label"=>"Privilege","name"=>"id_cms_privileges","type"=>"select",'validation'=>'required',"datatable"=>"cms_privileges,name",'width'=>'col-sm-5'];
+		$this->form[] = ["label"=>"Channel","name"=>"channels_id","type"=>"select",'validation'=>'required',"datatable"=>"channels,channel_description","datatable_where"=>"status='ACTIVE'",'width'=>'col-sm-5'];
+		$this->form[] = ["label"=>"Store","name"=>"store_masters_id","type"=>"select",'validation'=>'required',"datatable"=>"store_masters,bea_so_store_name",'parent_select'=>'channels_id','width'=>'col-sm-5'];
 		$this->form[] = ["label"=>"Password","name"=>"password","type"=>"password","help"=>"Please leave empty if not changed",'width'=>'col-sm-5'];
 		if((CRUDBooster::isSuperadmin() || CRUDBooster::myPrivilegeName() == "ADMIN") && (in_array(CRUDBooster::getCurrentMethod(),['getEdit','postEditSave']))){
 		    $this->form[] = ["label"=>"Status","name"=>"status","type"=>"select","validation"=>"required","width"=>"col-sm-5","dataenum"=>"ACTIVE;INACTIVE"];
@@ -49,13 +59,16 @@ class AdminCmsUsersController extends CBController {
 			$this->button_selected[] = ["label"=>"Set Status ACTIVE ","icon"=>"fa fa-check-circle","name"=>"set_status_ACTIVE"];
 			$this->button_selected[] = ["label"=>"Set Status INACTIVE","icon"=>"fa fa-times-circle","name"=>"set_status_INACTIVE"];
 			$this->button_selected[] = ["label"=>"Reset Password","icon"=>"fa fa-refresh","name"=>"reset_password"];
+            foreach ($this->activeChannel as $keyChannel => $valueChannel) {
+                $this->button_selected[] = ["label"=>"Set Channel as {$valueChannel->channel_code}","icon"=>"fa fa-check-circle","name"=>"set_channel_{$valueChannel->channel_code}"];
+            }
 		}
 
         $this->table_row_color = array();
         $this->table_row_color[] = ["condition"=>"[status] == 'INACTIVE'","color"=>"danger"];
 
         $this->index_button = array();
-        if(CRUDBooster::isSuperAdmin()){
+        if(CRUDBooster::isSuperAdmin() && CRUDBooster::getCurrentMethod() == 'getIndex'){
             $this->index_button[] = ["label"=>"Upload Users","url"=>"javascript:uploadUsers()","icon"=>"fa fa-upload","color"=>"warning"];
         }
 
@@ -115,6 +128,13 @@ class AdminCmsUsersController extends CBController {
                 $data['password'] = bcrypt('qwerty');
 				break;
 			default:
+                {
+                    foreach ($this->activeChannel as $keyChannel => $valueChannel) {
+                        if($button_name == "set_channel_{$valueChannel->channel_code}"){
+                            $data['channels_id'] = $valueChannel->id;
+                        }
+                    }
+                }
 				break;
 		}
 
