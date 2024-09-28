@@ -13,6 +13,9 @@ class OracleShipmentHeader extends Model
     protected $table = 'RCV_SHIPMENT_HEADERS';
 
     public function scopeGetShipmentByRef($query, $order_number){
-        return $query->where('shipment_num', $order_number)->first();
+        return $query->select('shipment_header_id')
+            ->where('shipment_num', $order_number)
+            ->orderBy('shipment_header_id', 'DESC')
+            ->first();
     }
 }

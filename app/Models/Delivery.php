@@ -15,6 +15,7 @@ class Delivery extends Model
     const PENDING = 0;
     const PROCESSING = 1;
     const RECEIVED = 2;
+    const PROCESSING_DOTR = 3;
 
     protected $table = 'deliveries';
     protected $fillable = [
@@ -51,20 +52,44 @@ class Delivery extends Model
 
     public function scopeGetProcessing(){
         return $this->where('status', self::PROCESSING)
-            ->where('deliveries.interface_flag', 0)
+            ->where('interface_flag', 1)
+            ->select('order_number')
+            ->orderBy('transaction_date','asc');
+    }
+
+    public function scopeGetPendingDotr(){
+        return $this->where('status', self::PENDING)
+            ->where('interface_flag', 0)
+            ->select('order_number','dr_number','to_org_id as org_id')
+            ->orderBy('transaction_date','asc');
+    }
+
+    public function scopeGetProcessingDotr(){
+        return $this->where('status', self::PROCESSING_DOTR)
+            ->where('interface_flag', 1)
             ->select('order_number')
             ->orderBy('transaction_date','asc');
     }
 
     public function scopeGetProcessingLines(){
+        return self::getHeadLineQuery()
+            ->where('deliveries.status', self::PROCESSING)
+            ->where('deliveries.interface_flag', 0);
+    }
+
+    public function scopeGetPendingDotrLines(){
+        return self::getHeadLineQuery()
+            ->where('deliveries.status', self::PENDING)
+            ->where('deliveries.interface_flag', 0);
+    }
+
+    private function getHeadLineQuery(){
         return $this->join('delivery_lines', 'deliveries.id', 'delivery_lines.deliveries_id')
             ->join('store_masters', 'deliveries.to_warehouse_id', 'store_masters.warehouse_code')
-            ->where('deliveries.status', self::PROCESSING)
-            ->where('deliveries.interface_flag', 0)
             ->where('deliveries.transaction_type', 'MO')
             ->select(
                 'deliveries.dr_number',
-                'deliveries.locators_id',
+                'deliveries.locators_id as locator_id',
                 DB::raw("(SELECT 'STAGINGMO') as from_subinventory"),
                 'deliveries.from_org_id as org_id',
                 'deliveries.to_org_id as transfer_org_id',

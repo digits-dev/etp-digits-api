@@ -13,7 +13,7 @@ class PushDotInterfaceCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'interface:push-dot';
+    protected $signature = 'interface:push-dot-dotr';
 
     /**
      * The console command description.
@@ -43,7 +43,12 @@ class PushDotInterfaceCommand extends Command
      */
     public function handle()
     {
-        $this->info('starting to run task...');
+        $this->info('Running push dot interface.');
         $this->oraclePushController->pushDotInterface($this->deliveryInterfaceService);
+        $this->info('Done push dot interface.');
+
+        $this->info('Running push dotr interface.');
+        $this->oraclePushController->pushDotrInterface($this->deliveryInterfaceService);
+        $this->info('Done push dotr interface.');
     }
 }

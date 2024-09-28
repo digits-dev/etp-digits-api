@@ -28,7 +28,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('task:orderpull')->hourly();
-        $schedule->command('interface:push-dot')->everyMinute();
+        $schedule->command('interface:push-dot-dotr')->everyFifteenMinutes();
 
         $schedule->call(function(){
 
