@@ -41,7 +41,7 @@ class RmaItem extends Model
                 'rma_item_masters.brands_id',
                 'rma_item_masters.model',
                 DB::raw("(select '0') as models_id"),
-                'rma_item_masters.compatibility',
+                DB::raw("(select '') as compatibility"),
                 DB::raw("(select '0') as compatibility_id"),
                 'rma_subclasses.subclass_description as subclass',
                 'rma_item_masters.rma_subclasses_id as subclasses_id',
