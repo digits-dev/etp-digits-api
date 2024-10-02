@@ -27,10 +27,6 @@ class ItemMasterController extends Controller
                 ->whereBetween('item_masters.approved_at', [$request->datefrom, $request->dateto])
                 ->orderBy('item_masters.digits_code','ASC')->paginate(50);
 
-            $gachaItems = GashaponItemMaster::getItems()
-                ->whereBetween('gacha_item_masters.approved_at', [$request->datefrom, $request->dateto])
-                ->orderBy('gacha_item_masters.digits_code','ASC')->paginate(50);
-
             //add rma items
             $rmaItems = RmaItem::getItems()
                 ->whereBetween('rma_item_masters.approved_at', [$request->datefrom, $request->dateto])
@@ -47,14 +43,13 @@ class ItemMasterController extends Controller
             // Combine the data arrays, but handle the pagination metadata separately
             $combinedData = array_merge(
                 $items->items(),
-                $gachaItems->items(),
                 $rmaItems->items(),
                 $adminItems->items()
             );
 
             // Create a new paginator with the combined data
             $perPage = 50;
-            $total = $items->total() + $gachaItems->total() + $rmaItems->total() + $adminItems->total(); // Total items from both paginators
+            $total = $items->total() + $rmaItems->total() + $adminItems->total(); // Total items from both paginators
 
             $data = new LengthAwarePaginator(
                 $combinedData,                    // Combined items array
