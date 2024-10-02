@@ -52,7 +52,8 @@ class Delivery extends Model
 
     public function scopeGetProcessing(){
         return $this->where('status', self::PROCESSING)
-            ->where('interface_flag', 1)
+            ->where('interface_flag', 0)
+            ->where('transaction_type', 'MO')
             ->select('order_number')
             ->orderBy('transaction_date','asc');
     }
@@ -60,6 +61,7 @@ class Delivery extends Model
     public function scopeGetPendingDotr(){
         return $this->where('status', self::PENDING)
             ->where('interface_flag', 0)
+            ->where('transaction_type', 'MO')
             ->select('order_number','dr_number','to_org_id as org_id')
             ->orderBy('transaction_date','asc');
     }
