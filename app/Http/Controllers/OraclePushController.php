@@ -16,6 +16,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use PDO;
 
 class OraclePushController extends Controller
 {
@@ -46,14 +47,14 @@ class OraclePushController extends Controller
 
         //update interface flag to headers
         foreach ($deliveryInterface->getProcessingDelivery() ?? [] as $key => $value) {
-            $dr = Delivery::where('order_number', $value['order_number'])->first();
-            $dr->interface_flag = 1;
-            $dr->save();
+            $drhead = Delivery::where('order_number', $value['order_number'])->first();
+            $drhead->interface_flag = 1;
+            $drhead->save();
         }
     }
 
     public function pushDotrInterface(DeliveryInterfaceService $deliveryInterface){
-        foreach ($deliveryInterface->getPendingDotrDelivery() ?? [] as $key => $value) {
+        foreach ($deliveryInterface->getProcessingDotrDelivery() ?? [] as $key => $value) {
             $this->processPushtoOrderRcvInterface('DOTR', $value);
             $shipment = OracleShipmentHeader::query()->getShipmentByRef($value['dr_number']);
             $headerId = ($shipment->getModel()->exists) ? $shipment->shipment_header_id : null;
@@ -65,6 +66,7 @@ class OraclePushController extends Controller
             $drInterfaced = Delivery::where('order_number', $value['order_number'])->first();
             $drInterfaced->update([
                 'status' => Delivery::PROCESSING_DOTR,
+                'shipment_header_id' => $headerId,
                 'interface_flag' => 1
             ]);
 
@@ -143,25 +145,28 @@ class OraclePushController extends Controller
             'EXPECTED_RECEIPT_DATE' => $this->sysDate,
             'VALIDATION_FLAG' => 'Y'
         ];
-
+        $ref = [];
         switch ($transactionType) {
             case 'MOR': case 'DOTR':
                 $details['RECEIPT_SOURCE_CODE'] = 'INVENTORY';
                 $details['AUTO_TRANSACT_CODE'] = 'DELIVER';
                 $details['SHIPMENT_NUM'] = $data['dr_number'];
                 $details['SHIP_TO_ORGANIZATION_ID'] = $data['org_id'];
+                $ref['SHIPMENT_NUM'] = $data['dr_number'];
                 break;
             case 'SOR':
                 $details['RECEIPT_SOURCE_CODE'] = 'CUSTOMER';
                 $details['CUSTOMER_ID'] = $data['customer_id'];
+                $ref['HEADER_INTERFACE_ID'] = $this->nextHeader;
                 break;
             default:
                 # code...
                 break;
         }
+
         try {
             DB::beginTransaction();
-            OracleOrderReceivingHeaderInterface::insert($details);
+            OracleOrderReceivingHeaderInterface::updateOrInsert($ref, $details);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
@@ -199,13 +204,14 @@ class OraclePushController extends Controller
             'VALIDATION_FLAG' => 'Y'
         ];
 
+        $ref = [];
         switch ($transactionType) {
             case 'MOR': case 'DOTR':
-                $details['SHIPMENT_NUM'] = $data['dr_number'];
                 $details['RECEIPT_SOURCE_CODE'] = 'INVENTORY';
                 $details['SOURCE_DOCUMENT_CODE'] = 'INVENTORY';
                 $details['SHIPMENT_HEADER_ID'] = $data['shipment_header_id'];
                 $details['SHIPMENT_LINE_ID'] = $data['shipment_line_id'];
+                $ref['SHIPMENT_LINE_ID'] = $data['shipment_line_id'];
                 break;
             case 'SOR':
                 $details['OE_ORDER_HEADER_ID'] = $data['oe_order_header_id'];
@@ -214,6 +220,7 @@ class OraclePushController extends Controller
                 $details['CUSTOMER_SITE_ID']  = $data['customer_site_id'];
                 $details['RECEIPT_SOURCE_CODE'] = 'CUSTOMER';
                 $details['SOURCE_DOCUMENT_CODE'] = 'RMA';
+                $ref['OE_ORDER_LINE_ID']  = $data['oe_order_line_id'];
                 break;
             default:
                 # code...
@@ -222,7 +229,7 @@ class OraclePushController extends Controller
 
         try {
             DB::beginTransaction();
-            OracleOrderReceivingLineInterface::insert($details);
+            OracleOrderReceivingLineInterface::updateOrInsert($ref, $details);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
@@ -249,6 +256,8 @@ class OraclePushController extends Controller
             'TRANSACTION_MODE' => 3,
         ];
 
+        $ref = [];
+
         switch ($transactionType) {
             case 'DOT':
                 $details['SOURCE_CODE'] = 'BEAPOSMW';
@@ -257,6 +266,7 @@ class OraclePushController extends Controller
                 $details['TRANSACTION_QUANTITY'] = ($data['quantity'])*(-1);
                 $details['LOCATOR_ID'] = $data['locator_id'];
                 $details['SHIPMENT_NUMBER'] = $data['dr_number'];
+                $ref['SHIPMENT_NUMBER'] = $data['dr_number'];
             break;
             case 'MOR':
                 $details['SOURCE_CODE'] = 'MIDDLEWARE';
@@ -265,6 +275,7 @@ class OraclePushController extends Controller
                 $details['TRANSACTION_QUANTITY'] = $data['quantity'];
                 $details['REASON_ID'] = $data['reason_id'];
                 $details['SHIPMENT_NUMBER'] = $data['dr_number'];
+                $ref['SHIPMENT_NUMBER'] = $data['dr_number'];
             break;
             case 'SIT':
                 $details['SOURCE_CODE'] = 'INV';
@@ -282,6 +293,7 @@ class OraclePushController extends Controller
                 $details['SCHEDULED_FLAG'] = 2;
                 $details['TRANSACTION_REFERENCE'] = $$data['dr_number'];
                 $details['TRANSACTION_SOURCE_NAME'] = $$data['dr_number'];
+                $ref['TRANSACTION_REFERENCE'] = $data['dr_number'];
             break;
 
             default:
@@ -290,12 +302,33 @@ class OraclePushController extends Controller
         }
         try {
             DB::beginTransaction();
-            OracleTransactionInterface::insert($details);
+            OracleTransactionInterface::updateOrInsert($ref, $details);
             DB::commit();
         } catch (Exception $e) {
             DB::rollBack();
             Log::error($e->getMessage());
         }
+    }
+
+    public function acceptedDate($p_delivery_id)
+    {
+        try {
+            DB::connection('oracle')->statement('BEGIN ACCEPTED_DATE_BPG(:p_delivery_id); END;',
+                ['p_delivery_id' => $p_delivery_id]);
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+        }
+    }
+
+    public function closeTrip($p_delivery_id)
+    {
+        try {
+            DB::connection('oracle')->statement('BEGIN CLOSE_TRIP_BPG(:p_delivery_id); END;',
+                ['p_delivery_id' => $p_delivery_id]);
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+        }
+
     }
 
 }

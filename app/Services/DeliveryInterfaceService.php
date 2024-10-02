@@ -21,4 +21,12 @@ class DeliveryInterfaceService
     public function getPendingDotrDelivery(){
         return Delivery::getPendingDotr()->get()->toArray();
     }
+
+    public function getProcessingDotrDeliveryLines(){
+        return Delivery::getProcessingDotrLines()->get()->toArray();
+    }
+
+    public function getProcessingDotrDelivery(){
+        return Delivery::getProcessingDotr()->get()->toArray();
+    }
 }

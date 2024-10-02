@@ -34,7 +34,8 @@ class Delivery extends Model
         'total_qty',
         'status',
         'transaction_date',
-        'interface_flag'
+        'interface_flag',
+        'shipment_header_id'
     ];
 
     public function lines() : HasMany {
@@ -52,7 +53,7 @@ class Delivery extends Model
 
     public function scopeGetProcessing(){
         return $this->where('status', self::PROCESSING)
-            ->where('interface_flag', 0)
+            ->where('interface_flag', 1)
             ->where('transaction_type', 'MO')
             ->select('order_number')
             ->orderBy('transaction_date','asc');
@@ -62,21 +63,28 @@ class Delivery extends Model
         return $this->where('status', self::PENDING)
             ->where('interface_flag', 0)
             ->where('transaction_type', 'MO')
-            ->select('order_number','dr_number','to_org_id as org_id')
+            ->select('order_number','dr_number','to_org_id as org_id','to_warehouse_id')
             ->orderBy('transaction_date','asc');
     }
 
     public function scopeGetProcessingDotr(){
         return $this->where('status', self::PROCESSING_DOTR)
+            ->where('interface_flag', 0)
+            ->select('order_number','dr_number','to_org_id as org_id','to_warehouse_id')
+            ->orderBy('transaction_date','asc');
+    }
+
+    public function scopeGetDotrProcessing(){
+        return $this->where('status', self::PROCESSING_DOTR)
             ->where('interface_flag', 1)
-            ->select('order_number')
+            ->select('order_number','dr_number','to_org_id as org_id','to_warehouse_id')
             ->orderBy('transaction_date','asc');
     }
 
     public function scopeGetProcessingLines(){
         return self::getHeadLineQuery()
             ->where('deliveries.status', self::PROCESSING)
-            ->where('deliveries.interface_flag', 0);
+            ->where('deliveries.interface_flag', 1);
     }
 
     public function scopeGetPendingDotrLines(){

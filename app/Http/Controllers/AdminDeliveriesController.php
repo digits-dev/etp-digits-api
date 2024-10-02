@@ -78,6 +78,7 @@ use Illuminate\Support\Facades\Session;
                             <th>From Warehouse</th>
                             <th>To Warehouse</th>
                             <th>Delivery Number</th>
+                            <th>Received Date</th>
                             <th>Status</th>
                             </tr>
                         </thead>

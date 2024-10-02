@@ -28,7 +28,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('task:orderpull')->hourly();
-        $schedule->command('interface:push-dot-dotr')->everyFifteenMinutes();
+        // $schedule->command('interface:push-dot-dotr')->everyFifteenMinutes();
 
         $schedule->call(function(){
 
@@ -50,11 +50,15 @@ class Kernel extends ConsoleKernel
         $schedule->call(function(){
             $oracle = new OraclePullController();
             $oracle->processOrgTransfers();
-            $oracle->processReturnTransactions();
+            // $oracle->processOrgTransfersReceiving();
+            // $oracle->processReturnTransactions();
             $oracle->updateOracleItemId();
         })->everyMinute();
 
-
+        $schedule->call(function(){
+            $oracle = new OraclePullController();
+            $oracle->updateOrgTransfers();
+        })->everyFiveMinutes()->between('01:00:00', '05:00:00');
 
     }
 

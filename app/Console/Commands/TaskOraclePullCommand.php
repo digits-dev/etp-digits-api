@@ -21,15 +21,16 @@ class TaskOraclePullCommand extends Command
      * @var string
      */
     protected $description = 'Execute the scheduled task to pull Oracle orders.';
-
+    protected $pullController;
     /**
      * Create a new command instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(OraclePullController $pullController )
     {
         parent::__construct();
+        $this->pullController = $pullController;
     }
 
     /**
@@ -43,7 +44,7 @@ class TaskOraclePullCommand extends Command
         $this->info('Scheduled task started: Oracle Pull Task.');
 
         // Perform the task
-        $result = $this->performOrderPull();
+        $result = self::performOrderPull();
 
         // Add console output and log message
         if ($result) {
@@ -57,9 +58,8 @@ class TaskOraclePullCommand extends Command
 
     private function performOrderPull()
     {
-        $oracle = new OraclePullController();
-        $oracle->moveOrderPull(request());
-        $oracle->salesOrderPull(request());
+        $this->pullController->moveOrderPull(request());
+        $this->pullController->salesOrderPull(request());
         return true;
     }
 }

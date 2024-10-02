@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Delivery;
+use App\Models\EtpDelivery;
 use App\Models\GashaponItemMaster;
 use App\Models\Item;
 use App\Models\ItemMaster;
@@ -223,6 +224,68 @@ class OraclePullController extends Controller
                 }
             }
         }
+    }
+
+    public function processOrgTransfersReceiving(){
+        $deliveries = Delivery::getPendingDotr()->get();
+        foreach ($deliveries ?? [] as $key => $dr) {
+            $orders = EtpDelivery::query()->getReceivedDeliveryByWh($dr->order_number, $dr->to_warehouse_id)->first();
+            if($orders->getModel()->exists){
+                DB::beginTransaction();
+                try {
+                    $delivery = Delivery::where('order_number', $dr->order_number)->first();
+                    if ($delivery) {
+                        $delivery->update([
+                            'status' => Delivery::PROCESSING_DOTR,
+                            'interface_flag' => 0,
+                        ]);
+
+                        $delivery->lines()->update(['interface_flag' => 0]);
+                    }
+                    DB::commit();
+                } catch (Exception $ex) {
+                    DB::rollBack();
+                    Log::error($ex->getMessage());
+                }
+            }
+        }
+    }
+
+    public function updateOrgTransfers(){
+        $deliveries = Delivery::getDotrProcessing()->get();
+        foreach ($deliveries ?? [] as $key => $dr) {
+            $orders = OracleShipmentHeader::query()->getRcvShipmentByRef($dr->dr_number);
+            if(sizeof($orders) > 0){
+                $statusCodes = array_map(function($item) {
+                    return $item['shipment_line_status_code'];
+                }, $orders->toArray());
+
+                $distinctStatusCodes = array_unique($statusCodes);
+
+                if($distinctStatusCodes[0] == "FULLY RECEIVED"){
+                    DB::beginTransaction();
+                    try {
+                        $delivery = Delivery::where('order_number', $dr->order_number)->first();
+                        if ($delivery) {
+                            $delivery->update([
+                                'status' => Delivery::RECEIVED,
+                                'interface_flag' => 0,
+                            ]);
+
+                            $delivery->lines()->update(['interface_flag' => 0]);
+                        }
+                        DB::commit();
+                    } catch (Exception $ex) {
+                        DB::rollBack();
+                        Log::error($ex->getMessage());
+                    }
+                }
+            }
+        }
+    }
+
+    public function updateSalesOrders(){
+
     }
 
     public function processReturnTransactions(){

@@ -34,10 +34,28 @@ class EtpDelivery extends Model
         return $query->where('Company', 100)
             ->where('Division', 100)
             ->where('TransactionStatus', 1) //received
-            ->where('ToWarehouse', '0921')
+            ->where('ToWarehouse', '0572')
             ->select(
                 'OrderNumber',
                 'ReceivingDate',
+                'ReceivingTime',
+                'ToWarehouse',
+                'Warehouse',
+                'Status',
+                'TransactionId'
+            );
+    }
+
+    public function scopeGetReceivedDeliveryByWh($query, $drNumber, $whCode){
+        return $query->where('Company', 100)
+            ->where('Division', 100)
+            ->where('TransactionStatus', 1) //received
+            ->where('ToWarehouse', $whCode)
+            ->where('OrderNumber', $drNumber)
+            ->select(
+                'OrderNumber',
+                'ReceivingDate',
+                'ReceivingTime',
                 'ToWarehouse',
                 'Warehouse',
                 'Status',
