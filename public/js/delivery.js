@@ -34,12 +34,24 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+
         deliveries.forEach(delivery => {
+            const dateTimeString = `${delivery.ReceivingDate} ${delivery.ReceivingTime}`;
+            const year = dateTimeString.slice(0, 4);
+            const month = dateTimeString.slice(4, 6);
+            const day = dateTimeString.slice(6, 8);
+            const hours = dateTimeString.slice(9, 11);
+            const minutes = dateTimeString.slice(11, 13);
+            const seconds = dateTimeString.slice(13, 15);
+
+            // Create a JavaScript Date object
+            const date = new Date(`${year}-${month}-${day}T${hours}:${minutes}:${seconds}`);
             const row = `
                 <tr>
                     <td>${delivery.from_wh.store_name}</td>
                     <td>${delivery.to_wh.store_name}</td>
                     <td>${delivery.OrderNumber}</td>
+                    <td>${date.toLocaleDateString('en-US')} ${date.toLocaleTimeString('en-US')}</td>
                     <td>${delivery.status.order_status}</td>
                 </tr>
             `;
