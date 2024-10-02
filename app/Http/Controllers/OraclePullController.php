@@ -90,10 +90,12 @@ class OraclePullController extends Controller
             }
 
             $orders = $order->get();
+
+            $transaction_date = Carbon::parse($date_from)->format("Y-m-d");
             $transactions_attr = [
                 'type' => 'SO'
             ];
-            $this->processOrders($orders, $transactions_attr, Carbon::parse($date_from)->format("Y-m-d"));
+            $this->processOrders($orders, $transactions_attr, $transaction_date);
         }
 
     }
@@ -200,13 +202,20 @@ class OraclePullController extends Controller
 
     public function processOrgTransfers(){
         $deliveries = Delivery::getProcessing()->get();
-        foreach ($deliveries as $key => $dr) {
+        foreach ($deliveries ?? [] as $key => $dr) {
             $orders = OracleShipmentHeader::query()->getShipmentByRef($dr->order_number);
             if($orders->getModel()->exists){
                 DB::beginTransaction();
                 try {
-                    Delivery::where('order_number',$dr->order_number)
-                    ->update(['status' => Delivery::PENDING]);
+                    $delivery = Delivery::where('order_number', $dr->order_number)->first();
+                    if ($delivery) {
+                        $delivery->update([
+                            'status' => Delivery::PENDING,
+                            'interface_flag' => 0,
+                        ]);
+
+                        $delivery->lines()->update(['interface_flag' => 0]);
+                    }
                     DB::commit();
                 } catch (Exception $ex) {
                     DB::rollBack();
