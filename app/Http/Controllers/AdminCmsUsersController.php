@@ -148,7 +148,7 @@ class AdminCmsUsersController extends CBController {
 		$this->button_show    = false;
 		$this->button_add     = false;
 		$this->button_delete  = false;
-		$this->hide_form 	  = ['id_cms_privileges'];
+		$this->hide_form 	  = ['id_cms_privileges','channels_id','store_masters_id','photo'];
 
 		$data['page_title'] = cbLang("label_button_profile");
 		$data['row']        = CRUDBooster::first('cms_users',CRUDBooster::myId());
