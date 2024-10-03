@@ -35,4 +35,10 @@ class DeliveryLine extends Model
     public function serials() : HasMany {
         return $this->hasMany(ItemSerial::class, 'delivery_lines_id');
     }
+
+    // protected static function booted() {
+    //     static::saved(function ($line) {
+    //         $line->delivery->calculateTotals();
+    //     });
+    // }
 }

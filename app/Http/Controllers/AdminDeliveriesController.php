@@ -55,6 +55,11 @@ use Illuminate\Support\Facades\Session;
                 $this->index_button[] = ["label"=>"Get ETP Delivery","url"=>"javascript:pullDeliveries()","icon"=>"fa fa-download","color"=>"warning"];
             }
 
+            $this->button_selected = array();
+            if(CRUDBooster::isSuperAdmin()){
+			    $this->button_selected[] = ['label'=>'Update Total Amount', 'icon'=>'fa fa-refresh', 'name'=>'update_total_amount'];
+            }
+
             $this->load_js[] = asset("js/delivery.js");
 
             $this->post_index_html = "
@@ -99,7 +104,12 @@ use Illuminate\Support\Facades\Session;
 
 	    public function actionButtonSelected($id_selected,$button_name) {
 	        //Your code here
-
+            if($button_name == "update_total_amount"){
+                foreach ($id_selected as $id) {
+                    $delivery = Delivery::find($id);
+                    $delivery->calculateTotals();
+                }
+            }
 	    }
 
         public function hook_query_index(&$query){
