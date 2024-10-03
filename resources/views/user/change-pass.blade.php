@@ -136,6 +136,47 @@
             });
         });
 
+        $('#password, #confirm_password').on('paste', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Password',
+                html: '<h5>Pasting is not allowed.</h5>',
+                icon: 'error',
+                confirmButtonText: 'Try Again'
+            });
+            return;
+        });
+
+        $('#password, #confirm_password').on('copy', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Password',
+                html: '<h5>Copying is not allowed.</h5>',
+                icon: 'error',
+                confirmButtonText: 'Try Again'
+            });
+        });
+
+        $('#password, #confirm_password').on('cut', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Password',
+                html: '<h5>Cutting is not allowed.</h5>',
+                icon: 'error',
+                confirmButtonText: 'Try Again'
+            });
+        });
+
+        $('#password, #confirm_password').on('contextmenu', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Password',
+                html: '<h5>Right-click is not allowed.</h5>',
+                icon: 'error',
+                confirmButtonText: 'Try Again'
+            });
+        });
+
         $('#password').on('input', function() {
             const password = $(this).val();
 
