@@ -134,19 +134,19 @@ class OraclePullController extends Controller
                     'status' => ($transactionAttr['type'] == 'MO') ? Delivery::PROCESSING : Delivery::PENDING
                 ]);
 
-                $orderedItem = $value->ordered_item;
+                // $orderedItem = $value->ordered_item;
 
-                $itemKey = "dimfs{$orderedItem}";
-                $rtlItemPrice = Cache::remember($itemKey, 3600, function() use ($orderedItem){
-                    $price = ItemMaster::getPrice($orderedItem);
-                    if(!$price){
-                        $price = GashaponItemMaster::getPrice($orderedItem);
-                    }
-                    return serialize($price);
-                });
+                // $itemKey = "dimfs{$orderedItem}";
+                // $rtlItemPrice = Cache::remember($itemKey, 3600, function() use ($orderedItem){
+                //     $price = ItemMaster::getPrice($orderedItem);
+                //     if(!$price){
+                //         $price = GashaponItemMaster::getPrice($orderedItem);
+                //     }
+                //     return serialize($price);
+                // });
 
-                // $rtlItemPrice = ItemMaster::getPrice($value->ordered_item);
-                // $gboItemPrice = GashaponItemMaster::getPrice($value->ordered_item);
+                $rtlItemPrice = ItemMaster::getPrice($value->ordered_item);
+                $gboItemPrice = GashaponItemMaster::getPrice($value->ordered_item);
 
                 // Step 2: Insert into `delivery_lines` table
                 $deliveryLine = $deliveryHeader->lines()->firstOrCreate([
@@ -156,7 +156,7 @@ class OraclePullController extends Controller
                     'ordered_item' => $value->ordered_item,
                     'ordered_item_id' => $value->ordered_item_id,
                     'shipped_quantity' => $value->shipped_quantity,
-                    'unit_price' => (floatval($rtlItemPrice)) ?? '0.00',
+                    'unit_price' => (floatval($rtlItemPrice ?? $gboItemPrice ?? 0.00)),
                     'transaction_date' => $transactionDate
                 ]);
 
