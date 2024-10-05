@@ -11,5 +11,5 @@ class CmsMenuPrivilege extends Model
 
     protected $table = 'cms_menus_privileges';
     protected $guarded = [];
-    protected $timestamps = false;
+    public $timestamps = false;
 }
