@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminCmsUsersController;
 use App\Http\Controllers\AdminDeliveriesController;
+use App\Http\Controllers\AdminReasonsController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\ItemMasterController;
 use App\Http\Controllers\OraclePullController;
@@ -49,6 +50,11 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
     Route::group(['prefix' => 'users'], function () {
         Route::post('users-import',[AdminCmsUsersController::class,'importUsers'])->name('users.upload');
         Route::get('users-import-template',[AdminCmsUsersController::class,'importUsersTemplate'])->name('users.template');
+    });
+
+    Route::group(['prefix' => 'reasons'], function () {
+        Route::post('reasons-import',[AdminReasonsController::class,'importReasons'])->name('reasons.upload');
+        Route::get('reasons-import-template',[AdminReasonsController::class,'importReasonsTemplate'])->name('reasons.template');
     });
 
     Route::group(['prefix' => 'deliveries'], function(){

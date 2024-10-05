@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\ReasonImport;
 use App\Models\Reason;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Maatwebsite\Excel\Validators\ValidationException;
 
 	class AdminReasonsController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -57,6 +62,51 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
                 $this->button_selected[] = ['label'=>'Set Status ACTIVE','icon'=>'fa fa-check-circle','name'=>'set_status_active'];
 				$this->button_selected[] = ['label'=>'Set Status INACTIVE','icon'=>'fa fa-times-circle','name'=>'set_status_inactive'];
             }
+
+            $this->index_button = array();
+            if(CRUDBooster::isSuperAdmin() && CRUDBooster::getCurrentMethod() == 'getIndex'){
+                $this->index_button[] = ["label"=>"Upload Reason","url"=>"javascript:uploadReasons()","icon"=>"fa fa-upload","color"=>"warning"];
+            }
+
+            $this->script_js = "
+                function uploadReasons() {
+                    $('#modal-upload-reasons').modal('show');
+                }
+                $('#import-reason-form').submit(function() {
+                    $('#btnImport').prop('disabled', true);
+                    $('#loading-spinner').css('display', 'inline-block');
+                });
+            ";
+
+            $this->post_index_html = "
+			<div class='modal fade' tabindex='-1' role='dialog' id='modal-upload-reasons'>
+				<div class='modal-dialog'>
+					<div class='modal-content'>
+						<div class='modal-header bg-aqua'>
+							<button class='close' aria-label='Close' type='button' data-dismiss='modal'>
+								<span aria-hidden='true'>×</span></button>
+							<h4 class='modal-title'><i class='fa fa-download'></i> Upload Reason</h4>
+						</div>
+
+						<form id='import-reason-form' method='post' action=".route('reasons.upload')." enctype='multipart/form-data'>
+                        <input type='hidden' name='_token' value=".csrf_token().">
+                        <div class='modal-body'>
+                            <div class='form-group'>
+                                <label for='file'>Excel File</label>
+                                <input type='file' id='file' name='import_file' class='form-control' required accept='.csv' />
+                            </div>
+                            <a href=".route('reasons.template')." class='btn btn-info'><i class='fa fa-download'> </i> Download Template</a>
+						</div>
+						<div class='modal-footer' align='right'>
+                            <button class='btn btn-default' type='button' data-dismiss='modal'>Close</button>
+                            <button class='btn btn-success btn-submit' type='submit' id='btnImport'><i class='fa fa-save'> </i> Submit</button>
+                            <span id='loading-spinner' class='spinner-border spinner-border-sm' role='status' aria-hidden='true' style='display: none;'></span>
+                        </div>
+                        </form>
+					</div>
+				</div>
+			</div>
+            ";
 	    }
 
 	    public function actionButtonSelected($id_selected,$button_name) {
@@ -90,5 +140,41 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
             $postdata['updated_at'] = date('Y-m-d H:i:s');
 			$postdata['updated_by'] = CRUDBooster::myId();
 	    }
+
+        public function importReasons(Request $request){
+            $request->validate([
+                'import_file' => 'required|file|mimes:csv,txt',
+            ]);
+            try {
+                $import = new ReasonImport();
+                $import->import($request->file('import_file'));
+                // Check for any failures
+                if($import->failures()->isNotEmpty()) {
+                    dd('test');
+                    $errors = [];
+                    foreach ($import->failures() as $failure) {
+                        $errors[] = 'row #'.$failure->row() . ' failed because: ' . json_encode($failure->errors());
+                    }
+                    return back()->with(['message_type'=>'danger','message'=>$errors]);
+                }
+                return back()->with(['message_type'=>'success', 'message'=>'Reasons imported successfully.']);
+            } catch (ValidationException $e) {
+                $errors = [];
+                foreach ($e->failures() as $failure) {
+                    $errors[] = 'row #'.$failure->row() . ' failed because: ' . json_encode($failure->errors());
+                }
+                return back()->with(['message_type'=>'danger', 'message'=>$errors]);
+            } catch (Exception $ex) {
+                Log::error($ex->getMessage());
+                return back()->with(['message_type'=>'danger', 'message'=>$ex->getMessage()]);
+            }
+
+        }
+
+        public function importReasonsTemplate(){
+            $path = storage_path('app/templates/reason-import-template.csv');
+            $datefile = date("YmdHis");
+            return response()->download($path, "reason-import-template-{$datefile}.csv");
+        }
 
 	}
