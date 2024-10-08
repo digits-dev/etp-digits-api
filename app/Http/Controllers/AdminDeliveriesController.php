@@ -70,19 +70,28 @@ use Illuminate\Support\Facades\Session;
                         <h4 class='modal-title' id='deliveryModalLabel'>ETP Delivery Information</h4>
                     </div>
                     <div class='modal-body'>
-                        <input type='text' id='searchInput' class='form-control' placeholder='Search...' style='margin: 5px 0;'>
+                        <div class='form-inline d-flex align-items-center' style='width: 100%; margin: 5px 0;'>
+                            <label for='searchInput' style='margin-right: 5px;'>Search: </label>
+                            <input type='text' id='searchInput' class='form-control' placeholder='Search...' style='width: 20%; margin-right: 20px;'>
+
+                            <label for='dateFrom' style='margin-right: 5px;'>Date From: </label>
+                            <input type='date' id='dateFrom' class='form-control' style='width: 20%; margin-right: 20px;'>
+
+                            <label for='dateTo' style='margin-right: 5px;'>Date To: </label>
+                            <input type='date' id='dateTo' class='form-control' style='width: 20%;'>
+                        </div>
 
                         <div id='spinner' class='text-center' style='display: none;'>
                             <i class='fa fa-spinner fa-spin fa-3x fa-fw'></i>
                             <p>Loading data, please wait...</p>
                         </div>
 
-                        <table class='table table-bordered mt-3' id='deliveryTable'>
+                        <table class='table table-bordered mt-3 tbl-bordered' id='deliveryTable'>
                         <thead>
                             <tr>
                             <th>From Warehouse</th>
                             <th>To Warehouse</th>
-                            <th>Delivery Number</th>
+                            <th>Delivery #</th>
                             <th>Received Date</th>
                             <th>Status</th>
                             </tr>
