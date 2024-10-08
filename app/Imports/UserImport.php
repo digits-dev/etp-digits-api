@@ -18,13 +18,10 @@ class UserImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValidat
 {
     use Importable, SkipsFailures;
     public function model(array $row) {
-        // Map Excel row data to your User model
+
         $priv = Cache::remember("user_{$row['privilege']}", 3600, function() use ($row){
             return CmsPrivilege::where('name', $row['privilege'])->value('id');
         });
-
-        $json = json_encode($row);
-        Log::info("rows {$json}");
 
         return CmsUser::firstOrCreate(['name' => $row['name']],[
             'name' => $row['name'],
@@ -35,18 +32,16 @@ class UserImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValidat
         ]);
     }
 
-    public function rules(): array
-    {
+    public function rules(): array {
         return [
             'name' => 'required',
-            'privilege' => 'required',
+            'privilege' => 'required|exists:cms_privileges,name',
             'email' => 'required|email|unique:cms_users,email',
             'status' => 'required|in:ACTIVE,INACTIVE'
         ];
     }
 
-    public function onFailure(Failure ...$failures)
-    {
+    public function onFailure(Failure ...$failures) {
         $errors = [];
         Log::error("User import failed!");
         foreach ($failures as $failure) {

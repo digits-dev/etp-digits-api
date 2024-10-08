@@ -23,9 +23,6 @@ class ReasonImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValid
             return TransactionType::where('transaction_type', $row['transaction_type'])->value('id');
         });
 
-        $json = json_encode($row);
-        Log::info("rows {$json}");
-
         return Reason::firstOrCreate(['pullout_reason' => $row['pullout_reason']],[
             'pullout_reason' => $row['pullout_reason'],
             'transaction_types_id' => $type,
