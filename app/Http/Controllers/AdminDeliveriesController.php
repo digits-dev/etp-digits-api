@@ -70,15 +70,25 @@ use Illuminate\Support\Facades\Session;
                         <h4 class='modal-title' id='deliveryModalLabel'>ETP Delivery Information</h4>
                     </div>
                     <div class='modal-body'>
-                        <div class='form-inline d-flex align-items-center' style='width: 100%; margin: 5px 0;'>
-                            <label for='searchInput' style='margin-right: 5px;'>Search: </label>
-                            <input type='text' id='searchInput' class='form-control' placeholder='Search...' style='width: 20%; margin-right: 20px;'>
-
-                            <label for='dateFrom' style='margin-right: 5px;'>Date From: </label>
-                            <input type='date' id='dateFrom' class='form-control' style='width: 20%; margin-right: 20px;'>
-
-                            <label for='dateTo' style='margin-right: 5px;'>Date To: </label>
-                            <input type='date' id='dateTo' class='form-control' style='width: 20%;'>
+                        <div class='row'>
+                            <div class='col-md-4 col-sm-4'>
+                                <div class='form-group' >
+                                    <label for='searchInput'>Search: </label>
+                                    <input type='text' id='searchInput' class='form-control' placeholder='Search...' >
+                                </div>
+                            </div>
+                            <div class='col-md-4 col-sm-4'>
+                                <div class='form-group'>
+                                    <label for='dateFrom'>Date From: </label>
+                                    <input type='date' id='dateFrom' class='form-control' >
+                                </div>
+                            </div>
+                            <div class='col-md-4 col-sm-4'>
+                                <div class='form-group'>
+                                    <label for='dateTo'>Date To: </label>
+                                    <input type='date' id='dateTo' class='form-control' >
+                                </div>
+                            </div>
                         </div>
 
                         <div id='spinner' class='text-center' style='display: none;'>
