@@ -121,7 +121,11 @@ class ItemSyncService
         foreach ($updatedItems['data'] ?? [] as $key => $value) {
             DB::beginTransaction();
             try {
-                Item::where('digits_code', $value->digits_code)->update($value);
+                $item = Item::where('digits_code', $value->digits_code)->first();
+                if($item){
+                    $item->fill((array)$value);
+                    $item->save();
+                }
                 DB::commit();
             } catch (Exception $e) {
                 DB::rollBack();
