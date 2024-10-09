@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminCmsUsersController;
 use App\Http\Controllers\AdminDeliveriesController;
 use App\Http\Controllers\AdminReasonsController;
 use App\Http\Controllers\DeliveryController;
+use App\Http\Controllers\EtpController;
 use App\Http\Controllers\ItemMasterController;
 use App\Http\Controllers\OraclePullController;
 use App\Http\Controllers\OraclePushController;
@@ -58,9 +59,9 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
     });
 
     Route::group(['prefix' => 'deliveries'], function(){
-        Route::get('etp-delivered-dr', [AdminDeliveriesController::class,'getDeliveredTransactions'])->name('get-etp-deliveries');
-        Route::get('etp-store-sync', [AdminDeliveriesController::class,'getStoreSync'])->name('get-etp-store-sync');
-        Route::get('etp-delivered-by-dr/{drnumber}', [AdminDeliveriesController::class,'getDeliveredTransactionsByNumber']);
+        Route::get('etp-delivered-dr', [EtpController::class,'getDeliveredTransactions'])->name('get-etp-deliveries');
+        Route::get('etp-store-sync', [EtpController::class,'getStoreSync'])->name('get-etp-store-sync');
+        Route::get('etp-delivered-by-dr/{drnumber}', [EtpController::class,'getDeliveredTransactionsByNumber']);
         Route::get('processing-dr', [OraclePushController::class,'pushDotInterface']);
     });
 });
