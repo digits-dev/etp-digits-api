@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Session;
 			# START CONFIGURATION DO NOT REMOVE THIS LINE
 			$this->title_field = "dr_number";
 			$this->limit = "20";
-			$this->orderby = "dr_number,desc";
+			$this->orderby = "transaction_date,desc";
 			$this->global_privilege = false;
 			$this->button_table_action = true;
 			$this->button_bulk_action = true;
