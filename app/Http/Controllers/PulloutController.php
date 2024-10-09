@@ -8,6 +8,7 @@ use App\Models\StoreMaster;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class PulloutController extends Controller
@@ -61,12 +62,17 @@ class PulloutController extends Controller
         }
 
         try{
+            DB::beginTransaction();
             $message = [];
             // Iterate over each pullout in the data array
             foreach ($requestData['data'] as $pullout) {
                 // Save the pullout Header
                 $store = Cache::remember("org{$pullout['wh_from']}", 3600, function() use ($pullout){
                     return StoreMaster::getPulloutDetails($pullout['wh_from'])->toArray();
+                });
+
+                $reason = Cache::remember("reason{$pullout['reason']}", 3600, function() use ($pullout){
+                    return Reason::getReason($pullout['reason'])->id;
                 });
 
                 $pulloutHeader = Pullout::firstOrCreate([
@@ -78,7 +84,7 @@ class PulloutController extends Controller
                     'to_org_id' => $store['to_org_id'] ?? 223,
                     'channels_id' => $store['channels_id'],
                     'stores_id' => $store['id'],
-                    'reasons_id' => Reason::getReason($pullout['reason'])->id,
+                    'reasons_id' => $reason,
                     'transaction_type' => $pullout['transaction_type'],
                 ]);
 
@@ -106,6 +112,7 @@ class PulloutController extends Controller
                 }
 
                 $pulloutHeader->calculateTotals();
+                DB::commit();
             }
 
             return response()->json([
@@ -116,6 +123,7 @@ class PulloutController extends Controller
             ], 200);
         }
         catch(Exception $ex){
+            DB::rollBack();
             return response()->json([
                 'api_status' => 0,
                 'api_message' => 'Error while saving to database!',
