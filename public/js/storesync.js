@@ -1,6 +1,6 @@
 $(document).ready(function() {
-    // Show the spinner and hide the table while fetching
-    $('#spinner').css('display', 'block');
+    // Show the spinnerSync and hide the table while fetching
+    $('#spinnerSync').css('display', 'block');
     $('#storeSyncTable').css('display', 'none');
     // Function to fetch data from the route
     function fetchStoreSync() {
@@ -19,8 +19,8 @@ $(document).ready(function() {
                 console.error('Error fetching storeSync data:', error);
             })
             .finally(() => {
-                // Hide the spinner after the fetch completes
-                $('#spinner').css('display', 'none');
+                // Hide the spinnerSync after the fetch completes
+                $('#spinnerSync').css('display', 'none');
             });
     }
 

@@ -153,7 +153,7 @@ use Illuminate\Support\Facades\Session;
                             </div>
                         </div>
 
-                        <div id='spinner' class='text-center' style='display: none;'>
+                        <div id='spinnerSync' class='text-center' style='display: none;'>
                             <i class='fa fa-spinner fa-spin fa-3x fa-fw'></i>
                             <p>Loading data, please wait...</p>
                         </div>
