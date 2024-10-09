@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Delivery;
 use App\Models\EtpDelivery;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use Exception;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 	class AdminDeliveriesController extends \crocodicstudio\crudbooster\controllers\CBController {
@@ -58,6 +61,7 @@ use Illuminate\Support\Facades\Session;
             $this->button_selected = array();
             if(CRUDBooster::isSuperAdmin()){
 			    $this->button_selected[] = ['label'=>'Update Total Amount', 'icon'=>'fa fa-refresh', 'name'=>'calculate_totals'];
+			    $this->button_selected[] = ['label'=>'Update Status PENDING', 'icon'=>'fa fa-file', 'name'=>'update_status_pending'];
             }
 
             $this->load_js[] = asset("js/delivery.js");
@@ -122,11 +126,23 @@ use Illuminate\Support\Facades\Session;
 	    }
 
 	    public function actionButtonSelected($id_selected,$button_name) {
-	        //Your code here
+
             if($button_name == "calculate_totals"){
                 foreach ($id_selected as $id) {
                     $delivery = Delivery::find($id);
                     $delivery->calculateTotals();
+                }
+            }
+            if($button_name == "update_status_pending"){
+                try {
+                    DB::beginTransaction();
+                    Delivery::whereIn('id',$id_selected)->update([
+                        'status' => Delivery::PENDING
+                    ]);
+                    DB::commit();
+                } catch (Exception $ex) {
+                    DB::rollBack();
+                    Log::error($ex->getMessage());
                 }
             }
 	    }
