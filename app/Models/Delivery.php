@@ -16,6 +16,7 @@ class Delivery extends Model
     const PROCESSING = 1;
     const RECEIVED = 2;
     const PROCESSING_DOTR = 3;
+    const PROCESSING_SIT = 4;
 
     protected $table = 'deliveries';
     protected $fillable = [
@@ -66,6 +67,46 @@ class Delivery extends Model
             ->where('customer_name', 'NOT LIKE','%FBD')
             ->select('order_number','dr_number','to_org_id as org_id','to_warehouse_id')
             ->orderBy('transaction_date','asc');
+    }
+
+    public function scopeGetPendingSit(){
+        return $this->where('status', self::PENDING)
+            ->where('interface_flag', 0)
+            ->where('transaction_type', 'MO')
+            ->where('customer_name', 'LIKE','%FBD')
+            ->select('order_number','dr_number','to_org_id as org_id','to_warehouse_id')
+            ->orderBy('transaction_date','asc');
+    }
+
+    public function scopeGetProcessingSit(){
+        return $this->where('status', self::PROCESSING_SIT)
+            ->where('interface_flag', 1)
+            ->where('transaction_type', 'MO')
+            ->where('customer_name', 'LIKE','%FBD')
+            ->select('order_number')
+            ->orderBy('transaction_date','asc');
+    }
+
+    public function scopeGetProcessingSitLines(){
+        return $this->join('delivery_lines', 'deliveries.id', 'delivery_lines.deliveries_id')
+            ->join('store_masters', 'deliveries.to_warehouse_id', 'store_masters.warehouse_code')
+            ->where('deliveries.transaction_type', 'MO')
+            ->select(
+                'deliveries.dr_number',
+                'deliveries.locators_id as locator_id',
+                DB::raw("(SELECT 'STAGINGMO') as from_subinventory"),
+                'deliveries.from_org_id as org_id',
+                'deliveries.to_org_id as transfer_org_id',
+                'store_masters.sit_subinventory as transfer_subinventory',
+                'delivery_lines.id as line_id',
+                'delivery_lines.ordered_item_id as item_id',
+                'delivery_lines.shipped_quantity as quantity',
+            )
+            ->where('deliveries.status', self::PROCESSING_SIT)
+            ->where('deliveries.interface_flag', 0)
+            ->where('deliveries.transaction_type', 'MO')
+            ->where('deliveries.customer_name', 'LIKE','%FBD')
+            ->orderBy('deliveries.transaction_date', 'asc');
     }
 
     public function scopeGetProcessingDotr(){

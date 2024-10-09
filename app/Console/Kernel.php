@@ -39,9 +39,9 @@ class Kernel extends ConsoleKernel
             $datefrom = Carbon::now()->format("Y-m-d");
             $dateto = Carbon::now()->addDays(1)->format("Y-m-d");
 
-            $sync = new ItemSyncService();
-            $sync->syncNewItems(request()->merge(['datefrom'=>$datefrom,'dateto'=>$dateto]));
-            $sync->syncUpdatedItems(request()->merge(['datefrom'=>$datefrom,'dateto'=>$dateto]));
+            $itemSync = new ItemSyncService();
+            $itemSync->syncNewItems(request()->merge(['datefrom'=>$datefrom,'dateto'=>$dateto]));
+            $itemSync->syncUpdatedItems(request()->merge(['datefrom'=>$datefrom,'dateto'=>$dateto]));
 
             $whSync = new WarehouseSyncService();
             $whSync->syncNewWarehouse(request()->merge(['datefrom'=>$datefrom,'dateto'=>$dateto]));
@@ -50,8 +50,9 @@ class Kernel extends ConsoleKernel
         $schedule->call(function(){
             $oracle = new OraclePullController();
             $oracle->processOrgTransfers();
-            // $oracle->processOrgTransfersReceiving();
-            // $oracle->processReturnTransactions();
+            $oracle->processOrgTransfersReceiving();//for dotr
+            $oracle->processSubInvTransfersReceiving();//for sitr
+            $oracle->processReturnTransactions();
             $oracle->updateOracleItemId();
         })->everyMinute();
 

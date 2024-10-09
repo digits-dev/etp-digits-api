@@ -76,6 +76,24 @@ class OraclePushController extends Controller
         }
     }
 
+    public function pushSitInterface(DeliveryInterfaceService $deliveryInterface){
+        foreach ($deliveryInterface->getProcessingSitLines() ?? [] as $key => $value) {
+            $this->processTransferInterface('SIT', $value);
+
+            //update interface flag
+            $drline = DeliveryLine::find($value['line_id']);
+            $drline->interface_flag = 1;
+            $drline->save();
+        }
+
+        //update interface flag to headers
+        foreach ($deliveryInterface->getProcessingSit() ?? [] as $key => $value) {
+            $drhead = Delivery::where('order_number', $value['order_number'])->first();
+            $drhead->interface_flag = 1;
+            $drhead->save();
+        }
+    }
+
 
     public function pushMorInterface(Request $request){
 

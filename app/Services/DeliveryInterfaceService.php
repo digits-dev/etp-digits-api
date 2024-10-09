@@ -29,4 +29,12 @@ class DeliveryInterfaceService
     public function getProcessingDotrDelivery(){
         return Delivery::getProcessingDotr()->get()->toArray();
     }
+
+    public function getProcessingSitLines(){
+        return Delivery::getProcessingSitLines()->get()->toArray();
+    }
+
+    public function getProcessingSit(){
+        return Delivery::getProcessingSit()->get()->toArray();
+    }
 }

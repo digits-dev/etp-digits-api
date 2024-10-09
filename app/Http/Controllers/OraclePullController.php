@@ -112,9 +112,10 @@ class OraclePullController extends Controller
                     ->first();
             });
 
-            DB::beginTransaction();
             try {
-                $isFBD = substr($value->customer_name, -3); //get last 3 char at the end of customer name
+                DB::beginTransaction();
+                //get last 3 char at the end of customer name
+                $isFBD = substr($value->customer_name, -3);
                 // Step 1: Insert into `delivery_header` table
                 $deliveryHeader = Delivery::firstOrCreate([
                     'dr_number' => $value->dr_number
@@ -128,7 +129,7 @@ class OraclePullController extends Controller
                     'customer_po' => preg_replace('/[[:space:]]+/u', ' ', trim($value->customer_po)),
                     'locators_id' => $value->locator_id ?? null,
                     'from_org_id' => $transactionAttr['from_org'] ?? null,
-                    'to_org_id' => $transactionAttr['to_org'] ?? null,
+                    'to_org_id' => ($isFBD != 'FBD') ? $transactionAttr['to_org'] : 263,
                     'transaction_type' => $transactionAttr['type'],
                     'transaction_date' => $transactionDate,
                     'status' => ($transactionAttr['type'] == 'MO' && $isFBD != 'FBD') ? Delivery::PROCESSING : Delivery::PENDING
@@ -206,8 +207,8 @@ class OraclePullController extends Controller
         foreach ($deliveries ?? [] as $key => $dr) {
             $orders = OracleShipmentHeader::query()->getShipmentByRef($dr->order_number);
             if($orders->getModel()->exists){
-                DB::beginTransaction();
                 try {
+                    DB::beginTransaction();
                     $delivery = Delivery::where('order_number', $dr->order_number)->first();
                     if ($delivery) {
                         $delivery->update([
@@ -231,12 +232,37 @@ class OraclePullController extends Controller
         foreach ($deliveries ?? [] as $key => $dr) {
             $orders = EtpDelivery::query()->getReceivedDeliveryByWh($dr->order_number, $dr->to_warehouse_id)->first();
             if($orders->getModel()->exists){
-                DB::beginTransaction();
                 try {
+                    DB::beginTransaction();
                     $delivery = Delivery::where('order_number', $dr->order_number)->first();
                     if ($delivery) {
                         $delivery->update([
                             'status' => Delivery::PROCESSING_DOTR,
+                            'interface_flag' => 0,
+                        ]);
+
+                        $delivery->lines()->update(['interface_flag' => 0]);
+                    }
+                    DB::commit();
+                } catch (Exception $ex) {
+                    DB::rollBack();
+                    Log::error($ex->getMessage());
+                }
+            }
+        }
+    }
+
+    public function processSubInvTransfersReceiving(){
+        $deliveries = Delivery::getPendingSit()->get();
+        foreach ($deliveries ?? [] as $key => $dr) {
+            $orders = EtpDelivery::query()->getReceivedDeliveryByWh($dr->order_number, $dr->to_warehouse_id)->first();
+            if($orders->getModel()->exists){
+                try {
+                    DB::beginTransaction();
+                    $delivery = Delivery::where('order_number', $dr->order_number)->first();
+                    if ($delivery) {
+                        $delivery->update([
+                            'status' => Delivery::PROCESSING_SIT,
                             'interface_flag' => 0,
                         ]);
 
@@ -263,8 +289,8 @@ class OraclePullController extends Controller
                 $distinctStatusCodes = array_unique($statusCodes);
 
                 if($distinctStatusCodes[0] == "FULLY RECEIVED"){
-                    DB::beginTransaction();
                     try {
+                        DB::beginTransaction();
                         $delivery = Delivery::where('order_number', $dr->order_number)->first();
                         if ($delivery) {
                             $delivery->update([
@@ -293,8 +319,8 @@ class OraclePullController extends Controller
         foreach ($pullouts as $key => $pullout) {
             $orders = OracleShipmentHeader::query()->getShipmentByRef($pullout->document_number);
             if($orders->getModel()->exists){
-                DB::beginTransaction();
                 try {
+                    DB::beginTransaction();
                     Pullout::where('document_number', $pullout->document_number)
                     ->update([
                         'sor_mor_number' => $pullout->document_number,
@@ -324,8 +350,8 @@ class OraclePullController extends Controller
                         $pulloutDetails['status'] = Pullout::PARTIALLY_RECEIVED;
                     }
                 }
-                DB::beginTransaction();
                 try {
+                    DB::beginTransaction();
                     if(!empty($pulloutDetails)){
                         Pullout::where('document_number', $pullout->document_number)
                             ->update($pulloutDetails);
@@ -346,8 +372,8 @@ class OraclePullController extends Controller
             $oracleItem = OracleItem::query()->getItemByCode($item->digits_code);
 
             if($oracleItem->getModel()->exists){
-                DB::beginTransaction();
                 try {
+                    DB::beginTransaction();
                     Item::where('digits_code', $item->digits_code)->update([
                         'beach_item_id' => $oracleItem->inventory_item_id
                     ]);
