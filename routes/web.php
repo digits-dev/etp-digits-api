@@ -59,6 +59,7 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
 
     Route::group(['prefix' => 'deliveries'], function(){
         Route::get('etp-delivered-dr', [AdminDeliveriesController::class,'getDeliveredTransactions'])->name('get-etp-deliveries');
+        Route::get('etp-store-sync', [AdminDeliveriesController::class,'getStoreSync'])->name('get-etp-store-sync');
         Route::get('etp-delivered-by-dr/{drnumber}', [AdminDeliveriesController::class,'getDeliveredTransactionsByNumber']);
         Route::get('processing-dr', [OraclePushController::class,'pushDotInterface']);
     });

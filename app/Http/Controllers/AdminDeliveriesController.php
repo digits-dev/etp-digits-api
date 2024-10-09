@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Delivery;
+use App\Models\EtpCashOrderTrx;
 use App\Models\EtpDelivery;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Exception;
@@ -56,6 +57,7 @@ use Illuminate\Support\Facades\Session;
             $this->index_button = array();
             if(CRUDBooster::isSuperAdmin()){
                 $this->index_button[] = ["label"=>"Get ETP Delivery","url"=>"javascript:pullDeliveries()","icon"=>"fa fa-download","color"=>"warning"];
+                $this->index_button[] = ["label"=>"Get ETP Sync","url"=>"javascript:storeSync()","icon"=>"fa fa-refresh","color"=>"default"];
             }
 
             $this->button_selected = array();
@@ -65,13 +67,14 @@ use Illuminate\Support\Facades\Session;
             }
 
             $this->load_js[] = asset("js/delivery.js");
+            $this->load_js[] = asset("js/storesync.js");
 
             $this->post_index_html = "
             <div class='modal fade' id='deliveryModal' tabindex='-1' role='dialog' aria-labelledby='deliveryModalLabel'>
                 <div class='modal-dialog modal-lg' role='document'>
                     <div class='modal-content'>
                     <div class='modal-header bg-aqua'>
-                        <h4 class='modal-title' id='deliveryModalLabel'>ETP Delivery Information</h4>
+                        <h4 class='modal-title' id='deliveryModalLabel'><i class='fa fa-file-text-o'> </i> ETP Delivery Information</h4>
                     </div>
                     <div class='modal-body'>
                         <div class='row'>
@@ -116,7 +119,59 @@ use Illuminate\Support\Facades\Session;
                         </table>
                     </div>
                     <div class='modal-footer'>
-                        <button type='button' class='btn btn-secondary' data-dismiss='modal'>Close</button>
+                        <button type='button' class='btn btn-danger' data-dismiss='modal'><i class='fa fa-times'> </i> Close</button>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class='modal fade' id='storeSyncModal' tabindex='-1' role='dialog' aria-labelledby='storeSyncModalLabel'>
+                <div class='modal-dialog modal-lg' role='document'>
+                    <div class='modal-content'>
+                    <div class='modal-header bg-aqua'>
+                        <h4 class='modal-title' id='storeSyncModalLabel'><i class='fa fa-refresh'> </i> ETP StoreSync Information</h4>
+                    </div>
+                    <div class='modal-body'>
+                        <div class='row'>
+                            <div class='col-md-4 col-sm-4'>
+                                <div class='form-group' >
+                                    <label for='searchInput'>Search: </label>
+                                    <input type='text' id='searchInput' class='form-control' placeholder='Search...' >
+                                </div>
+                            </div>
+                            <div class='col-md-4 col-sm-4'>
+                                <div class='form-group'>
+                                    <label for='dateFrom'>Date From: </label>
+                                    <input type='date' id='dateFrom' class='form-control' >
+                                </div>
+                            </div>
+                            <div class='col-md-4 col-sm-4'>
+                                <div class='form-group'>
+                                    <label for='dateTo'>Date To: </label>
+                                    <input type='date' id='dateTo' class='form-control' >
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id='spinner' class='text-center' style='display: none;'>
+                            <i class='fa fa-spinner fa-spin fa-3x fa-fw'></i>
+                            <p>Loading data, please wait...</p>
+                        </div>
+
+                        <table class='table table-bordered mt-3 tbl-bordered' id='storeSyncTable'>
+                        <thead>
+                            <tr>
+                            <th>Warehouse</th>
+                            <th>Sync DateTime</th>
+                            </tr>
+                        </thead>
+                        <tbody id='storeSyncTableBody'>
+                            <!-- Dynamic content will be populated here -->
+                        </tbody>
+                        </table>
+                    </div>
+                    <div class='modal-footer'>
+                        <button type='button' class='btn btn-danger' data-dismiss='modal'><i class='fa fa-times'> </i> Close</button>
                     </div>
                     </div>
                 </div>
@@ -179,6 +234,13 @@ use Illuminate\Support\Facades\Session;
                 'lines',
                 'lines.item'
             ])->get();
+
+            return response()->json($data);
+        }
+
+        public function getStoreSync(){
+            $data = [];
+            $data['sync'] = EtpCashOrderTrx::getStoreSync()->with(['wh'])->get();
 
             return response()->json($data);
         }
