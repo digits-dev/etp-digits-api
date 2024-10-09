@@ -291,8 +291,8 @@ class OraclePushController extends Controller
                 $details['LOCK_FLAG'] = 2;
                 $details['FLOW_SCHEDULE'] = 'Y';
                 $details['SCHEDULED_FLAG'] = 2;
-                $details['TRANSACTION_REFERENCE'] = $$data['dr_number'];
-                $details['TRANSACTION_SOURCE_NAME'] = $$data['dr_number'];
+                $details['TRANSACTION_REFERENCE'] = $data['dr_number'];
+                $details['TRANSACTION_SOURCE_NAME'] = $data['dr_number'];
                 $ref['TRANSACTION_REFERENCE'] = $data['dr_number'];
             break;
 

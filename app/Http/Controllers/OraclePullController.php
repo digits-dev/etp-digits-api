@@ -114,7 +114,7 @@ class OraclePullController extends Controller
 
             DB::beginTransaction();
             try {
-
+                $isFBD = substr($value->customer_name, -3); //get last 3 char at the end of customer name
                 // Step 1: Insert into `delivery_header` table
                 $deliveryHeader = Delivery::firstOrCreate([
                     'dr_number' => $value->dr_number
@@ -131,7 +131,7 @@ class OraclePullController extends Controller
                     'to_org_id' => $transactionAttr['to_org'] ?? null,
                     'transaction_type' => $transactionAttr['type'],
                     'transaction_date' => $transactionDate,
-                    'status' => ($transactionAttr['type'] == 'MO') ? Delivery::PROCESSING : Delivery::PENDING
+                    'status' => ($transactionAttr['type'] == 'MO' && $isFBD != 'FBD') ? Delivery::PROCESSING : Delivery::PENDING
                 ]);
 
                 // $orderedItem = $value->ordered_item;
@@ -298,7 +298,8 @@ class OraclePullController extends Controller
                     Pullout::where('document_number', $pullout->document_number)
                     ->update([
                         'sor_mor_number' => $pullout->document_number,
-                        'status' => Pullout::FOR_RECEIVING
+                        'status' => Pullout::FOR_RECEIVING,
+                        'interface_flag' => 1
                     ]);
                     DB::commit();
                 } catch (Exception $ex) {

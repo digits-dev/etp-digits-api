@@ -63,6 +63,7 @@ class Delivery extends Model
         return $this->where('status', self::PENDING)
             ->where('interface_flag', 0)
             ->where('transaction_type', 'MO')
+            ->where('customer_name', 'NOT LIKE','%FBD')
             ->select('order_number','dr_number','to_org_id as org_id','to_warehouse_id')
             ->orderBy('transaction_date','asc');
     }
@@ -90,6 +91,7 @@ class Delivery extends Model
     public function scopeGetPendingDotrLines(){
         return self::getHeadLineQuery()
             ->where('deliveries.status', self::PENDING)
+            ->where('deliveries.customer_name', 'NOT LIKE','%FBD')
             ->where('deliveries.interface_flag', 0);
     }
 
