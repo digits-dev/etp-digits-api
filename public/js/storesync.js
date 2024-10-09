@@ -64,7 +64,7 @@ $(document).ready(function() {
         const tableBody = document.getElementById('storeSyncTableBody');
         tableBody.innerHTML = `
             <tr>
-                <td colspan="4" class="text-center text-danger">${message}</td>
+                <td colspan="2" class="text-center text-danger">${message}</td>
             </tr>
         `;
 

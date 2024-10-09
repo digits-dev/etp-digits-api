@@ -56,7 +56,7 @@ use Illuminate\Support\Facades\Session;
 
             $this->index_button = array();
             if(CRUDBooster::isSuperAdmin()){
-                $this->index_button[] = ["label"=>"Get ETP Delivery","url"=>"javascript:pullDeliveries()","icon"=>"fa fa-download","color"=>"warning"];
+                $this->index_button[] = ["label"=>"Get ETP Delivery","url"=>"javascript:pullDeliveries()","icon"=>"fa fa-file-text-o","color"=>"default"];
                 $this->index_button[] = ["label"=>"Get ETP Sync","url"=>"javascript:storeSync()","icon"=>"fa fa-refresh","color"=>"default"];
             }
 
@@ -103,7 +103,7 @@ use Illuminate\Support\Facades\Session;
                             <p>Loading data, please wait...</p>
                         </div>
 
-                        <table class='table table-bordered mt-3 tbl-bordered' id='deliveryTable'>
+                        <table class='table table-bordered tbl-bordered' id='deliveryTable'>
                         <thead>
                             <tr>
                             <th>From Warehouse</th>
@@ -158,7 +158,7 @@ use Illuminate\Support\Facades\Session;
                             <p>Loading data, please wait...</p>
                         </div>
 
-                        <table class='table table-bordered mt-3 tbl-bordered' id='storeSyncTable'>
+                        <table class='table table-bordered tbl-bordered' id='storeSyncTable'>
                         <thead>
                             <tr>
                             <th>Warehouse</th>
@@ -240,7 +240,9 @@ use Illuminate\Support\Facades\Session;
 
         public function getStoreSync(){
             $data = [];
-            $data['sync'] = EtpCashOrderTrx::getStoreSync()->with(['wh'])->get();
+            $data['sync'] = EtpCashOrderTrx::getStoreSync()->with([
+                'wh'
+            ])->get();
 
             return response()->json($data);
         }
