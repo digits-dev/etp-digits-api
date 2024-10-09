@@ -49,10 +49,6 @@ class ItemSyncService
         ]);
 
         if($validation->fails()){
-            // return redirect()->back()->with([
-            //     'message_type'=>"danger",
-            //     'message'=> $validation->getMessageBag()
-            // ]);
             Log::error($validation->getMessageBag());
             return response()->json([
                 'status' => 'error',
@@ -68,8 +64,8 @@ class ItemSyncService
         ]);
 
         foreach ($newItems['data'] ?? [] as $key => $value) {
-            DB::beginTransaction();
             try {
+                DB::beginTransaction();
                 Item::firstOrCreate(['digits_code'=>$value['digits_code']], $value);
                 DB::commit();
             } catch (Exception $e) {
@@ -78,12 +74,8 @@ class ItemSyncService
             }
         }
 
-        Log::info("Pull new items done!");
-        // return redirect()->back()->with([
-        //     'message' => 'Pull new items done!',
-        //     'message_type' => 'info'
-        // ]);
         $count = count($newItems['data']);
+        Log::info("Pull new items done! {$count} records!");
         return response()->json([
             'status' => 'success',
             'message' => "Pull new items done! {$count} records!"
@@ -100,10 +92,6 @@ class ItemSyncService
         ]);
 
         if($validation->fails()){
-            // return redirect()->back()->with([
-            //     'message_type'=>"danger",
-            //     'message'=> $validation->getMessageBag()
-            // ]);
             Log::error($validation->getMessageBag());
             return response()->json([
                 'status' => 'error',
@@ -119,8 +107,8 @@ class ItemSyncService
         ]);
 
         foreach ($updatedItems['data'] ?? [] as $key => $value) {
-            DB::beginTransaction();
             try {
+                DB::beginTransaction();
                 $item = Item::where('digits_code', $value->digits_code)->first();
                 if($item){
                     $item->fill((array)$value);
@@ -133,12 +121,8 @@ class ItemSyncService
             }
         }
 
-        Log::info("Pull new items done!");
-        // return redirect()->back()->with([
-        //     'message' => 'Pull updated items done!',
-        //     'message_type' => 'info'
-        // ]);
         $count = count($updatedItems['data']);
+        Log::info("Pull updated items done! {$count} records!");
         return response()->json([
             'status' => 'success',
             'message' => "Pull updated items done! {$count} records!"
