@@ -2,8 +2,10 @@
 
 namespace App\Imports;
 
+use App\Models\Channel;
 use App\Models\CmsPrivilege;
 use App\Models\CmsUser;
+use App\Models\StoreMaster;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\Importable;
@@ -23,10 +25,20 @@ class UserImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValidat
             return CmsPrivilege::where('name', $row['privilege'])->value('id');
         });
 
-        return CmsUser::firstOrCreate(['name' => $row['name']],[
+        $channel = Cache::remember("channel_{$row['channel']}", 3600, function() use ($row){
+            return Channel::where('channel_description', $row['channel'])->value('id');
+        });
+
+        $store = Cache::remember("store_{$row['store']}", 3600, function() use ($row){
+            return StoreMaster::where('bea_so_store_name', $row['store'])->value('id');
+        });
+
+        return CmsUser::updateOrCreate(['email' => $row['email']],[
             'name' => $row['name'],
             'email' => $row['email'],
             'id_cms_privileges' => $priv,
+            'channels_id' => $channel,
+            'store_masters_id' => $store,
             'password' => bcrypt('qwerty'),
             'status' => $row['status'],
         ]);

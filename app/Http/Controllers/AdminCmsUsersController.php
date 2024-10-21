@@ -44,7 +44,7 @@ class AdminCmsUsersController extends CBController {
 		$this->form = array();
 		$this->form[] = ["label"=>"Name","name"=>"name",'validation'=>'required|alpha_spaces|min:3','width'=>'col-sm-5'];
 		$this->form[] = ["label"=>"Email","name"=>"email",'type'=>'email','validation'=>'required|email|unique:cms_users,email,'.CRUDBooster::getCurrentId(),'width'=>'col-sm-5'];
-		$this->form[] = ["label"=>"Photo","name"=>"photo","type"=>"upload","help"=>"Recommended resolution is 200x200px",'validation'=>'required|image|max:1000','resize_width'=>90,'resize_height'=>90,'width'=>'col-sm-5'];
+		$this->form[] = ["label"=>"Photo","name"=>"photo","type"=>"upload","help"=>"Recommended resolution is 200x200px",'validation'=>'image|max:1000','resize_width'=>90,'resize_height'=>90,'width'=>'col-sm-5'];
 		$this->form[] = ["label"=>"Privilege","name"=>"id_cms_privileges","type"=>"select",'validation'=>'required',"datatable"=>"cms_privileges,name",'width'=>'col-sm-5'];
 		$this->form[] = ["label"=>"Channel","name"=>"channels_id","type"=>"select",'validation'=>'required',"datatable"=>"channels,channel_description","datatable_where"=>"status='ACTIVE'",'width'=>'col-sm-5'];
 		$this->form[] = ["label"=>"Store","name"=>"store_masters_id","type"=>"select",'validation'=>'required',"datatable"=>"store_masters,bea_so_store_name",'parent_select'=>'channels_id','width'=>'col-sm-5'];
@@ -116,7 +116,7 @@ class AdminCmsUsersController extends CBController {
 
     public function actionButtonSelected($id_selected,$button_name) {
 		//Your code here
-		$data = ['updated_at' => date('Y-m-d H:i:s')];
+		$data = ['updated_at' => now()];
 		switch ($button_name) {
 			case 'set_status_ACTIVE':
 				$data['status'] = 'ACTIVE';
@@ -129,7 +129,7 @@ class AdminCmsUsersController extends CBController {
 				break;
 			default:
                 {
-                    foreach ($this->activeChannel as $keyChannel => $valueChannel) {
+                    foreach ($this->activeChannel as $valueChannel) {
                         if($button_name == "set_channel_{$valueChannel->channel_code}"){
                             $data['channels_id'] = $valueChannel->id;
                         }
