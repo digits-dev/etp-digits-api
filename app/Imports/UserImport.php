@@ -48,6 +48,8 @@ class UserImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValidat
         return [
             'name' => 'required',
             'privilege' => 'required|exists:cms_privileges,name',
+            'channel' => 'required|exists:channels,channel_description',
+            'store' => 'required|exists:store_masters,bea_so_store_name',
             'email' => 'required|email|unique:cms_users,email',
             'status' => 'required|in:ACTIVE,INACTIVE'
         ];
