@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Delivery;
-use App\Models\EtpCashOrderTrx;
-use App\Models\EtpDelivery;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +13,6 @@ use Illuminate\Support\Facades\Session;
 
 	    public function cbInit() {
 
-			# START CONFIGURATION DO NOT REMOVE THIS LINE
 			$this->title_field = "dr_number";
 			$this->limit = "20";
 			$this->orderby = "transaction_date,desc";
@@ -32,9 +29,7 @@ use Illuminate\Support\Facades\Session;
 			$this->button_import = false;
 			$this->button_export = true;
 			$this->table = "deliveries";
-			# END CONFIGURATION DO NOT REMOVE THIS LINE
 
-			# START COLUMNS DO NOT REMOVE THIS LINE
 			$this->col = [];
 			$this->col[] = ["label"=>"Order #","name"=>"order_number"];
 			$this->col[] = ["label"=>"DR #","name"=>"dr_number"];
@@ -48,20 +43,13 @@ use Illuminate\Support\Facades\Session;
             }];
 			$this->col[] = ["label"=>"Order Date","name"=>"transaction_date"];
 			$this->col[] = ["label"=>"Status","name"=>"status","join"=>"order_statuses,style"];
-			# END COLUMNS DO NOT REMOVE THIS LINE
 
-			# START FORM DO NOT REMOVE THIS LINE
 			$this->form = [];
-            # END FORM DO NOT REMOVE THIS LINE
 
-            $this->index_button = array();
             if(CRUDBooster::isSuperAdmin()){
                 $this->index_button[] = ["label"=>"Get ETP Delivery","url"=>"javascript:pullDeliveries()","icon"=>"fa fa-file-text-o","color"=>"default"];
                 $this->index_button[] = ["label"=>"Get ETP Sync","url"=>"javascript:storeSync()","icon"=>"fa fa-refresh","color"=>"default"];
-            }
 
-            $this->button_selected = array();
-            if(CRUDBooster::isSuperAdmin()){
 			    $this->button_selected[] = ['label'=>'Update Total Amount', 'icon'=>'fa fa-refresh', 'name'=>'calculate_totals'];
 			    $this->button_selected[] = ['label'=>'Update Status PENDING', 'icon'=>'fa fa-file', 'name'=>'update_status_pending'];
             }
@@ -184,8 +172,15 @@ use Illuminate\Support\Facades\Session;
 
             if($button_name == "calculate_totals"){
                 foreach ($id_selected as $id) {
-                    $delivery = Delivery::find($id);
-                    $delivery->calculateTotals();
+                    try {
+                        DB::beginTransaction();
+                        $delivery = Delivery::find($id);
+                        $delivery->calculateTotals();
+                        DB::commit();
+                    } catch (Exception $ex) {
+                        DB::rollBack();
+                        Log::error($ex->getMessage());
+                    }
                 }
             }
             if($button_name == "update_status_pending"){
