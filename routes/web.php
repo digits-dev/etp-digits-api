@@ -1,8 +1,9 @@
 <?php
 
 use App\Http\Controllers\AdminCmsUsersController;
-use App\Http\Controllers\AdminDeliveriesController;
 use App\Http\Controllers\AdminReasonsController;
+use App\Http\Controllers\AdminStorePulloutsController;
+use App\Http\Controllers\AdminStoreTransfersController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\EtpController;
 use App\Http\Controllers\ItemMasterController;
@@ -26,7 +27,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    // return view('welcome');
     return redirect('admin/login');
 });
 
@@ -63,6 +63,15 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::get('etp-store-sync', [EtpController::class,'getStoreSync'])->name('get-etp-store-sync');
         Route::get('etp-delivered-by-dr/{drnumber}', [EtpController::class,'getDeliveredTransactionsByNumber']);
         Route::get('processing-dr', [OraclePushController::class,'pushDotInterface']);
+    });
+
+    Route::group(['prefix' => 'store_pullouts'], function(){
+        Route::get('create-pullout-stw', AdminStorePulloutsController::class,'getSTW')->name('getSTW');
+        Route::get('create-pullout-str', AdminStorePulloutsController::class,'getSTR')->name('getSTR');
+    });
+
+    Route::group(['prefix' => 'store_transfers'], function(){
+        Route::get('create-sts', AdminStoreTransfersController::class,'getSTS')->name('getSTS');
     });
 });
 
