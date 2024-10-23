@@ -16,7 +16,7 @@ class CreateStorePulloutLinesTable extends Migration
         Schema::create('store_pullout_lines', function (Blueprint $table) {
             $table->id();
             $table->foreignId('store_pullouts_id')->constrained()->onDelete('cascade');
-            $table->string('item_code',100)->nullable();
+            $table->string('item_code',100)->nullable()->index();
             $table->unsignedInteger('qty')->nullable();
             $table->decimal('unit_price', 16, 2)->default('0.00');
             $table->text('problems')->nullable();
