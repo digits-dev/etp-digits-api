@@ -87,6 +87,24 @@ class CmsModuleSeeder extends Seeder
                 'is_protected' => 0,
                 'is_active'    => 0
             ],
+            [
+                'name'         => 'Create STS',
+                'icon'         => 'fa fa-file-text',
+                'path'         => 'store_transfers',
+                'table_name'   => 'store_transfers',
+                'controller'   => 'AdminStoreTransfersController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
+            [
+                'name'         => 'Create STW/STR',
+                'icon'         => 'fa fa-file-text',
+                'path'         => 'store_pullouts',
+                'table_name'   => 'store_pullouts',
+                'controller'   => 'AdminStorePulloutsController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
 
         ];
 

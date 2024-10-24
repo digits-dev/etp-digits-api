@@ -125,6 +125,30 @@ class CmsMenuSeeder extends Seeder
                 'id_cms_privileges' => 1,
                 'sorting'           => 2
             ],
+            [
+                'name'              => 'Create STS',
+                'type'              => 'Route',
+                'path'              => 'AdminStoreTransfersControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-file-text',
+                'parent_id'         => 0,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 3
+            ],
+            [
+                'name'              => 'Create STW/STR',
+                'type'              => 'Route',
+                'path'              => 'AdminStorePulloutsControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-file-text',
+                'parent_id'         => 0,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 5
+            ],
         ];
 
         foreach ($menus as $menu) {
