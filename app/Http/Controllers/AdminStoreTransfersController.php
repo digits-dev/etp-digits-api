@@ -1,5 +1,8 @@
 <?php namespace App\Http\Controllers;
 
+use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use Illuminate\Contracts\Session\Session;
+use Illuminate\Support\Facades\DB;
 
 	class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -36,6 +39,7 @@
 
 			$this->form = [];
 
+			$this->index_button[] = ['label'=>'Create STS','url'=>route('createSTS'),'icon'=>'fa fa-plus','color'=>'success'];
 	    }
 
 	    public function actionButtonSelected($id_selected,$button_name) {
@@ -47,5 +51,29 @@
 	        //Your code here
 
 	    }
+
+		public function createSTS() {
+			$data = array();
+			$data['page_title'] = 'Create STS';
+
+			if(CRUDBooster::isSuperadmin()){
+				$data['transfer_from'] = DB::table('store_masters')
+				->select('id','store_name')
+				->where('status', 'ACTIVE')
+				->orderBy('bea_so_store_name', 'ASC')
+				->get();
+			}else{
+				$data['transfer_from'] = DB::table('store_masters')
+				->select('id','store_name')
+				->whereIn('id', (array) CRUDBooster::myStore())
+				->where('status', 'ACTIVE')
+				->orderBy('bea_so_store_name', 'ASC')
+				->get();
+			}
+
+		
+
+			return view("store-transfer.create", $data);
+		}
 
 	}

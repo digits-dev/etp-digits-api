@@ -71,7 +71,7 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
     });
 
     Route::group(['prefix' => 'store_transfers'], function(){
-        Route::get('create-sts', [AdminStoreTransfersController::class,'getSTS'])->name('getSTS');
+        Route::get('create-sts', [AdminStoreTransfersController::class,'createSTS'])->name('createSTS');
     });
 });
 

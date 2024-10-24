@@ -26,7 +26,7 @@
                 <p style="font-size:16px; color:red; text-align:center;"><b>**PLEASE DO NOT MANUALLY TYPE THE DIGITS CODE**</b></p>
             </div>
 
-            <form action="{{ route('saveCreateSTS') }}" method="POST" id="sts_create" autocomplete="off" role="form" enctype="multipart/form-data">
+            <form action="" method="POST" id="sts_create" autocomplete="off" role="form" enctype="multipart/form-data">
             <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}" >
 
             <div class="col-md-3">
@@ -35,7 +35,7 @@
                     <select class="form-control select2" style="width: 100%;" name="transfer_from" id="transfer_from" required>
                         <option value="">Please select a store</option>
                         @foreach ($transfer_from as $data)
-                            <option value="{{$data->warehouse_id}}">{{$data->warehouse_name}}</option>
+                            <option value="{{$data->id}}">{{$data->store_name}}</option>
 
                         @endforeach
                     </select>
@@ -47,9 +47,9 @@
                     <label class="control-label">Transfer To: <span class="required">*</span></label>
                     <select class="form-control select2" style="width: 100%;" name="transfer_to" id="transfer_to" required>
                         <option value="">Please select a store</option>
-                        @foreach ($transfer_to as $data)
+                        {{-- @foreach ($transfer_to as $data)
                             <option value="{{$data->warehouse_id}}" data-id="{{$data->warehouse_id}}">{{$data->warehouse_name}}</option>
-                        @endforeach
+                        @endforeach --}}
                     </select>
                 </div>
             </div>
@@ -59,9 +59,9 @@
                     <label class="control-label">Reason: <span class="required">*</span></label>
                     <select class="form-control select2" style="width: 100%;" name="reason" id="reason" required>
                         <option value="">Please select a reason</option>
-                        @foreach ($reasons as $data)
+                        {{-- @foreach ($reasons as $data)
                             <option value="{{$data->id}}">{{$data->pullout_reason}}</option>
-                        @endforeach
+                        @endforeach --}}
                     </select>
                 </div>
             </div>
@@ -71,9 +71,9 @@
                     <label class="control-label">Transport By: <span class="required">*</span></label>
                     <select class="form-control select2" style="width: 100%;" name="transport_type" id="transport_type" required>
                         <option value="">Please select a transport type</option>
-                        @foreach ($transport_types as $data)
+                        {{-- @foreach ($transport_types as $data)
                             <option value="{{$data->id}}">{{$data->transport_type}}</option>
-                        @endforeach
+                        @endforeach --}}
                     </select>
                 </div>
             </div>
