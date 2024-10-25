@@ -1,7 +1,9 @@
 <?php namespace App\Http\Controllers;
 
+use App\Models\Item;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
-	use Illuminate\Support\Facades\DB;
+use Illuminate\Contracts\Session\Session;
+use Illuminate\Support\Facades\DB;
 
 	class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -84,6 +86,20 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
 
 			return view("store-transfer.create-sts", $data);
+		}
+
+		public function scanDigitsCode(){
+			$digits_code = request()->input('digits_code');
+
+			$checkCode = Item::select('digits_code', 'upc_code', 'item_description', 'has_serial')
+                    ->where('digits_code', $digits_code)
+                    ->first();
+
+			if ($checkCode) {
+				return response()->json(['success' => true, 'data' => $checkCode]);
+			} else {
+				return response()->json(['success' => false]);
+			}
 		}
 
 	}

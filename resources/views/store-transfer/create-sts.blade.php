@@ -107,10 +107,20 @@
                     <label class="control-label">Scan Digits Code</label>
                     <input class="form-control" type="text" name="item_search" id="item_search"/>
                 </div>
-
             </div>
 
-            <div class="col-md-9">
+            <div class="col-md-1">
+                <div class="form-group">
+                    <label class="control-label" style="padding-top: 20px;"></label>
+                    <button type="button" class="btn btn-default" id="scan_digits_code" style="color: limegreen"> 
+                        <i class="fa fa-barcode" id="scanIcon"></i> 
+                        <i class="fa fa-spinner fa-pulse fa-fw" id="scanningSpinner" style="display: none;"></i> 
+                        Scan
+                    </button>
+                </div> 
+            </div>
+
+            <div class="col-md-8">
                 <div class="form-group">
                     <label class="control-label">Memo:</label>
                     <input class="form-control" type="text" name="memo" id="memo" maxlength="120"/>
@@ -130,7 +140,7 @@
 
                 <div class="box-body no-padding noselect">
                     <div class="table-responsive">
-                        <table class="table table-bordered" id="st_items">
+                        <table class="table table-bordered" id="st_items" style="border: 1px solid">
                             <thead>
                                 <tr style="background: #0047ab; color: white">
                                     <th width="15%" class="text-center">Digits Code</th>
@@ -142,14 +152,16 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr class="dynamicRows"></tr>
-                                <tr class="tableInfo">
-                                    <td colspan="3" class="td-right"><strong>Total Qty</strong></td>
-                                    <td class="td-left" colspan="1" class="noselect"><span id="totalQuantity">0</span></td>
-                                    <td colspan="2"></td>
+                                <tr class="dynamicRows">
                                 </tr>
-
                             </tbody>
+                            <tfoot>
+                                <tr class="tableInfo">
+                                    <td colspan="3" class="td-right" style="border: 1px solid; text-align: center;"><strong>Total Qty</strong></td>
+                                    <td class="td-left" colspan="1" class="noselect" style="text-align: center; border: 1px solid"><span id="totalQuantity">0</span></td>
+                                    <td colspan="2" style="border: 1px solid"></td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -278,7 +290,7 @@
 
 @push('bottom')
 <script src='<?php echo asset("vendor/crudbooster/assets/select2/dist/js/select2.full.min.js")?>'></script>
-<script src='https://cdn.jsdelivr.net/gh/admsev/jquery-play-sound@master/jquery.playSound.js'></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     $(document).ready(function(){
@@ -299,8 +311,63 @@
         });
     })
 
+    $('#item_search').on('copy paste cut', function(e) {
+            e.preventDefault(); 
+        });
+
+        $('#item_search').on('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        $('#scan_digits_code').click(function(){
+            const digits_code = $('#item_search').val();
+            $('#scanningSpinner').show();
+            $('#scanIcon').hide();
+            $.ajax({
+                url: '{{ route("scan-digits-code") }}',
+                method: 'POST',
+                data: {
+                    digits_code: digits_code,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.success && response.data) {
+                        const tbody = $('#st_items tbody');
+                        tbody.empty();
+                        const row = response.data;
+                        const qty = 0; 
+                        const tr = `
+                            <tr>
+                                <td class="text-center">${row.digits_code || ''}</td>
+                                <td class="text-center">${row.upc_code || ''}</td>
+                                <td class="text-center">${row.item_description || ''}</td>
+                                <td class="text-center">${qty}</td>
+                                <td class="text-center">${row.has_serial || ''}</td>
+                                <td class="text-center">-</td>
+                            </tr>
+                        `;
+                        tbody.append(tr);
+                        $('#totalQuantity').text(qty);
+
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Oops...",
+                            html: "<h5><strong>Invalid digits code:</strong> <br> No matching data found, please try again!</h5>",
+                            confirmButtonText: '<i class="fa fa-thumbs-up"></i> Okay'
+                        });
+                    }
+                    $('#scanningSpinner').hide();
+                    $('#scanIcon').show();
+                },
+                error: function(xhr, status, error){
+                    alert('Error: ' + error);
+                    $('#scanningSpinner').hide();
+                    $('#scanIcon').show();
+                }
+            });
+        });
+
 </script>
 
 @endpush
-
-
