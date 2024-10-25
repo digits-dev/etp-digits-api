@@ -58,6 +58,7 @@ use Illuminate\Support\Facades\DB;
 				$data['transfer_from'] = DB::table('store_masters')
 				->select('id','store_name')
 				->where('status', 'ACTIVE')
+				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 			}else{
@@ -65,6 +66,7 @@ use Illuminate\Support\Facades\DB;
 				->select('id','store_name')
 				->whereIn('id', (array) CRUDBooster::myStore())
 				->where('status', 'ACTIVE')
+				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 			}
@@ -72,6 +74,7 @@ use Illuminate\Support\Facades\DB;
 			$data['transfer_to'] = DB::table('store_masters')
 				->select('id','store_name')
 				->where('status', 'ACTIVE')
+				->where('store_name', 'DIGITS WAREHOUSE')
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 
@@ -103,6 +106,7 @@ use Illuminate\Support\Facades\DB;
 				$data['transfer_from'] = DB::table('store_masters')
 				->select('id','store_name')
 				->where('status', 'ACTIVE')
+				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 			}else{
@@ -110,6 +114,7 @@ use Illuminate\Support\Facades\DB;
 				->select('id','store_name')
 				->whereIn('id', (array) CRUDBooster::myStore())
 				->where('status', 'ACTIVE')
+				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 			}
@@ -117,6 +122,7 @@ use Illuminate\Support\Facades\DB;
 			$data['transfer_to'] = DB::table('store_masters')
 				->select('id','store_name')
 				->where('status', 'ACTIVE')
+				->where('store_name', 'RMA WAREHOUSE')
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 

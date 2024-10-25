@@ -61,6 +61,7 @@ use Illuminate\Support\Facades\DB;
 				$data['transfer_from'] = DB::table('store_masters')
 				->select('id','store_name')
 				->where('status', 'ACTIVE')
+				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 			}else{
@@ -68,6 +69,7 @@ use Illuminate\Support\Facades\DB;
 				->select('id','store_name')
 				->whereIn('id', (array) CRUDBooster::myStore())
 				->where('status', 'ACTIVE')
+				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 			}
@@ -75,12 +77,13 @@ use Illuminate\Support\Facades\DB;
 			$data['transfer_to'] = DB::table('store_masters')
 				->select('id','store_name')
 				->where('status', 'ACTIVE')
+				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 
 			$data['reasons'] = DB::table('reasons')
 				->select('id','pullout_reason')
-				->where('transaction_types_id',1) //STS
+				->where('transaction_types_id',4)  //STS
 				->where('status','ACTIVE')
 				->get();
 
