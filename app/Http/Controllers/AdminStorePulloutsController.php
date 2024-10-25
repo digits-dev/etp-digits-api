@@ -53,6 +53,7 @@ use Illuminate\Support\Facades\DB;
 			$data = array();
 			$data['page_title'] = 'Create STW';
 
+
 			if(CRUDBooster::isSuperadmin()){
 				$data['transfer_from'] = DB::table('store_masters')
 				->select('id','store_name')
@@ -74,11 +75,20 @@ use Illuminate\Support\Facades\DB;
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 
-			$data['reasons'] = DB::table('reasons')
-				->select('id','pullout_reason')
-				->where('transaction_types_id',2)
+			if(CRUDBooster::myChannel() == 1){ //retail
+				$data['reasons'] = DB::table('reasons')
+				->select('bea_mo_reason as bea_reason','pullout_reason')
+				->where('transaction_types_id',1) //STW
 				->where('status','ACTIVE')
 				->get();
+			}
+			else{
+				$data['reasons'] = DB::table('reasons')
+				->select('bea_so_reason as bea_reason','pullout_reason')
+				->where('transaction_types_id',1) //STW
+				->where('status','ACTIVE')
+				->get();
+			}
 
 
 			return view("store-pullout.create-stw", $data);
@@ -110,11 +120,20 @@ use Illuminate\Support\Facades\DB;
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 
-			$data['reasons'] = DB::table('reasons')
-				->select('id','pullout_reason')
-				->where('transaction_types_id',2)
+			if(CRUDBooster::myChannel() == 1){ //retail
+				$data['reasons'] = DB::table('reasons')
+				->select('bea_mo_reason as bea_reason','pullout_reason','allow_multi_items')
+				->where('transaction_types_id',2) //rma
 				->where('status','ACTIVE')
 				->get();
+			}
+			else{
+				$data['reasons'] = DB::table('reasons')
+				->select('bea_so_reason as bea_reason','pullout_reason','allow_multi_items')
+				->where('transaction_typess_id',2) //rma
+				->where('status','ACTIVE')
+				->get();
+			}
 
 
 			return view("store-pullout.create-str", $data);

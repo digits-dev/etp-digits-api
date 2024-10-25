@@ -169,12 +169,12 @@ input[type=number]::-webkit-outer-spin-button {
                     <table class="table table-bordered noselect" id="st_items">
                         <thead>
                             <tr style="background: #0047ab; color: white">
-                                <th width="15%" class="text-center">{{ trans('message.table.digits_code') }}</th>
-                                <th width="15%" class="text-center">{{ trans('message.table.upc_code') }}</th>
-                                <th width="25%" class="text-center">{{ trans('message.table.item_description') }}</th>
-                                <th width="5%" class="text-center">{{ trans('message.table.st_quantity') }}</th>
-                                <th width="25%" class="text-center">{{ trans('message.table.st_serial_numbers') }}</th>
-                                <th width="10%" class="text-center">{{ trans('message.table.action') }}</th>
+                                <th width="15%" class="text-center">Digits Code</th>
+                                <th width="15%" class="text-center">UPC Code</th>
+                                <th width="25%" class="text-center">Item Description</th>
+                                <th width="5%" class="text-center">Qty</th>
+                                <th width="25%" class="text-center">Serial #</th>
+                                <th width="10%" class="text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody>
