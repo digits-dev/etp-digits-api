@@ -136,7 +136,7 @@ use Illuminate\Support\Facades\DB;
 			else{
 				$data['reasons'] = DB::table('reasons')
 				->select('bea_so_reason as bea_reason','pullout_reason','allow_multi_items')
-				->where('transaction_typess_id',2) //rma
+				->where('transaction_types_id',2) //rma
 				->where('status','ACTIVE')
 				->get();
 			}

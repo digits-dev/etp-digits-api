@@ -5,6 +5,8 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 	class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -107,4 +109,57 @@ use Illuminate\Support\Facades\DB;
 			}
 		}
 
+		public function postStsTransfer(Request $request)
+		{
+			try {
+				$validatedData = $request->validate([
+					'transfer_from' => 'required|max:255', 
+					'transfer_to' => 'required|max:255',
+					'reason' => 'required|max:255', 
+					'transport_type' => 'required|integer', 
+					'memo' => 'nullable|string|max:255', 
+					'hand_carrier' => 'nullable|string|max:100', 
+					'scanned_digits_code' => 'required|string|max:100', 
+					'qty' => 'required|integer|min:2', 
+				]);
+			} catch (ValidationException $e) {
+				$errors = $e->validator->errors()->all();
+				$errorMessage = implode('<br>', $errors);
+				CRUDBooster::redirect(CRUDBooster::mainpath(), $errorMessage, 'danger');
+			}
+
+			$transfer_from = $validatedData['transfer_from'];
+			$transfer_to = $validatedData['transfer_to'];
+			$reason = $validatedData['reason'];
+			$transport_type = $validatedData['transport_type'];
+			$memo = $validatedData['memo'];
+			$scanned_digits_code = $validatedData['scanned_digits_code'];
+			$qty = $validatedData['qty'];
+			$hand_carrier = $transport_type == 2 ? $request->input('hand_carrier') : "";
+
+			// Insert store transfer headers
+			$store_transfer_header_id = DB::table('store_transfers')->insertGetId([
+				'memo' => $memo,
+				'transaction_type' => 4, // STS
+				'wh_from' => $transfer_from,
+				'wh_to' => $transfer_to,
+				'hand_carrier' => $hand_carrier,
+				'reasons_id' => $reason,
+				'transport_types_id' => $transport_type,
+				'channels_id' => CRUDBooster::myChannel(),
+				'stores_id' => CRUDBooster::myStore(),
+				'status' => 0, // Pending
+				'created_by' => CRUDBooster::myId(),
+				'created_at' => now()
+			]);
+
+			// Insert store transfer lines
+			DB::table('store_transfer_lines')->insert([
+				'store_transfers_id' => $store_transfer_header_id, 
+				'item_code' => $scanned_digits_code,
+				'qty' => $qty,
+				'created_at' => now()
+			]);
+			CRUDBooster::redirect(CRUDBooster::mainpath(), trans("STS created successfully!"), 'success');
+		}
 	}

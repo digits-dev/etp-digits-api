@@ -140,7 +140,18 @@ input[type=number]::-webkit-outer-spin-button {
             
         </div>
 
-        <div class="col-md-6">
+        <div class="col-md-1">
+            <div class="form-group">
+                <label class="control-label" style="padding-top: 20px;"></label>
+                <button type="button" class="btn btn-default" id="scan_digits_code" style="color: limegreen">
+                    <i class="fa fa-barcode" id="scanIcon"></i>
+                    <i class="fa fa-spinner fa-pulse fa-fw" id="scanningSpinner" style="display: none;"></i>
+                    Scan
+                </button>
+            </div>
+        </div>
+
+        <div class="col-md-5">
             <div class="form-group">
                 <label class="control-label">Memo:</label>
                 <input class="form-control" type="text" name="memo" id="memo" maxlength="120"/>
@@ -179,6 +190,9 @@ input[type=number]::-webkit-outer-spin-button {
                         </thead>
                         <tbody>
                             <tr class="dynamicRows"></tr>
+                            
+                        </tbody>
+                        <tfoot>
                             <tr class="tableInfo">
                                 <td colspan="3" align="right"><strong>Total Qty</strong></td>
                                 <td align="left" colspan="1">
@@ -186,8 +200,7 @@ input[type=number]::-webkit-outer-spin-button {
                                 </td>
                                 <td colspan="2"></td>
                             </tr>
-
-                        </tbody>
+                        </tfoot>
                     </table>
                 </div>
             </div>
@@ -207,11 +220,36 @@ input[type=number]::-webkit-outer-spin-button {
 </div>
 
 
+<!-- The Modal -->
+<div class="modal fade" id="SerialModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="exampleModalCenterTitle"> <i class="fa fa-barcode"></i> Create Serial Number</h4>
+          {{-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button> --}}
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="">Serial Number</label>
+            <input type="text" name="createSerial" id="createSerial" class="form-control">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          {{-- <button type="button" class="btn btn-success">Create</button> --}}
+        </div>
+      </div>
+    </div>
+  </div>
+
 @endsection
 
 @push('bottom')
 <script src='<?php echo asset("vendor/crudbooster/assets/select2/dist/js/select2.full.min.js")?>'></script>
 <script src='https://cdn.jsdelivr.net/gh/admsev/jquery-play-sound@master/jquery.playSound.js'></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
     $(document).ready(function(){
@@ -231,6 +269,73 @@ input[type=number]::-webkit-outer-spin-button {
  
         });
     })
+
+    $('#item_search').on('copy paste cut', function(e) {
+            e.preventDefault();
+        });
+
+        $('#item_search').on('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        function play(){
+            // $.playSound('https://assets.mixkit.co/active_storage/sfx/931/931-preview.mp3');
+        }
+
+        $('#scan_digits_code').click(function() {
+            const digits_code = $('#item_search').val();
+            $('#scanningSpinner').show();
+            $('#scanIcon').hide();
+            play();
+            $.ajax({
+                url: '{{ route('scan-digits-code') }}',
+                method: 'POST',
+                data: {
+                    digits_code: digits_code,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    if (response.success && response.data) {
+                        const tbody = $('#st_items tbody');
+                        tbody.empty();
+                        const row = response.data;
+                        const qty = 1;
+                        const tr = `
+                            <tr>
+                                <td class="text-center">${row.digits_code || ''}</td>
+                                <td class="text-center">${row.upc_code || ''}</td>
+                                <td class="text-center">${row.item_description || ''}</td>
+                                <td class="text-center">${qty}</td>
+                                <td class="text-center">${row.has_serial || ''}</td>
+                                <td class="text-center">-</td>
+                            </tr>
+                        `;
+                        tbody.append(tr);
+                        $('#totalQuantity').val(qty);
+
+                        if(row.has_serial == 1){
+                            $('#SerialModal').modal('show');
+                        } else if(row.has_serial == 0) {
+                            // alert('No need serial');
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Oops...",
+                            html: "<h5><strong>Invalid digits code:</strong> <br> No matching data found, please try again!</h5>",
+                            confirmButtonText: '<i class="fa fa-thumbs-up"></i> Okay'
+                        });
+                    }
+                    $('#scanningSpinner').hide();
+                    $('#scanIcon').show();
+                },
+                error: function(xhr, status, error) {
+                    alert('Error: ' + error);
+                    $('#scanningSpinner').hide();
+                    $('#scanIcon').show();
+                }
+            });
+        });
 
 </script>
 
