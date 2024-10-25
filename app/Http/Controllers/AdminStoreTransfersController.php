@@ -3,6 +3,7 @@
 use App\Models\Item;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Illuminate\Contracts\Session\Session;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 	class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controllers\CBController {
@@ -77,7 +78,8 @@ use Illuminate\Support\Facades\DB;
 			$data['transfer_to'] = DB::table('store_masters')
 				->select('id','store_name')
 				->where('status', 'ACTIVE')
-				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE', CRUDBooster::myStore()])
+				->whereNotIn('id', (array) CRUDBooster::myStore())
+				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 
