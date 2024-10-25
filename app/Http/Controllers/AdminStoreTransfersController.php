@@ -119,8 +119,8 @@ use Illuminate\Validation\ValidationException;
 					'transport_type' => 'required|integer', 
 					'memo' => 'nullable|string|max:255', 
 					'hand_carrier' => 'nullable|string|max:100', 
-					'scanned_digits_code' => 'required|string|max:100', 
-					'qty' => 'required|integer|min:2', 
+					'scanned_digits_code' => 'required|max:100', 
+					'qty' => 'required|min:1', 
 				]);
 			} catch (ValidationException $e) {
 				$errors = $e->validator->errors()->all();
