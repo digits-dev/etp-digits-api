@@ -1,8 +1,21 @@
 @extends('crudbooster::admin_template')
 @section('content')
 
-    @push('head')
-    @endpush
+@push('head')
+<link rel='stylesheet' href='<?php echo asset("vendor/crudbooster/assets/select2/dist/css/select2.min.css")?>'/>
+<style type="text/css">
+    .select2-container--default .select2-selection--single {border-radius: 0px !important}
+    .select2-container .select2-selection--single {height: 35px}
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #3c8dbc !important;
+        border-color: #367fa9 !important;
+        color: #fff !important;
+    }
+    .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+        color: #fff !important;
+    }
+</style>
+@endpush
 
     @if ($errors->any())
         <div class="alert alert-danger">
@@ -47,9 +60,9 @@
                     <label class="control-label">Transfer To: <span class="required">*</span></label>
                     <select class="form-control select2" style="width: 100%;" name="transfer_to" id="transfer_to" required>
                         <option value="">Please select a store</option>
-                        {{-- @foreach ($transfer_to as $data)
-                            <option value="{{$data->warehouse_id}}" data-id="{{$data->warehouse_id}}">{{$data->warehouse_name}}</option>
-                        @endforeach --}}
+                        @foreach ($transfer_to as $data)
+                            <option value="{{$data->id}}">{{$data->store_name}}</option>
+                        @endforeach
                     </select>
                 </div>
             </div>
@@ -59,9 +72,9 @@
                     <label class="control-label">Reason: <span class="required">*</span></label>
                     <select class="form-control select2" style="width: 100%;" name="reason" id="reason" required>
                         <option value="">Please select a reason</option>
-                        {{-- @foreach ($reasons as $data)
+                        @foreach ($reasons as $data)
                             <option value="{{$data->id}}">{{$data->pullout_reason}}</option>
-                        @endforeach --}}
+                        @endforeach
                     </select>
                 </div>
             </div>
@@ -71,6 +84,9 @@
                     <label class="control-label">Transport By: <span class="required">*</span></label>
                     <select class="form-control select2" style="width: 100%;" name="transport_type" id="transport_type" required>
                         <option value="">Please select a transport type</option>
+                        <option value="1">Logistics</option>
+                        <option value="2">Hand Carry</option>
+
                         {{-- @foreach ($transport_types as $data)
                             <option value="{{$data->id}}">{{$data->transport_type}}</option>
                         @endforeach --}}
@@ -78,7 +94,7 @@
                 </div>
             </div>
 
-            <div class="col-md-3 col-md-offset-9" id="hand_carriers">
+            <div class="col-md-3 col-md-offset-9" id="hand_carriers" style="display: none">
                 <div class="form-group">
                     <label class="control-label">Hand Carrier:</label>
                     <input class="form-control" type="text" name="hand_carrier" id="hand_carrier" placeholder="First name Last name"/>
@@ -259,3 +275,32 @@
     </div>
 
 @endsection
+
+@push('bottom')
+<script src='<?php echo asset("vendor/crudbooster/assets/select2/dist/js/select2.full.min.js")?>'></script>
+<script src='https://cdn.jsdelivr.net/gh/admsev/jquery-play-sound@master/jquery.playSound.js'></script>
+
+<script>
+    $(document).ready(function(){
+        $('#transfer_to').select2();
+        $('#transfer_from').select2();
+        $('#reason').select2();
+        $('#transport_type').select2();
+
+        $('#transport_type').change(function(){
+            let transport_type = $('#transport_type').val();
+            if (transport_type == 2){
+                $('#hand_carriers').show();
+            }
+            else{
+                $('#hand_carriers').hide();
+            }
+ 
+        });
+    })
+
+</script>
+
+@endpush
+
+

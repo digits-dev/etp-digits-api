@@ -66,8 +66,8 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
     });
 
     Route::group(['prefix' => 'store_pullouts'], function(){
-        Route::get('create-pullout-stw', [AdminStorePulloutsController::class,'getSTW'])->name('getSTW');
-        Route::get('create-pullout-str', [AdminStorePulloutsController::class,'getSTR'])->name('getSTR');
+        Route::get('create-pullout-stw', [AdminStorePulloutsController::class,'createSTW'])->name('createSTW');
+        Route::get('create-pullout-str', [AdminStorePulloutsController::class,'createSTR'])->name('createSTR');
     });
 
     Route::group(['prefix' => 'store_transfers'], function(){

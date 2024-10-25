@@ -1,5 +1,8 @@
 <?php namespace App\Http\Controllers;
 
+use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use Illuminate\Support\Facades\DB;
+
 	class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controllers\CBController {
 
 	    public function cbInit() {
@@ -32,6 +35,9 @@
 
 			$this->form = [];
 
+			$this->index_button[] = ['label'=>'Create STW','url'=>route('createSTW'),'icon'=>'fa fa-plus','color'=>'success'];
+			$this->index_button[] = ['label'=>'Create ST RMA','url'=>route('createSTR'),'icon'=>'fa fa-plus','color'=>'success'];
+
 	    }
 
 	    public function actionButtonSelected($id_selected,$button_name) {
@@ -42,4 +48,78 @@
 	    public function hook_query_index(&$query) {
 
 	    }
+
+		public function createSTW() {
+			$data = array();
+			$data['page_title'] = 'Create STW';
+
+			if(CRUDBooster::isSuperadmin()){
+				$data['transfer_from'] = DB::table('store_masters')
+				->select('id','store_name')
+				->where('status', 'ACTIVE')
+				->orderBy('bea_so_store_name', 'ASC')
+				->get();
+			}else{
+				$data['transfer_from'] = DB::table('store_masters')
+				->select('id','store_name')
+				->whereIn('id', (array) CRUDBooster::myStore())
+				->where('status', 'ACTIVE')
+				->orderBy('bea_so_store_name', 'ASC')
+				->get();
+			}
+
+			$data['transfer_to'] = DB::table('store_masters')
+				->select('id','store_name')
+				->where('status', 'ACTIVE')
+				->orderBy('bea_so_store_name', 'ASC')
+				->get();
+
+			$data['reasons'] = DB::table('reasons')
+				->select('id','pullout_reason')
+				->where('transaction_types_id',2)
+				->where('status','ACTIVE')
+				->get();
+
+
+			return view("store-pullout.create-stw", $data);
+		}
+
+		public function createSTR() {
+			$data = array();
+			$data['page_title'] = 'Create ST RMA';
+
+
+			if(CRUDBooster::isSuperadmin()){
+				$data['transfer_from'] = DB::table('store_masters')
+				->select('id','store_name')
+				->where('status', 'ACTIVE')
+				->orderBy('bea_so_store_name', 'ASC')
+				->get();
+			}else{
+				$data['transfer_from'] = DB::table('store_masters')
+				->select('id','store_name')
+				->whereIn('id', (array) CRUDBooster::myStore())
+				->where('status', 'ACTIVE')
+				->orderBy('bea_so_store_name', 'ASC')
+				->get();
+			}
+
+			$data['transfer_to'] = DB::table('store_masters')
+				->select('id','store_name')
+				->where('status', 'ACTIVE')
+				->orderBy('bea_so_store_name', 'ASC')
+				->get();
+
+			$data['reasons'] = DB::table('reasons')
+				->select('id','pullout_reason')
+				->where('transaction_types_id',2)
+				->where('status','ACTIVE')
+				->get();
+
+
+			return view("store-pullout.create-str", $data);
+		}
+
+
+		
 	}

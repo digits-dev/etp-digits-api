@@ -1,8 +1,7 @@
 <?php namespace App\Http\Controllers;
 
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
-use Illuminate\Contracts\Session\Session;
-use Illuminate\Support\Facades\DB;
+	use Illuminate\Support\Facades\DB;
 
 	class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -71,9 +70,20 @@ use Illuminate\Support\Facades\DB;
 				->get();
 			}
 
-		
+			$data['transfer_to'] = DB::table('store_masters')
+				->select('id','store_name')
+				->where('status', 'ACTIVE')
+				->orderBy('bea_so_store_name', 'ASC')
+				->get();
 
-			return view("store-transfer.create", $data);
+			$data['reasons'] = DB::table('reasons')
+				->select('id','pullout_reason')
+				->where('transaction_types_id',1) //STS
+				->where('status','ACTIVE')
+				->get();
+
+
+			return view("store-transfer.create-sts", $data);
 		}
 
 	}
