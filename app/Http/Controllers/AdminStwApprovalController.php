@@ -91,7 +91,7 @@
 			
 			$data = [];
             $data['page_title'] = "Pullout Details";
-			$data['store_pullout'] = StorePullout::with(['transport_types','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
+			$data['store_pullout'] = StorePullout::with(['transportTypes','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
 
 			// dd($data['store_pullout']);
 
@@ -107,7 +107,7 @@
 			
 			$data = [];
             $data['page_title'] = "Review Pullout Details";
-			$data['store_pullout'] = StorePullout::with(['transport_types','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
+			$data['store_pullout'] = StorePullout::with(['transportTypes','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
 			$data['action_url'] = route('saveReviewStw');
 			return view('store-pullout.approval', $data);
 

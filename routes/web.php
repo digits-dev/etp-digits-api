@@ -74,10 +74,16 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::get('void_pullout/{id}', [AdminStorePulloutsController::class, 'voidPullout'])->name('voidPullout');
         Route::get('print/{id}', [AdminStorePulloutsController::class, 'printPullout'])->name('printPullout');
         Route::post('post-stw-pullout', [AdminStorePulloutsController::class,'postStwPullout'])->name('post-stw-pullout');
-       
+        Route::get('schedule/{id}', [AdminStorePulloutsController::class, 'getSchedule'])->name('stwSchedule');
+        Route::post('save-schedule',[AdminStorePulloutsController::class, 'saveSchedule'])->name('saveSchedulePullout');
     });
 
     Route::group(['prefix' => 'stw_approval'], function(){
+        Route::get('review/{id}',[AdminStwApprovalController::class,'getApproval'])->name('pullout-approval.review');
+        Route::post('save-stw-review',[AdminStwApprovalController::class,'saveReviewPullout'])->name('saveReviewStw');
+    });
+
+    Route::group(['prefix' => 'str_approval'], function(){
         Route::get('review/{id}',[AdminStwApprovalController::class,'getApproval'])->name('pullout-approval.review');
         Route::post('save-stw-review',[AdminStwApprovalController::class,'saveReviewPullout'])->name('saveReviewStw');
     });

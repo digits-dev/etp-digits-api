@@ -67,10 +67,6 @@ use Maatwebsite\Excel\Concerns\ToArray;
 					'confirmation_text'=>'Are you sure to VOID this transaction?'
 				];
 			}
-
-			if(CRUDBooster::isSuperadmin() || in_array(CRUDBooster::myPrivilegeName() ,["LOG TM","LOG TL"])){
-				$this->addaction[] = ['title'=>'Schedule','url'=>CRUDBooster::mainpath('schedule').'/[st_document_number]','icon'=>'fa fa-calendar','color'=>'warning','showIf'=>"[status]=='FOR SCHEDULE'"];
-			}
 			
 			if(in_array(CRUDBooster::myPrivilegeId(),self::Scheduler)){
 				$this->addaction[] = [
@@ -293,7 +289,7 @@ use Maatwebsite\Excel\Concerns\ToArray;
 				]);
 
 			if($record)
-                CRUDBooster::redirect(CRUDBooster::mainpath('print').'/'.$request->st_number,'','')->send();
+                CRUDBooster::redirect(CRUDBooster::mainpath('print').'/'.$request->header_id,'','')->send();
             else{
                 CRUDBooster::redirect(CRUDBooster::mainpath(),'Failed! No transaction has been scheduled for transfer.','danger')->send();
             }

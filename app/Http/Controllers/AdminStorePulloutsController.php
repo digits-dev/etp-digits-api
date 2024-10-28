@@ -12,6 +12,9 @@ use Illuminate\Support\Carbon;
 
 		private const Pending = '0';
 		private const Void = '8';
+		private const Scheduler = [1];
+		private const Schedule = 6;
+		private const Receiving = 5;
 
 	    public function cbInit() {
 
@@ -63,6 +66,15 @@ use Illuminate\Support\Carbon;
 					'confirmation_title'=>'Confirm Voiding',
 					'confirmation_text'=>'Are you sure to VOID this transaction?'
 				];
+			}
+
+			if(in_array(CRUDBooster::myPrivilegeId(),self::Scheduler)){
+				$this->addaction[] = [
+					'title'=>'Schedule',
+					'url'=>CRUDBooster::mainpath('schedule/[id]'),
+					'icon'=>'fa fa-calendar',
+					'color'=>'warning',
+					'showIf'=>"[status]=='" . Self::Schedule . "'"];
 			}
 
 			$this->addaction[] = ['title'=>'Print','url'=>CRUDBooster::mainpath('print').'/[id]','icon'=>'fa fa-print','color'=>'info'];
@@ -301,6 +313,33 @@ use Illuminate\Support\Carbon;
 
 		}
 
+		public function getSchedule($id) {
 
+            if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
+                CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
+            }
+			
+            $data = [];
+            $data['page_title'] = "Schedule Pullout";
+			$data['store_pullout'] = StorePullout::with(['transportTypes','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
+
+            return view('store-pullout.schedule', $data);
+
+        }
+
+		public function saveSchedule(Request $request){
+			$record = StorePullout::where('id',$request->header_id)
+				->update([
+					'scheduled_at' => $request->schedule_date,
+					'scheduled_by' => CRUDBooster::myId(),
+					'status' => self::Receiving
+				]);
+
+			if($record)
+                CRUDBooster::redirect(CRUDBooster::mainpath('print').'/'.$request->header_id,'','')->send();
+            else{
+                CRUDBooster::redirect(CRUDBooster::mainpath(),'Failed! No transaction has been scheduled for transfer.','danger')->send();
+            }
+		}
 		
 	}

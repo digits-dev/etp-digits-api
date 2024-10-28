@@ -50,8 +50,8 @@ table.table.table-bordered th {
                                     <b>ST:</b>
                                 </td>
                                 <td>
-                                    {{ $stock_transfer->st_document_number }}
-                                    <input type="hidden" name="st_number" id="st_number" value="{{$stock_transfer->st_document_number}}" >
+                                    {{ $stock_transfer->document_number }}
+                                    <input type="hidden" name="st_number" id="st_number" value="{{$stock_transfer->document_number}}" >
                                 </td>
                             </tr>
                             
@@ -60,7 +60,7 @@ table.table.table-bordered th {
                                     <b>From:</b>
                                 </td>
                                 <td>
-                                    {{ $transfer_from->bea_so_store_name }} 
+                                    {{ $store_transfer->storesFrom->store_name }} 
                                 </td>
                             </tr>
 
@@ -69,7 +69,7 @@ table.table.table-bordered th {
                                     <b>To:</b>
                                 </td>
                                 <td>
-                                    {{ $transfer_to->bea_so_store_name }} 
+                                    {{ $store_transfer->storesTo->store_name }} 
                                 </td>
                             </tr>
                             
@@ -78,7 +78,7 @@ table.table.table-bordered th {
                                     <b>Reason:</b>
                                 </td>
                                 <td>
-                                    {{ $stock_transfer->pullout_reason }} 
+                                    {{ $store_transfer->reasons->pullout_reason }} 
                                 </td>
                             </tr>
 
