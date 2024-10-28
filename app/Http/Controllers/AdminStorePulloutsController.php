@@ -2,6 +2,9 @@
 
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Carbon;
 
 	class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -56,14 +59,14 @@ use Illuminate\Support\Facades\DB;
 
 			if(CRUDBooster::isSuperadmin()){
 				$data['transfer_from'] = DB::table('store_masters')
-				->select('id','store_name')
+				->select('id','store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 			}else{
 				$data['transfer_from'] = DB::table('store_masters')
-				->select('id','store_name')
+				->select('id','store_name', 'warehouse_code')
 				->whereIn('id', (array) CRUDBooster::myStore())
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
@@ -72,7 +75,7 @@ use Illuminate\Support\Facades\DB;
 			}
 
 			$data['transfer_to'] = DB::table('store_masters')
-				->select('id','store_name')
+				->select('id','store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->where('store_name', 'DIGITS WAREHOUSE')
 				->orderBy('bea_so_store_name', 'ASC')
@@ -95,6 +98,86 @@ use Illuminate\Support\Facades\DB;
 
 
 			return view("store-pullout.create-stw", $data);
+		}
+
+		public function postStwPullout(Request $request)
+		{
+			try {
+				$validatedData = $request->validate([
+					'pullout_from' => 'required|max:255', 
+					'pullout_to' => 'required|max:255',
+					'reason' => 'required|max:255', 
+					'transport_type' => 'required|integer', 
+					'memo' => 'nullable|string|max:255', 
+					'hand_carrier' => 'nullable|string|max:100',
+					'pullout_date' => 'required', 
+					'scanned_digits_code' => 'required|max:100',
+					'allSerial' => 'required',
+					'qty' => 'required',
+					'current_srp' => 'required',
+					'stores_id_destination_to' => 'required' 
+				]);
+			} catch (ValidationException $e) {
+				$errors = $e->validator->errors()->all();
+				$errorMessage = implode('<br>', $errors);
+				CRUDBooster::redirect(CRUDBooster::mainpath(), $errorMessage, 'danger');
+			}
+
+			$transport_type = $validatedData['transport_type'];
+			$hand_carrier = $transport_type == 2 ? $request->input('hand_carrier') : "";
+
+			$store_pullout_header_id = DB::table('store_pullouts')->insertGetId([
+				'memo' => $validatedData['memo'],
+				'pullout_date' => Carbon::parse($validatedData['pullout_date']),
+				'transaction_type' => 1, // STW
+				'wh_from' => $validatedData['pullout_from'],
+				'wh_to' => $validatedData['pullout_to'],
+				'hand_carrier' => $hand_carrier,
+				'reasons_id' => $validatedData['reason'],
+				'transport_types_id' => $validatedData['transport_type'],
+				'channels_id' => CRUDBooster::myChannel(),
+				'stores_id' => CRUDBooster::myStore(),
+				'stores_id_destination' => $validatedData['stores_id_destination_to'],
+				'status' => 0, // Pending
+				'created_by' => CRUDBooster::myId(),
+				'created_at' => now()
+			]);
+
+			$store_pullout_lines = [];
+
+			foreach ($validatedData['scanned_digits_code'] as $index => $item_code) {
+				$store_pullout_lines[] = [
+					'store_pullouts_id' => $store_pullout_header_id,
+					'item_code' => $item_code,
+					'qty' => $validatedData['qty'][$index], 
+					'unit_price' => $validatedData['current_srp'][$index],
+					'created_at' => now()
+				];
+			}
+			DB::table('store_pullout_lines')->insert($store_pullout_lines);
+	
+			$line_ids = DB::table('store_pullout_lines')
+				->where('store_pullouts_id', $store_pullout_header_id)
+				->pluck('id');
+
+			$serial_table = [];
+			foreach ($line_ids as $index => $line_id) {
+				if (!empty($validatedData['allSerial'][$index])) { 
+
+					$individual_serials = explode(',', $validatedData['allSerial'][$index]);
+					foreach ($individual_serials as $ser) {
+						$serial_table[] = [
+							'store_pullout_lines' => $line_id,
+							'serial_number' => trim($ser),
+							'status' => 0, //Pending
+							'created_at' => now()
+						];
+					}
+				}
+			}
+			DB::table('serial_numbers')->insert($serial_table);
+
+			CRUDBooster::redirect(CRUDBooster::mainpath(), trans("STS created successfully!"), 'success');
 		}
 
 		public function createSTR() {

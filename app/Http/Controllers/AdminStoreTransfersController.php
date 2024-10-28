@@ -7,6 +7,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Concerns\ToArray;
 
 	class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -62,14 +63,14 @@ use Illuminate\Validation\ValidationException;
 
 			if(CRUDBooster::isSuperadmin()){
 				$data['transfer_from'] = DB::table('store_masters')
-				->select('id','store_name')
+				->select('id','store_name','warehouse_code')
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 			}else{
 				$data['transfer_from'] = DB::table('store_masters')
-				->select('id','store_name')
+				->select('id','store_name','warehouse_code')
 				->whereIn('id', (array) CRUDBooster::myStore())
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
@@ -78,7 +79,7 @@ use Illuminate\Validation\ValidationException;
 			}
 
 			$data['transfer_to'] = DB::table('store_masters')
-				->select('id','store_name')
+				->select('id','store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->whereNotIn('id', (array) CRUDBooster::myStore())
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
@@ -98,15 +99,23 @@ use Illuminate\Validation\ValidationException;
 		public function scanDigitsCode(){
 			$digits_code = request()->input('digits_code');
 
-			$checkCode = Item::select('digits_code', 'upc_code', 'item_description', 'has_serial')
-                    ->where('digits_code', $digits_code)
-                    ->first();
+			$checkCode = Item::select('digits_code', 'upc_code', 'item_description', 'has_serial', 'current_srp')
+						->where('digits_code', $digits_code)->first();
 
 			if ($checkCode) {
 				return response()->json(['success' => true, 'data' => $checkCode]);
 			} else {
 				return response()->json(['success' => false]);
 			}
+		}
+
+		public function checkSerial(Request $request){
+
+			$exists = DB::table('serial_numbers')
+				->where(DB::raw('BINARY serial_number'), $request->serial)
+				->exists();
+				
+			return response()->json(['exists' => $exists]);
 		}
 
 		public function postStsTransfer(Request $request)
@@ -119,7 +128,11 @@ use Illuminate\Validation\ValidationException;
 					'transport_type' => 'required|integer', 
 					'memo' => 'nullable|string|max:255', 
 					'hand_carrier' => 'nullable|string|max:100', 
-					'scanned_digits_code' => 'required|max:100' 
+					'scanned_digits_code' => 'required|max:100',
+					'allSerial' => 'required',
+					'qty' => 'required',
+					'current_srp' => 'required',
+					'stores_id_destination_to' => 'required' 
 				]);
 			} catch (ValidationException $e) {
 				$errors = $e->validator->errors()->all();
@@ -127,26 +140,20 @@ use Illuminate\Validation\ValidationException;
 				CRUDBooster::redirect(CRUDBooster::mainpath(), $errorMessage, 'danger');
 			}
 
-			$transfer_from = $validatedData['transfer_from'];
-			$transfer_to = $validatedData['transfer_to'];
-			$reason = $validatedData['reason'];
 			$transport_type = $validatedData['transport_type'];
-			$memo = $validatedData['memo'];
-			$scanned_digits_code = $validatedData['scanned_digits_code'];
-			$qty = $request->input('qty');
 			$hand_carrier = $transport_type == 2 ? $request->input('hand_carrier') : "";
 
-			//Insert store transfer headers
 			$store_transfer_header_id = DB::table('store_transfers')->insertGetId([
-				'memo' => $memo,
+				'memo' => $validatedData['memo'],
 				'transaction_type' => 4, // STS
-				'wh_from' => $transfer_from,
-				'wh_to' => $transfer_to,
+				'wh_from' => $validatedData['transfer_from'],
+				'wh_to' => $validatedData['transfer_to'],
 				'hand_carrier' => $hand_carrier,
-				'reasons_id' => $reason,
-				'transport_types_id' => $transport_type,
+				'reasons_id' => $validatedData['reason'],
+				'transport_types_id' => $validatedData['transport_type'],
 				'channels_id' => CRUDBooster::myChannel(),
 				'stores_id' => CRUDBooster::myStore(),
+				'stores_id_destination' => $validatedData['stores_id_destination_to'],
 				'status' => 0, // Pending
 				'created_by' => CRUDBooster::myId(),
 				'created_at' => now()
@@ -154,16 +161,39 @@ use Illuminate\Validation\ValidationException;
 
 			$store_transfer_lines = [];
 
-			for ($i = 0; $i < count($scanned_digits_code); $i++) {
+			foreach ($validatedData['scanned_digits_code'] as $index => $item_code) {
 				$store_transfer_lines[] = [
 					'store_transfers_id' => $store_transfer_header_id,
-					'item_code' => $scanned_digits_code[$i],
-					'qty' => $qty[$i],
+					'item_code' => $item_code,
+					'qty' => $validatedData['qty'][$index], 
+					'unit_price' => $validatedData['current_srp'][$index],
 					'created_at' => now()
 				];
 			}
-			// Insert all the store transfer lines
 			DB::table('store_transfer_lines')->insert($store_transfer_lines);
+	
+			$line_ids = DB::table('store_transfer_lines')
+				->where('store_transfers_id', $store_transfer_header_id)
+				->pluck('id');
+
+			$serial_table = [];
+			foreach ($line_ids as $index => $line_id) {
+				if (!empty($validatedData['allSerial'][$index])) { 
+
+					$individual_serials = explode(',', $validatedData['allSerial'][$index]);
+					foreach ($individual_serials as $ser) {
+						$serial_table[] = [
+							'store_transfer_lines' => $line_id,
+							'serial_number' => trim($ser),
+							'status' => 0, //Pending
+							'created_at' => now()
+						];
+					}
+				}
+			}
+			DB::table('serial_numbers')->insert($serial_table);
+
 			CRUDBooster::redirect(CRUDBooster::mainpath(), trans("STS created successfully!"), 'success');
 		}
+		
 	}

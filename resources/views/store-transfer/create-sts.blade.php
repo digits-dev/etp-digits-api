@@ -58,7 +58,7 @@
                             required>
                             <option value="">Please select a store</option>
                             @foreach ($transfer_from as $data)
-                                <option value="{{ $data->id }}">{{ $data->store_name }}</option>
+                                <option data-id="{{ $data->id }}" value="{{ $data->warehouse_code }}">{{ $data->store_name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -71,9 +71,10 @@
                             required>
                             <option value="">Please select a store</option>
                             @foreach ($transfer_to as $data)
-                                <option value="{{ $data->id }}">{{ $data->store_name }}</option>
+                                <option data-id="{{ $data->id }}" value="{{ $data->warehouse_code }}">{{ $data->store_name }}</option>
                             @endforeach
                         </select>
+                        <input type="hidden" name="stores_id_destination_to" id="stores_id_destination_to">
                     </div>
                 </div>
 
@@ -97,10 +98,6 @@
                             <option value="">Please select a transport type</option>
                             <option value="1">Logistics</option>
                             <option value="2">Hand Carry</option>
-
-                            {{-- @foreach ($transport_types as $data)
-                            <option value="{{$data->id}}">{{$data->transport_type}}</option>
-                        @endforeach --}}
                         </select>
                     </div>
                 </div>
@@ -300,10 +297,10 @@
     </div>
 
     <!-- The Modal -->
-    <div class="modal fade" id="SerialModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal fade" id="SerialModal" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
         <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-            <div class="modal-header">
+            <div class="modal-header bg-primary">
             <h4 class="modal-title" id="exampleModalCenterTitle"> <i class="fa fa-barcode"></i> Serial Number</h4>
             </div>
             <div class="modal-body">
@@ -313,7 +310,7 @@
             </div>
             </div>
             <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="CancelSerial()">Cancel</button>
             {{-- <button type="button" class="btn btn-success">Create</button> --}}
             </div>
         </div>
@@ -344,6 +341,11 @@
             });
         })
 
+        $('#transfer_to').change(function(){
+            const selectedDataId = $(this).find('option:selected').data('id');
+            $('#stores_id_destination_to').val(selectedDataId);
+        })
+
         function checkSelects() {
             const transfer_from = $('#transfer_from').val();
             const transfer_to = $('#transfer_to').val();
@@ -360,7 +362,6 @@
         $('#transfer_from, #transfer_to, #reason, #transport_type').on('change', checkSelects);
         $('#item_search').attr('disabled', true);
 
-
         $('#item_search').on('copy paste cut', function(e) {
             e.preventDefault();
         });
@@ -369,50 +370,69 @@
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
+        let currentSerialRow = null; // row tracker
+        let pendingSerials = []; // serials tracker
+
         $('#item_search').keypress(function(event) {
-            if (event.which === 13) { 
+            if (event.which === 13) {
                 event.preventDefault();
                 let scannedDigitsCodes = {};
-                const digits_code = $(this).val(); 
-                $('#scanningSpinner').show(); 
+                const digits_code = $(this).val();
+                $('#scanningSpinner').show();
 
                 $.ajax({
                     url: "{{ route('scan-digits-code') }}",
                     method: 'POST',
                     data: {
                         digits_code: digits_code,
-                        _token: $('meta[name="csrf-token"]').attr('content') 
+                        _token: $('meta[name="csrf-token"]').attr('content')
                     },
                     success: function(response) {
                         if (response.success && response.data) {
                             const tbody = $('#st_items tbody');
                             const row = response.data;
                             const digitsCode = row.digits_code;
-                            const qty = 1; 
+                            const qty = 1;
                             const existingRow = tbody.find(`input[name="scanned_digits_code[]"][value="${digitsCode}"]`).closest('tr');
 
                             if (existingRow.length) {
+                                // Item already exists; increment qty and show modal if serials are needed
                                 const currentQty = parseInt(existingRow.find('input[name="qty[]"]').val()) || 0;
                                 existingRow.find('input[name="qty[]"]').val(currentQty + 1);
+
+                                // Track the row and show modal to enter additional serials if item has serials
+                                if (row.has_serial == 1) {
+                                    currentSerialRow = existingRow;
+                                    $('#SerialModal').modal('show');
+                                }
                             } else {
                                 scannedDigitsCodes[digitsCode] = qty;
 
                                 const tr = `
                                     <tr>
-                                        <td class="text-center"><input type="text" class="form-control" name="scanned_digits_code[]" style="text-align:center" readonly value="${digitsCode || ''}"></td>
+                                        <td class="text-center">
+                                            <input type="text" class="form-control" name="scanned_digits_code[]" style="text-align:center" readonly value="${digitsCode || ''}">
+                                            <input type="hidden" class="form-control" name="current_srp[]" style="text-align:center" readonly value="${row.current_srp || ''}">
+                                        </td>
                                         <td class="text-center"><input type="text" class="form-control" name="upc_code[]" style="text-align:center" readonly value="${row.upc_code || ''}"></td>
                                         <td class="text-center"><input type="text" class="form-control" name="item_description[]" style="text-align:center" readonly value="${row.item_description || ''}"></td>
                                         <td class="text-center"><input type="text" class="form-control" name="qty[]" style="text-align:center" readonly value="${qty}"></td>
-                                        <td class="text-center"><input type="text" class="form-control" id="serial_input" name="serial[]" style="text-align:center" readonly value="${row.has_serial || ''}"></td>
+                                        <td class="text-center serial-container">
+                                            <input type="text" class="form-control serial-input" name="serial[]" style="text-align:center" readonly> 
+                                            <input type="hidden" class="form-control all-serial-input" name="allSerial[]" style="text-align:center" readonly>
+                                        </td>
                                         <td class="text-center"><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fa fa-trash"></i></button></td>
                                     </tr>
                                 `;
                                 tbody.append(tr);
-                                $('#totalQuantity').val(parseInt($('#totalQuantity').val() || 0) + qty); 
+
+                                if (row.has_serial == 1) {
+                                    currentSerialRow = tbody.find(`input[name="scanned_digits_code[]"][value="${digitsCode}"]`).closest('tr');
+                                    $('#SerialModal').modal('show');
+                                }
                             }
-                            if(row.has_serial == 1){
-                                $('#SerialModal').modal('show');
-                            }
+
+                            updateTotalQuantity();
                         } else {
                             Swal.fire({
                                 icon: "error",
@@ -425,7 +445,7 @@
                         $('#item_search').val("");
                     },
                     error: function(xhr, status, error) {
-                        alert('Error: ' + error); 
+                        alert('Error: ' + error);
                         $('#scanningSpinner').hide();
                     }
                 });
@@ -433,43 +453,86 @@
         });
 
         function removeRow(button) {
-            const row = $(button).closest('tr'); 
-            const qty = parseInt(row.find('input[name="qty[]"]').val()) || 0;
-            const totalQuantityInput = $('#totalQuantity');
-            const currentTotal = parseInt(totalQuantityInput.val()) || 0;
-
-            totalQuantityInput.val(currentTotal - qty);
+            const row = $(button).closest('tr');
             row.remove();
+            updateTotalQuantity(); 
+        }
+
+        function updateTotalQuantity() {
+            let totalQty = 0;
+            $('#st_items tbody').find('input[name="qty[]"]').each(function() {
+                totalQty += parseInt($(this).val()) || 0;
+            });
+            $('#totalQuantity').val(totalQty);
         }
 
         $('#createSerial').keypress(function(event) {
-            if (event.which === 13) { 
+            if (event.which === 13) {
                 event.preventDefault();
-                const serial = $('#createSerial').val(); 
-                $('#serial_input').val(serial);
-                $('#SerialModal').modal('hide');
+                const serial = $('#createSerial').val().trim();
+
+                if (serial && currentSerialRow) {
+                    $.ajax({
+                        url: '{{ route("check-serial") }}', 
+                        method: 'POST',
+                        data: { serial: serial },
+                        success: function(response) {
+                            if (response.exists) {
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Oops...",
+                                    html: "<h5><strong>Serial number already exists</strong> <br> Please double check your serial and enter again.</h5>",
+                                    confirmButtonText: '<i class="fa fa-thumbs-up"></i> Okay'
+                                });
+                            } else {
+                                const serialContainer = currentSerialRow.find('.serial-container');
+                                const qty = parseInt(currentSerialRow.find('input[name="qty[]"]').val());
+
+                                if (qty > 1) {
+                                    const newSerialInput = `
+                                        <input type="text" class="form-control serial-input mb-1" name="serial[]" style="text-align:center; margin-top: 5px;" readonly value="${serial}">
+                                    `;
+                                    serialContainer.append(newSerialInput);
+                                } else {
+                                    const singleSerialInput = serialContainer.find('.serial-input');
+                                    singleSerialInput.val(serial);
+                                }
+
+                                // Collect all serials and update allSerial input
+                                const allSerials = serialContainer.find('.serial-input').map(function() {
+                                    return $(this).val();
+                                }).get().join(', ');
+                                serialContainer.find('.all-serial-input').val(allSerials);
+
+                                $('#createSerial').val('');
+                                $('#SerialModal').modal('hide');
+                            }
+                        },
+                        error: function() {
+                            alert('An error occurred while checking the serial number. Please try again.');
+                        }
+                    });
+                }
             }
         });
 
-        // $('#btnSubmit').on('click', function(event) {
-        //     event.preventDefault(); 
+        function CancelSerial() {
+            if (currentSerialRow) {
+                const qtyInput = currentSerialRow.find('input[name="qty[]"]');
+                let qty = parseInt(qtyInput.val()) || 0;
 
-        //     // Show the confirmation Swal
-        //     Swal.fire({
-        //         title: 'Are you sure?',
-        //         text: "You won't be able to revert this!",
-        //         icon: 'warning',
-        //         showCancelButton: true,
-        //         confirmButtonColor: '#3085d6',
-        //         cancelButtonColor: '#d33',
-        //         confirmButtonText: 'Yes, create it!'
-        //     }).then((result) => {
-        //         if (result.isConfirmed) {
-        //             // If confirmed, submit the form
-        //             $(this).closest('form').submit();
-        //         }
-        //     });
-        // });
-        
+                if (qty > 1) {
+                    qtyInput.val(qty - 1);
+                } else {
+                    currentSerialRow.remove();
+                }
+
+                updateTotalQuantity();
+                currentSerialRow = null;
+            }
+
+            $('#SerialModal').modal('hide');
+        }
+  
     </script>
 @endpush
