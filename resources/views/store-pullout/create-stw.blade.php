@@ -79,8 +79,7 @@ input[type=number]::-webkit-outer-spin-button {
                 <select class="form-control select2" style="width: 100%;" required name="pullout_from" id="pullout_from">
                     <option value="">Please select a store</option>
                     @foreach ($transfer_from as $data)
-                        <option value="{{$data->warehouse_code}}">{{$data->store_name}}</option>
-                        
+                        <option value="{{$data->warehouse_code}}">{{$data->store_name}}</option>  
                     @endforeach
                 </select>
             </div>
@@ -204,7 +203,6 @@ input[type=number]::-webkit-outer-spin-button {
     </div>
     </form>
 </div>
-
 
 <!-- The Modal -->
 <div class="modal fade" id="SerialModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">

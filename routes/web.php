@@ -85,7 +85,8 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
 
     Route::group(['prefix' => 'str_approval'], function(){
         Route::get('review/{id}',[AdminStwApprovalController::class,'getApproval'])->name('pullout-approval.review');
-        Route::post('save-stw-review',[AdminStwApprovalController::class,'saveReviewPullout'])->name('saveReviewStw');
+        Route::post('save-stw-review',[AdminStwApprovalController::class,'saveReviewPullout'])->name('saveReviewStw');        Route::post('post-strma-pullout', [AdminStorePulloutsController::class,'postStRmaPullout'])->name('post-strma-pullout');
+
     });
 
     Route::group(['prefix' => 'sts_confirmation'], function(){
