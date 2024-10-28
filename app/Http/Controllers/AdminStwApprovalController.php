@@ -114,24 +114,26 @@
 		}
 
 		public function saveReviewPullout(Request $request){
+			$date = date('Y-m-d H:i:s');
+			$user = CRUDBooster::myId();
 			if($request->approval_action == 1){ 
-				StorePullout::where('st_document_number',$request->st_number)->update([
-					'status' =>  $pullout_status->workflow_status,
-					'approved_at' => date('Y-m-d H:i:s'),
-					'approved_by' => CRUDBooster::myId(),
-					'updated_at' => date('Y-m-d H:i:s')
+				StorePullout::where('id',$request->header_id)->update([
+					'status' =>  ($request->transport_type == 1) ? self::Schedule : self::Receiving,
+					'approved_at' => $date,
+					'approved_by' => $user,
+					'updated_at' => $date
 				]);
 
-				CRUDBooster::redirect(CRUDBooster::mainpath(),'ST#'.$request->st_number.' has been approved!','success')->send();
+				CRUDBooster::redirect(CRUDBooster::mainpath(),'STW#'.$request->st_number.' has been approved!','success')->send();
 			}else{
 				
-				StorePullout::where('st_document_number',$request->st_number)->update([
-					'status' => 'VOID',
-					'rejected_at' => date('Y-m-d H:i:s'),
-					'rejected_by' => CRUDBooster::myId(),
-					'updated_at' => date('Y-m-d H:i:s')
+				StorePullout::where('id',$request->header_id)->update([
+					'status' => self::Rejected,
+					'rejected_at' => $date,
+					'rejected_by' => $user,
+					'updated_at' => $date
 				]);
-				CRUDBooster::redirect(CRUDBooster::mainpath(),'ST#'.$request->st_number.' has been rejected!','info')->send();
+				CRUDBooster::redirect(CRUDBooster::mainpath(),'STW#'.$request->st_number.' has been rejected!','info')->send();
 			}
 		}
 

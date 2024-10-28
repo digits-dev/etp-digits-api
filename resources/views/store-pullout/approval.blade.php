@@ -25,6 +25,10 @@ table.table.table-bordered th {
             user-select: none; /* Non-prefixed version, currently supported by Chrome, Edge, Opera and Firefox */
 }
 
+.swal2-popup, .swal2-modal, .swal2-icon-warning .swal2-show {
+    font-size: 1.4rem !important;
+}
+
 </style>
 @endpush
 
@@ -50,6 +54,7 @@ table.table.table-bordered th {
             <input type="hidden" name="transaction_type" id="transaction_type" value="{{$store_pullout->transaction_type}}" >
             <input type="hidden" name="reason_so" id="reason_so" value="{{$store_pullout->reason_so}}" >
             <input type="hidden" name="reason_mo" id="reason_mo" value="{{$store_pullout->reason_mo}}" >
+            <input type="hidden" name="header_id" id="header_id" value="{{$store_pullout->id}}" >
 
             <div class="col-md-4">
                 <div class="table-responsive">
@@ -175,33 +180,77 @@ table.table.table-bordered th {
 @endsection
 
 @push('bottom')
-<script type="text/javascript">
-$(document).ready(function() {
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
 
-    $("form").bind("keypress", function(e) {
-        if (e.keyCode == 13) {
-            return false;
-        }
-    });
+            $("form").bind("keypress", function(e) {
+                if (e.keyCode == 13) {
+                    return false;
+                }
+            });
 
-    $(function(){
-        $('body').addClass("sidebar-collapse");
-    });
+            $(function(){
+                $('body').addClass("sidebar-collapse");
+            });
 
-    $('#btnApprove').click(function() {
-        $(this).attr('disabled','disabled');
-        $('#approval_action').val('1');
-        $('#approval_pullout').submit(); 
-    });
+            $('#btnApprove').click(function() {
+                Swal.fire({
+                    title: 'Are you sure you want to approve?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes',
+                    cancelButtonText: 'No',
+                    returnFocus: false,
+                    reverseButtons: true,
+                    showLoaderOnConfirm: true,
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $(this).attr('disabled','disabled');
+                        $('#approval_action').val('1');
+                        $('#approval_pullout').submit(); 
+                        Swal.fire({
+                            allowEscapeKey: false,
+                            allowOutsideClick: false,
+                            showConfirmButton: false,
+                            title: "Please wait while saving...",
+                            didOpen: () => Swal.showLoading()
+                        });
+                    }
+                });
+            
+            });
 
-    $('#btnReject').click(function() {
-
-        $(this).attr('disabled','disabled');
-        $('#approval_action').val('0');
-        $('#approval_pullout').submit(); 
-        
-    });
-});
-
-</script>
+            $('#btnReject').click(function() {
+                Swal.fire({
+                    title: 'Are you sure you want to reject?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes',
+                    cancelButtonText: 'No',
+                    returnFocus: false,
+                    reverseButtons: true,
+                    showLoaderOnConfirm: true,
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $(this).attr('disabled','disabled');
+                        $('#approval_action').val('0');
+                        $('#approval_pullout').submit(); 
+                        Swal.fire({
+                            allowEscapeKey: false,
+                            allowOutsideClick: false,
+                            showConfirmButton: false,
+                            title: "Please wait while saving...",
+                            didOpen: () => Swal.showLoading()
+                        });
+                    }
+                });
+            
+            });
+        });
+    </script>
 @endpush
