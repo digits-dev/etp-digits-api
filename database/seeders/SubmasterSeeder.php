@@ -16,41 +16,66 @@ class SubmasterSeeder extends Seeder
     public function run()
     {
         $transportTypes = [
-            [
-                'transport_type' => 'LOGISTICS',
-                'status' => 'ACTIVE',
-                'created_by' => 0
-            ],[
-                'transport_type' => 'HAND CARRY',
-                'status' => 'ACTIVE',
-                'created_by' => 0
-            ]
+            'LOGISTICS',
+            'HAND CARRY'
         ];
 
         $transactionTypes = [
-            [
-                'transaction_type' => 'STW',
-                'status' => 'ACTIVE',
-                'created_by' => 0
-            ],
-            [
-                'transaction_type' => 'STR',
-                'status' => 'ACTIVE',
-                'created_by' => 0
-            ],
-            [
-                'transaction_type' => 'STS',
-                'status' => 'ACTIVE',
-                'created_by' => 0
-            ]
+            'STW',
+            'STR',
+            'STS'
+        ];
+
+        $problems = [
+            'AESTHETICS - DISCOLORATION',
+            'AESTHETICS - MISSING PARTS / COMPONENTS',
+            'AESTHETICS - SCRATCHES / DENTS',
+            'AESTHETICS - WEAK ADHESIVE',
+            'BATTERY - BLOATED',
+            'BATTERY - EASILY DRAINED',
+            'BATTERY - NOT CHARGING',
+            'BATTERY - OVERHEATING',
+            'CAMERA - FOCUS ISSUES',
+            'CONNECTIVITY - SIGNAL',
+            'CONNECTIVITY - SYNC',
+            'CONNECTIVITY - WIFI',
+            'DISPLAY - CRACKED SCREEN',
+            'DISPLAY - FLICKERING SCREEN',
+            'DISPLAY - TOUCH MALFUNCTIONING',
+            'INPUT - BUTTON MALFUNCTIONING',
+            'MICROPHONE - NO SOUND INPUT',
+            'OTHERS',
+            'POWER - INTERMITTENT CHARGING',
+            'POWER - NOT CHARGING',
+            'POWER - NOT OPENING',
+            'SCREEN - DEAD PIXELS',
+            'SOFTWARE - HANGING',
+            'SOFTWARE - VIRUS',
+            'SOUND - DISTORTED/STATIC',
+            'SOUND - NO VOLUME'
+        ];
+
+        $createdBy = [
+            'status' => 'ACTIVE',
+            'created_by' => 0
         ];
 
         foreach ($transportTypes as $value) {
-            TransportType::updateOrInsert(['transport_type' => $value['transport_type']], $value);
+            $newValue['transport_type'] = $value;
+            TransportType::updateOrInsert(['transport_type' => $value],
+                array_merge($createdBy,$newValue));
         }
 
         foreach ($transactionTypes as $value) {
-            TransactionType::updateOrInsert(['transaction_type' => $value['transaction_type']], $value);
+            $newValue['transaction_type'] = $value;
+            TransactionType::updateOrInsert(['transaction_type' => $value],
+                array_merge($createdBy,$newValue));
+        }
+
+        foreach ($problems as $value) {
+            $newValue['problem_details'] = $value;
+            TransactionType::updateOrInsert(['problem_details' => $value],
+                array_merge($createdBy,$newValue));
         }
     }
 }

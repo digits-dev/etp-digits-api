@@ -35,6 +35,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
 			$this->form = [];
 			$this->form[] = ['label'=>'Transport Type','name'=>'transport_type','type'=>'text','validation'=>'required|min:1|max:15','width'=>'col-sm-5'];
+            $this->form[] = ['label'=>'Style','name'=>'style','type'=>'wysiwyg','validation'=>'required','width'=>'col-sm-5'];
 			if(in_array(CRUDBooster::getCurrentMethod(),['getEdit','postEditSave','getDetail'])) {
 				$this->form[] = ['label'=>'Status','name'=>'status','type'=>'select','validation'=>'required','width'=>'col-sm-5','dataenum'=>'ACTIVE;INACTIVE'];
 			}
