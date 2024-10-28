@@ -67,6 +67,8 @@ use Maatwebsite\Excel\Concerns\ToArray;
 					'confirmation_text'=>'Are you sure to VOID this transaction?'
 				];
 			}
+
+			$this->addaction[] = ['title'=>'Print','url'=>CRUDBooster::mainpath('print').'/[id]','icon'=>'fa fa-print','color'=>'info'];
 			
 			if(in_array(CRUDBooster::myPrivilegeId(),self::Scheduler)){
 				$this->addaction[] = [
@@ -293,5 +295,20 @@ use Maatwebsite\Excel\Concerns\ToArray;
             else{
                 CRUDBooster::redirect(CRUDBooster::mainpath(),'Failed! No transaction has been scheduled for transfer.','danger')->send();
             }
+		}
+
+		public function printSTS($id){
+
+			if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
+                CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
+            }
+			
+			$data = [];
+            $data['page_title'] = "Print STW Details";
+			$data['store_transfer'] = StoreTransfer::with(['transportTypes','reasons','lines', 'statuses', 'storesFrom', 'storesTo' ,'lines.serials', 'lines.item'])->find($id);
+
+			// dd($data['store_transfer']);
+			return view('store-transfer.print', $data);
+
 		}
 	}

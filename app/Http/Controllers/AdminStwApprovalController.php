@@ -2,9 +2,8 @@
 
 	use Session;
 	use DB;
-	use CRUDBooster;
 	use App\Models\StorePullout;
-	use App\Models\StorePulloutLine;
+	use crocodicstudio\crudbooster\helpers\CRUDBooster;
 	use Illuminate\Http\Request;
 
 	class AdminStwApprovalController extends \crocodicstudio\crudbooster\controllers\CBController {

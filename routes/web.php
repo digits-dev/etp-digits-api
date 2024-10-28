@@ -105,8 +105,8 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::post('post-sts-transfer', [AdminStoreTransfersController::class,'postStsTransfer'])->name('post-sts-transfer');
         Route::get('schedule/{id}', [AdminStoreTransfersController::class, 'getSchedule'])->name('stsSchedule');
         Route::post('save-schedule',[AdminStoreTransfersController::class, 'saveSchedule'])->name('saveScheduleTransfer');
-    
-        
+        Route::get('print/{id}', [AdminStoreTransfersController::class, 'printSTS'])->name('printSTS');
+           
     });
 });
 

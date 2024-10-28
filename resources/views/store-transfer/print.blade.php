@@ -83,9 +83,9 @@ tfoot { display:table-footer-group }
 </style>
 @endpush
 
-    <div class='panel panel-default' id="print">
+    <div class='panel panel-default'>
         
-        <h4 class="text-center"><b>Pullout Form - {{ $store_pullout->transactionTypes->transaction_type }}</b></h4>
+        <h4 class="text-center"><b>Pullout Form - STS</b></h4>
         <div class='panel-body'>
 
             <div class="col-md-12">
@@ -97,13 +97,13 @@ tfoot { display:table-footer-group }
                                     <b>ST:</b>
                                 </td>
                                 <td width="35%">
-                                    {{$store_pullout->document_number}}
+                                    {{ $store_transfer->document_number }}
                                 </td>
                                 <td>
                                     <b>From:</b>
                                 </td>
                                 <td>
-                                    {{ $store_pullout->storesfrom->store_name }} 
+                                    {{ $store_transfer->storesFrom->store_name }} 
                                 </td>
                             </tr>
                             <tr>
@@ -111,43 +111,36 @@ tfoot { display:table-footer-group }
                                     <b>Scheduled:</b>
                                 </td>
                                 <td width="35%">
-                                    @if(!empty($store_pullout->pullout_schedule_date)) {{ $store_pullout->pullout_schedule_date }} - {{ $store_pullout->scheduled_by }} @else {{ $store_pullout->pullout_date }} @endif
+                                    @if(!empty($store_transfer->scheduled_at)) {{ $store_transfer->scheduled_at }} @else {{ $store_transfer->transfer_date }} @endif  
                                 </td>
                                 <td>
                                     <b>To:</b>
                                 </td>
                                 <td>
-                                    {{ $store_pullout->storesto->store_name }} 
+                                    {{ $store_transfer->storesTo->store_name }} 
                                 </td>
                             </tr>
                             <tr>
                                 <td width="15%">
-                                    <b>SOR/MOR:</b>
+                                    <b>Transport By:</b>
                                 </td>
                                 <td width="35%">
-                                    {{$store_pullout->sor_mor_number}} 
+                                    {{ $store_transfer->transportTypes->transport_type }} @if(!empty($store_transfer->hand_carrier)) : {{ $store_transfer->hand_carrier }} @endif
                                 </td>
                                 <td>
                                     <b>Reason:</b>
                                 </td>
                                 <td>
-                                    {{ $store_pullout->reasons->pullout_reason }} 
+                                    {{ $store_transfer->reasons->pullout_reason }} 
                                 </td>
                             </tr>
-
+                            
                             <tr>
                                 <td width="15%">
-                                    <b>Transport By:</b>
-                                </td>
-                                <td>
-                                    {{ $store_pullout->transport_types->transport_type }} @if(!empty($store_pullout->hand_carrier)) : {{ $store_pullout->hand_carrier }} @endif
-                                </td>
-                            
-                                <td>
                                     <b>Notes:</b>
                                 </td>
-                                <td>
-                                    {{ $store_pullout->memo }}
+                                <td colspan="3">
+                                    {{ $store_transfer->memo }}
                                 </td>
                                 
                             </tr>
@@ -160,51 +153,42 @@ tfoot { display:table-footer-group }
 
             <div class="col-md-12">
                 <div class="box-header text-center no-print">
-                    <h3 class="box-title no-print"><b>Pullout Items</b></h3>
+                    <h3 class="box-title  no-print"><b>Stock Transfer Items</b></h3>
                 </div>
                 
                 <div class="box-body no-padding">
-                    
-                    <div class="table-responsive" id="st-items">
-                        <table class="table-bordered noselect" style="width: 100%">
+                    <div class="table-responsive">
+                        <table class="table-bordered noselect" id="st-items" style="width: 100%">
                             <thead>
                                 <tr style="background: #0047ab; color: white">
                                     <th width="15%" class="text-center">Digits Code</th>
-                               
                                     <th width="15%" class="text-center">UPC Code</th>
-                                    <th width="35%" class="text-center">Item Description</th>
-                                    <th width="10%" class="text-center">Qty</th>
-                                    @if($store_pullout->transaction_type == 2)
-                                        <th width="15%" class="text-center">Problem</th>
-                                    @endif
+                                    <th width="40%" class="text-center">Item Description</th>
+                                    <th width="5%" class="text-center">Qty</th>
                                     <th width="25%" class="text-center">Serial #</th>
-                                   
-                              
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($store_pullout->lines as $lines)
+                                @foreach ($store_transfer->lines as $lines)
                                     <tr>
-                                        <td class="text-center">{{$lines->item_code}}</td>
+                                        <td class="text-center">{{$lines->item_code}} </td>
                                         <td class="text-center">{{$lines->item->upc_code}} </td>
-                                        <td class="text-center">{{$lines->item->item_description}}</td>
+                                        <td>{{$lines->item->item_description}}</td>
                                         <td class="text-center">{{$lines->qty}}</td>
-                                        @if($store_pullout->transaction_type == 2)
-                                        <td>{{$lines->problems}} - {{$lines->problem_details}} </td>
-                                        @endif
                                         <td>
                                             @foreach ($lines->serials as $serial)
                                                 {{$serial->serial_number}}<br>
                                             @endforeach
-                                        </td>  
-                                      
-                                    </tr> 
+                                        </td>
+                                        
+                                    </tr>    
                                 @endforeach
-
+                                
                                 <tr class="tableInfo">
+
                                     <td colspan="3" align="right"><strong>Total Qty&nbsp;&nbsp;&nbsp;</strong></td>
                                     <td align="center" colspan="1">
-                                        {{$store_pullout->calculateTotals()}}
+                                        {{$store_transfer->calculateTotals()}}
                                     </td>
                                     <td colspan="1"></td>
                                 </tr>
@@ -223,24 +207,18 @@ tfoot { display:table-footer-group }
                         <tbody>
 
                             <tr>
-                                <td width="25%">
-                                    <b>Prepared by (Store):</b>
+                                <td width="33%">
+                                    <b>Prepared by:</b>
                                 </td>
-                                <td width="25%">
-                                    <b>Pullout by (Logistics):</b>
+                                <td width="33%">
+                                    <b>Pullout by:</b>
                                 </td>
-                                <td width="25%">
-                                    <b>Received by (Warehouse):</b>
-                                </td>
-                                <td width="25%">
-                                    <b>Checked by (Supervisor):</b>
+                                <td width="33%">
+                                    <b>Received by:</b>
                                 </td>
                             </tr>
 
                             <tr>
-                                <td>
-                                    &nbsp;&nbsp;&nbsp;
-                                </td>
                                 <td>
                                     &nbsp;&nbsp;&nbsp;
                                 </td>
@@ -256,7 +234,7 @@ tfoot { display:table-footer-group }
                     </table>
                 </div>
             </div>
-            
+
             <br>
 
             <div class="col-md-12">
@@ -264,7 +242,7 @@ tfoot { display:table-footer-group }
                     <table class="table-bordered policy" id="st-footer" style="width: 100%">
                         <thead>
                             <tr>
-                                <th style="text-align:center" width="25%">Policy</th>
+                                <th style="text-align:center; width:20%;">Policy</th>
                                 <th style="text-align:center">SCENARIO</th>
                             </tr>
                         </thead>
@@ -293,18 +271,17 @@ tfoot { display:table-footer-group }
         </div>
 
         <div class='panel-footer no-print'>
-            <a href="{{ CRUDBooster::mainpath() }}" class="btn btn-default no-print">{{ trans('message.form.back') }}</a>
+            <a href="{{ CRUDBooster::mainpath() }}" class="btn btn-default no-print">Back</a>
         </div>
+        </form>
     </div>
-
-    
 
 @endsection
 
 @push('bottom')
 <script type="text/javascript">
-$(document).ready(function () {
-    window.print();
-});
+    $(document).ready(function () {
+        window.print();
+    });
 </script>
 @endpush
