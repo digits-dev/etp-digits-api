@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             CmsModuleSeeder::class,
             CmsMenuSeeder::class,
             CmsPrivilegeRoleSeeder::class,
+            SubmasterSeeder::class,
         ]);
     }
 }
