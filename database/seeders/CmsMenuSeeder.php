@@ -68,6 +68,18 @@ class CmsMenuSeeder extends Seeder
                 'sorting'           => 3
             ],
             [
+                'name'              => 'Problems',
+                'type'              => 'Route',
+                'path'              => 'AdminProblemsControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-circle-o',
+                'parent_id'         => $submaster,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 4
+            ],
+            [
                 'name'              => 'Reason',
                 'type'              => 'Route',
                 'path'              => 'AdminReasonsControllerGetIndex',
@@ -77,7 +89,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 4
+                'sorting'           => 5
             ],
             [
                 'name'              => 'Stores',
@@ -89,7 +101,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 5
+                'sorting'           => 6
             ],
             [
                 'name'              => 'Transaction Type',
@@ -101,7 +113,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 6
+                'sorting'           => 7
             ],
             [
                 'name'              => 'Transport Type',
@@ -113,7 +125,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 7
+                'sorting'           => 8
             ],
             [
                 'name'              => 'Deliveries',
