@@ -217,6 +217,8 @@ use Illuminate\Support\Facades\Session;
                 $query->orderBy('line_number','ASC');
             },'lines.serials'])->find($id);
 
+            dd($data['deliveries']);
+
             return view('deliveries.detail', $data);
         }
 

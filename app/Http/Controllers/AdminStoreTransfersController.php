@@ -1,6 +1,8 @@
 <?php namespace App\Http\Controllers;
 
 use App\Models\Item;
+use App\Models\StoreTransfer;
+use App\Models\StoreTransferLine;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Support\Arr;
@@ -22,8 +24,8 @@ use Maatwebsite\Excel\Concerns\ToArray;
 			$this->button_bulk_action = true;
 			$this->button_action_style = "button_icon";
 			$this->button_add = false;
-			$this->button_edit = true;
-			$this->button_delete = true;
+			$this->button_edit = false;
+			$this->button_delete = false;
 			$this->button_detail = true;
 			$this->button_show = true;
 			$this->button_filter = true;
@@ -34,18 +36,30 @@ use Maatwebsite\Excel\Concerns\ToArray;
 
 			# START COLUMNS DO NOT REMOVE THIS LINE
 			$this->col = [];
-			$this->col[] = ["label"=>"Document #","name"=>"document_number"];
-			$this->col[] = ["label"=>"Received Document #","name"=>"received_document_number"];
-			$this->col[] = ["label"=>"Ref #","name"=>"ref_number"];
-			$this->col[] = ["label"=>"Memo","name"=>"memo"];
-			$this->col[] = ["label"=>"Transfer Date","name"=>"transfer_date"];
-			$this->col[] = ["label"=>"Transfer Schedule Date","name"=>"transfer_schedule_date"];
-			$this->col[] = ["label"=>"Transaction Type","name"=>"transaction_type"];
+			$this->col[] = ["label"=>"ST#","name"=>"document_number"];
+			$this->col[] = ["label"=>"Received ST#","name"=>"received_document_number"];
+			$this->col[] = ["label"=>"From WH","name"=>"wh_from","join"=>"store_masters,store_name","join_id"=>"id"];
+			$this->col[] = ["label"=>"To WH","name"=>"wh_to","join"=>"store_masters,store_name","join_id"=>"id"];
+			$this->col[] = ["label"=>"Status","name"=>"status","join"=>"order_statuses,style"];
+			$this->col[] = ["label"=>"Transport Type","name"=>"transport_types_id","join"=>"transport_types,transport_type"];
+			$this->col[] = ["label"=>"Created By","name"=>"created_by","join"=>"cms_users,name"];
+			$this->col[] = ["label"=>"Created Date","name"=>"created_at"];
 
 			$this->form = [];
 
 			$this->index_button[] = ['label'=>'Create STS','url'=>route('createSTS'),'icon'=>'fa fa-plus','color'=>'success'];
 	    }
+
+		public function hook_row_index($column_index,&$column_value){
+			if($column_index == 6){
+				if($column_value == "Logistics"){
+					$column_value = '<span class="label label-info">LOGISTICS</span>';
+				}
+				elseif($column_value == "Hand Carry"){
+					$column_value = '<span class="label label-primary">HAND CARRY</span>';
+				}
+			}
+		}
 
 	    public function actionButtonSelected($id_selected,$button_name) {
 	        //Your code here
@@ -56,6 +70,21 @@ use Maatwebsite\Excel\Concerns\ToArray;
 	        //Your code here
 
 	    }
+
+		public function getDetail($id) {
+
+            if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
+                CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
+            }
+			
+            $data = [];
+            $data['page_title'] = "STS Details";
+			$data['store_transfer'] = StoreTransfer::with(['transport_types','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
+
+
+            return view('store-transfer.detail', $data);
+
+        }
 
 		public function createSTS() {
 			$data = array();

@@ -1,5 +1,7 @@
 <?php namespace App\Http\Controllers;
 
+use App\Models\StorePullout;
+use App\Models\StorePulloutLine;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
@@ -19,8 +21,8 @@ use Illuminate\Support\Carbon;
 			$this->button_bulk_action = true;
 			$this->button_action_style = "button_icon";
 			$this->button_add = false;
-			$this->button_edit = true;
-			$this->button_delete = true;
+			$this->button_edit = false;
+			$this->button_delete = false;
 			$this->button_detail = true;
 			$this->button_show = true;
 			$this->button_filter = true;
@@ -29,12 +31,17 @@ use Illuminate\Support\Carbon;
 			$this->table = "store_pullouts";
 
 			$this->col = [];
-			// $this->col[] = ["label"=>"Sor Mor #","name"=>"sor_mor_number"];
-			// $this->col[] = ["label"=>"Document #","name"=>"document_number"];
-			$this->col[] = ["label"=>"Ref #","name"=>"ref_number"];
-			$this->col[] = ["label"=>"Pullout Date","name"=>"pullout_date"];
-			$this->col[] = ["label"=>"Pullout Schedule Date","name"=>"pullout_schedule_date"];
-			$this->col[] = ["label"=>"Pick List Date","name"=>"pick_list_date"];
+		
+			$this->col[] = ["label"=>"ST/REF#","name"=>"document_number"];
+			$this->col[] = ["label"=>"Received ST#","name"=>"ref_number"];
+			$this->col[] = ["label"=>"MOR/SOR#","name"=>"sor_mor_number"];
+			$this->col[] = ["label"=>"From WH","name"=>"wh_from","join"=>"store_masters,store_name","join_id"=>"id"];
+			$this->col[] = ["label"=>"To WH","name"=>"wh_to","join"=>"store_masters,store_name","join_id"=>"id"];
+			$this->col[] = ["label"=>"Transaction Type","name"=>"transaction_type","join"=>"transaction_types,transaction_type","join_id"=>"id"];
+			$this->col[] = ["label"=>"Status","name"=>"status","join"=>"order_statuses,style"];
+			$this->col[] = ["label"=>"Transport Type","name"=>"transport_types_id","join"=>"transport_types,transport_type"];
+			$this->col[] = ["label"=>"Created Date","name"=>"created_at"];
+
 
 			$this->form = [];
 
@@ -48,9 +55,36 @@ use Illuminate\Support\Carbon;
 
 	    }
 
+		public function hook_row_index($column_index,&$column_value){
+			if($column_index == 7){
+				if($column_value == "Logistics"){
+					$column_value = '<span class="label label-info">LOGISTICS</span>';
+				}
+				elseif($column_value == "Hand Carry"){
+					$column_value = '<span class="label label-primary">HAND CARRY</span>';
+				}
+			}
+		}
+
 	    public function hook_query_index(&$query) {
 
 	    }
+
+		public function getDetail($id) {
+
+			if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
+                CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
+            }
+			
+			$data = [];
+            $data['page_title'] = "Pullout Details";
+			$data['store_pullout'] = StorePullout::with(['transport_types','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
+
+			// dd($data['store_pullout']);
+
+			return view('store-pullout.detail', $data);
+
+		}
 
 		public function createSTW() {
 			$data = array();
