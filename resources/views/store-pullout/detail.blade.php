@@ -126,7 +126,7 @@ table.table.table-bordered th {
                                     <b>Transport By:</b>
                                 </td>
                                 <td>
-                                    {{ $store_pullout->transport_type }} @if(!empty($store_pullout->hand_carrier)) : {{ $store_pullout->hand_carrier }} @endif
+                                    {{ $store_pullout->transport_types->transport_type }} @if(!empty($store_pullout->hand_carrier)) : {{ $store_pullout->hand_carrier }} @endif
                                 </td>
                             </tr>
                             <tr>

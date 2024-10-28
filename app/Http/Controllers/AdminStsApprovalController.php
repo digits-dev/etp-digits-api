@@ -1,9 +1,10 @@
 <?php namespace App\Http\Controllers;
 
-	use Session;
+use App\Models\StoreTransfer;
+use Session;
 	use Request;
 	use DB;
-	use CRUDBooster;
+	use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
 	class AdminStsApprovalController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -18,8 +19,8 @@
 			$this->button_bulk_action = true;
 			$this->button_action_style = "button_icon";
 			$this->button_add = false;
-			$this->button_edit = true;
-			$this->button_delete = true;
+			$this->button_edit = false;
+			$this->button_delete = false;
 			$this->button_detail = true;
 			$this->button_show = true;
 			$this->button_filter = true;
@@ -60,9 +61,22 @@
 			}
 		}
 
+		public function getDetail($id) {
+
+			if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
+                CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
+            }
+			
+            $data = [];
+            $data['page_title'] = "Stock Transfer Details";
+			$data['store_transfer'] = StoreTransfer::with(['transport_types','reasons','lines', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
+
+
+			return view('store-transfer.sts-confirmation-detail', $data);
+		}
+
 
 	    public function hook_query_index(&$query) {
-	        //Your code here
 	            
 	    }
 

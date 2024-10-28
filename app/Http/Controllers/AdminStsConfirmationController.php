@@ -71,7 +71,14 @@ use Illuminate\Support\Facades\DB;
 	    }
     
 	    public function hook_row_index($column_index,&$column_value) {	        
-	    	//Your code here
+	    	if($column_index == 5){
+				if($column_value == "Logistics"){
+					$column_value = '<span class="label label-info">LOGISTICS</span>';
+				}
+				elseif($column_value == "Hand Carry"){
+					$column_value = '<span class="label label-primary">HAND CARRY</span>';
+				}
+			}
 	    }
 
 		public function getDetail($id) {
