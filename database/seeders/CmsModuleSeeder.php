@@ -114,6 +114,15 @@ class CmsModuleSeeder extends Seeder
                 'is_protected' => 0,
                 'is_active'    => 0
             ],
+            [
+                'name'         => 'Problems',
+                'icon'         => 'fa fa-circle-o',
+                'path'         => 'problems',
+                'table_name'   => 'problems',
+                'controller'   => 'AdminProblemsController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
 
         ];
 
