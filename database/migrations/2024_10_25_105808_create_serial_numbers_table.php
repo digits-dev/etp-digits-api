@@ -15,8 +15,8 @@ class CreateSerialNumbersTable extends Migration
     {
         Schema::create('serial_numbers', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('store_pullout_lines')->nullable()->index();
-            $table->unsignedBigInteger('store_transfer_lines')->nullable()->index();
+            $table->unsignedBigInteger('store_pullout_lines_id')->nullable()->index();
+            $table->unsignedBigInteger('store_transfer_lines_id')->nullable()->index();
             $table->string('serial_number',200)->nullable();
             $table->unsignedTinyInteger('status')->default(0)->comment('0-pending,1-received');
             $table->unsignedInteger('updated_by')->nullable();
