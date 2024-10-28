@@ -1,12 +1,17 @@
 <?php namespace App\Http\Controllers;
 
-use App\Models\StoreTransfer;
-use Session;
-	use Request;
+	use App\Models\StoreTransfer;
+	use Session;
+	use Illuminate\Http\Request;
 	use DB;
 	use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
 	class AdminStsApprovalController extends \crocodicstudio\crudbooster\controllers\CBController {
+		private const forApproval = 10;
+		private const Schedule = 6;
+		private const Rejected = 4;
+		private const Receiving = 5;
+	
 
 	    public function cbInit() {
 
@@ -41,9 +46,21 @@ use Session;
 			$this->col[] = ["label"=>"Created Date","name"=>"created_at"];
 			# END COLUMNS DO NOT REMOVE THIS LINE
 
-	        
-	        
+			$this->addaction = [];
+			$this->addaction[] = [
+				'title' => 'For Approval',
+				'url' => CRUDBooster::mainpath('review/[id]'),
+				'icon' => 'fa fa-thumbs-up',
+				'color' => 'info',
+				'showIf' => "[status] == '" . Self::forApproval . "'"
+			];
+
+			$this->load_css = [];
+			$this->load_css[] = asset("css/font-family.css");
+			$this->load_css[] = asset("css/select2-style.css");
 	    }
+
+		
 
 	    public function actionButtonSelected($id_selected,$button_name) {
 	        //Your code here
@@ -51,6 +68,14 @@ use Session;
 	    }
 
 		public function hook_row_index($column_index,&$column_value){
+			if($column_index == 4){
+				if($column_value == "Logistics"){
+					$column_value = '<span class="label label-info">LOGISTICS</span>';
+				}
+				elseif($column_value == "Hand Carry"){
+					$column_value = '<span class="label label-primary">HAND CARRY</span>';
+				}
+			}
 			if($column_index == 5){
 				if($column_value == "Logistics"){
 					$column_value = '<span class="label label-info">LOGISTICS</span>';
@@ -75,11 +100,46 @@ use Session;
 			return view('store-transfer.sts-confirmation-detail', $data);
 		}
 
+		public function getApproval($id) {
+
+			if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
+                CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
+            }
+			
+            $data = [];
+            $data['page_title'] = "Stock Transfer Approval";
+			$data['store_transfer'] = StoreTransfer::with(['transport_types','reasons','lines', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
+
+			return view('store-transfer.approval', $data);
+		}
+
+		public function saveReviewST(Request $request) {
+			$date = date('Y-m-d H:i:s');
+			$user = CRUDBooster::myId();
+			if($request->approval_action  == 1){
+				StoreTransfer::where('id',$request->header_id)->update([
+					'status' =>  ($request->transport_type == 1) ? self::Schedule : self::Receiving,
+					'approved_at' => $date,
+					'approved_by' => $user,
+					'updated_at' => $date
+				]);
+
+				CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->st_number.' has been approved!','success')->send();
+			}else{
+				StoreTransfer::where('id',$request->header_id)->update([
+					'status' => self::Rejected,
+					'rejected_at' => $date,
+					'rejected_by' => $user,
+					'updated_at' => $date
+				]);
+
+				CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->st_number.' has been rejected!','info')->send();
+			}
+		}
+
 
 	    public function hook_query_index(&$query) {
 	            
 	    }
-
-
 
 	}

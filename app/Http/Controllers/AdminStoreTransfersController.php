@@ -12,7 +12,9 @@ use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Concerns\ToArray;
 
 	class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controllers\CBController {
-
+		private const Scheduler = [1];
+		private const Schedule = 6;
+		private const Receiving = 5;
 	    public function cbInit() {
 
 			# START CONFIGURATION DO NOT REMOVE THIS LINE
@@ -48,7 +50,20 @@ use Maatwebsite\Excel\Concerns\ToArray;
 			$this->form = [];
 
 			$this->index_button[] = ['label'=>'Create STS','url'=>route('createSTS'),'icon'=>'fa fa-plus','color'=>'success'];
-	    }
+			
+			if(in_array(CRUDBooster::myPrivilegeId(),self::Scheduler)){
+				$this->addaction[] = [
+					'title'=>'Schedule',
+					'url'=>CRUDBooster::mainpath('schedule/[id]'),
+					'icon'=>'fa fa-calendar',
+					'color'=>'warning',
+					'showIf'=>"[status]=='" . Self::Schedule . "'"];
+			}
+
+			$this->load_css = [];
+			$this->load_css[] = asset("css/font-family.css");
+			$this->load_css[] = asset("css/select2-style.css");	
+		}
 
 		public function hook_row_index($column_index,&$column_value){
 			if($column_index == 6){
@@ -225,4 +240,34 @@ use Maatwebsite\Excel\Concerns\ToArray;
 			CRUDBooster::redirect(CRUDBooster::mainpath(), trans("STS created successfully!"), 'success');
 		}
 		
+
+		
+		public function getSchedule($id) {
+
+            if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
+                CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
+            }
+			
+            $data = [];
+            $data['page_title'] = "Schedule Stock Transfer";
+			$data['store_transfer'] = StoreTransfer::with(['transport_types','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
+
+            return view('store-transfer.schedule', $data);
+
+        }
+
+		public function saveSchedule(Request $request){
+			$record = StoreTransfer::where('id',$request->header_id)
+				->update([
+					'scheduled_at' => $request->schedule_date,
+					'scheduled_by' => CRUDBooster::myId(),
+					'status' => self::Receiving
+				]);
+
+			if($record)
+                CRUDBooster::redirect(CRUDBooster::mainpath('print').'/'.$request->st_number,'','')->send();
+            else{
+                CRUDBooster::redirect(CRUDBooster::mainpath(),'Failed! No transaction has been scheduled for transfer.','danger')->send();
+            }
+		}
 	}
