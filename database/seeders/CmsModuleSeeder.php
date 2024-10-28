@@ -105,6 +105,15 @@ class CmsModuleSeeder extends Seeder
                 'is_protected' => 0,
                 'is_active'    => 0
             ],
+            [
+                'name'         => 'Transport Type',
+                'icon'         => 'fa fa-circle-o',
+                'path'         => 'transport_types',
+                'table_name'   => 'transport_types',
+                'controller'   => 'AdminTransportTypesController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
 
         ];
 

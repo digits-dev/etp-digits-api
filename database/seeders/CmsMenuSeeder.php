@@ -16,6 +16,8 @@ class CmsMenuSeeder extends Seeder
     public function run()
     {
         $submaster = CmsMenu::where('name','Submaster')->value('id');
+        $pulloutMenu = CmsMenu::where('name','Create Pullout')->value('id');
+
         $menus = [
             [
                 'name'              => 'Submaster',
@@ -102,6 +104,18 @@ class CmsMenuSeeder extends Seeder
                 'sorting'           => 6
             ],
             [
+                'name'              => 'Transport Type',
+                'type'              => 'Route',
+                'path'              => 'AdminTransportTypesControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-circle-o',
+                'parent_id'         => $submaster,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 7
+            ],
+            [
                 'name'              => 'Deliveries',
                 'type'              => 'Route',
                 'path'              => 'AdminDeliveriesControllerGetIndex',
@@ -131,11 +145,11 @@ class CmsMenuSeeder extends Seeder
                 'path'              => 'AdminStoreTransfersControllerGetIndex',
                 'color'             => 'normal',
                 'icon'              => 'fa fa-file-text',
-                'parent_id'         => 0,
+                'parent_id'         => $pulloutMenu ?? 0,
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 3
+                'sorting'           => 1
             ],
             [
                 'name'              => 'Create STW/STR',
@@ -143,11 +157,23 @@ class CmsMenuSeeder extends Seeder
                 'path'              => 'AdminStorePulloutsControllerGetIndex',
                 'color'             => 'normal',
                 'icon'              => 'fa fa-file-text',
+                'parent_id'         => $pulloutMenu ?? 0,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 2
+            ],
+            [
+                'name'              => 'Create Pullout',
+                'type'              => 'URL',
+                'path'              => '#',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-file-text',
                 'parent_id'         => 0,
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 5
+                'sorting'           => 3
             ],
         ];
 
