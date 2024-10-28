@@ -11,4 +11,7 @@ class OrderStatus extends Model
 
     protected $connection = 'mysql';
     protected $guarded = [];
+
+    public const PENDING = 0;
+    public const CONFIRMED = 5;
 }

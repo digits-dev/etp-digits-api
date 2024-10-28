@@ -38,4 +38,16 @@ class StorePullout extends Model
         'rejected_by',
         'rejected_at'
     ];
+
+    public function scopePending(){
+        return $this->where('status', OrderStatus::PENDING);
+    }
+
+    public function scopeStw(){
+        return $this->where('transaction_type', 'STW');
+    }
+
+    public function scopeStr(){
+        return $this->where('transaction_type', 'STR');
+    }
 }

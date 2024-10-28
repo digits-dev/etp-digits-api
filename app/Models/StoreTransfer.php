@@ -38,4 +38,8 @@ class StoreTransfer extends Model
         'rejected_by',
         'rejected_at'
     ];
+
+    public function scopeConfirmed(){
+        return $this->where('status', OrderStatus::CONFIRMED);
+    }
 }
