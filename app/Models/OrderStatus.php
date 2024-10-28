@@ -13,5 +13,5 @@ class OrderStatus extends Model
     protected $guarded = [];
 
     public const PENDING = 0;
-    public const CONFIRMED = 5;
+    public const CONFIRMED = 9;
 }

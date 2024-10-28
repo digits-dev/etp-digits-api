@@ -111,7 +111,7 @@ table.table.table-bordered th {
                                     <b>Transport By:</b>
                                 </td>
                                 <td>
-                                    {{ $store_transfer->transport_types->transport_type }} @if(!empty($store_transfer->hand_carrier)) : {{ $store_transfer->hand_carrier }} @endif
+                                    {{ $store_transfer->transportTypes->transport_type }} @if(!empty($store_transfer->hand_carrier)) : {{ $store_transfer->hand_carrier }} @endif
                                 </td>
                             </tr>
                             <tr>
@@ -119,7 +119,7 @@ table.table.table-bordered th {
                                     <b>From:</b>
                                 </td>
                                 <td>
-                                    {{ $store_transfer->storesfrom->store_name }} 
+                                    {{ $store_transfer->storesFrom->store_name }} 
                                 </td>
                             </tr>
                             <tr>
@@ -127,7 +127,7 @@ table.table.table-bordered th {
                                     <b>To:</b>
                                 </td>
                                 <td>
-                                    {{ $store_transfer->storesto->store_name }} 
+                                    {{ $store_transfer->storesTo->store_name }} 
                                 </td>
                             </tr>
                         </tbody>

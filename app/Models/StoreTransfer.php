@@ -53,15 +53,15 @@ class StoreTransfer extends Model
         return $this->belongsTo(Reason::class, 'reasons_id', 'id');
     }
 
-    public function transport_types() : BelongsTo {
+    public function transportTypes() : BelongsTo {
         return $this->belongsTo(TransportType::class, 'transport_types_id', 'id');
     }
 
-    public function storesfrom() : BelongsTo {
+    public function storesFrom() : BelongsTo {
         return $this->belongsTo(StoreMaster::class, 'wh_from', 'warehouse_code');
     }
     
-    public function storesto() : BelongsTo {
+    public function storesTo() : BelongsTo {
         return $this->belongsTo(StoreMaster::class, 'wh_to', 'warehouse_code');
     }
 

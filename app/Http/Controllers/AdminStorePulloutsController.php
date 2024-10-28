@@ -10,6 +10,9 @@ use Illuminate\Support\Carbon;
 
 	class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controllers\CBController {
 
+		private const Pending = '0';
+		private const Void = '8';
+
 	    public function cbInit() {
 
 			# START CONFIGURATION DO NOT REMOVE THIS LINE
@@ -32,8 +35,8 @@ use Illuminate\Support\Carbon;
 
 			$this->col = [];
 		
-			$this->col[] = ["label"=>"ST/REF#","name"=>"document_number"];
-			$this->col[] = ["label"=>"Received ST#","name"=>"ref_number"];
+			$this->col[] = ["label"=>"Reference #","name"=>"ref_number"];
+			$this->col[] = ["label"=>"ST#","name"=>"document_number"];
 			$this->col[] = ["label"=>"MOR/SOR#","name"=>"sor_mor_number"];
 			$this->col[] = ["label"=>"From WH","name"=>"wh_from","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
 			$this->col[] = ["label"=>"To WH","name"=>"wh_to","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
@@ -48,6 +51,22 @@ use Illuminate\Support\Carbon;
 			$this->index_button[] = ['label'=>'Create STW','url'=>route('createSTW'),'icon'=>'fa fa-plus','color'=>'success'];
 			$this->index_button[] = ['label'=>'Create ST RMA','url'=>route('createSTR'),'icon'=>'fa fa-plus','color'=>'success'];
 
+			$this->addaction = [];
+			if(!in_array(CRUDBooster::myPrivilegeName(),["LOG TM","LOG TL","Warehouse","RMA", "Operations Manager", "Area Manager"])){
+				$this->addaction[] = [
+					'title'=>'Void ST',
+					'url' => CRUDBooster::mainpath('void_pullout/[id]'),
+					'icon'=>'fa fa-times',
+					'color'=>'danger',
+					'showIf'=>"[status]==".self::Pending."",
+					'confirmation'=>'yes',
+					'confirmation_title'=>'Confirm Voiding',
+					'confirmation_text'=>'Are you sure to VOID this transaction?'
+				];
+			}
+
+			$this->addaction[] = ['title'=>'Print','url'=>CRUDBooster::mainpath('print').'/[id]','icon'=>'fa fa-print','color'=>'info'];
+
 	    }
 
 	    public function actionButtonSelected($id_selected,$button_name) {
@@ -56,11 +75,11 @@ use Illuminate\Support\Carbon;
 	    }
 
 		public function hook_row_index($column_index,&$column_value){
-			if($column_index == 7){
-				if($column_value == "Logistics"){
+			if($column_index == 8){
+				if($column_value == "LOGISTICS"){
 					$column_value = '<span class="label label-info">LOGISTICS</span>';
 				}
-				elseif($column_value == "Hand Carry"){
+				elseif($column_value == "HAND CARRY"){
 					$column_value = '<span class="label label-primary">HAND CARRY</span>';
 				}
 			}
@@ -78,9 +97,7 @@ use Illuminate\Support\Carbon;
 			
 			$data = [];
             $data['page_title'] = "Pullout Details";
-			$data['store_pullout'] = StorePullout::with(['transport_types','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
-
-			// dd($data['store_pullout']);
+			$data['store_pullout'] = StorePullout::with(['transportTypes','reasons','lines', 'statuses', 'storesFrom', 'storesTo' ,'lines.serials', 'lines.item'])->find($id);
 
 			return view('store-pullout.detail', $data);
 
@@ -260,6 +277,28 @@ use Illuminate\Support\Carbon;
 
 
 			return view("store-pullout.create-str", $data);
+		}
+
+		public function voidPullout($id){
+
+			StorePullout::where('id', $id)->update(['status' => '8']); //VOID
+
+			CRUDBooster::redirect(CRUDBooster::mainpath(),'Pullout voided successfully!','success')->send();
+
+		}
+
+		public function printPullout($id){
+
+			if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
+                CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
+            }
+			
+			$data = [];
+            $data['page_title'] = "Print Pullout Details";
+			$data['store_pullout'] = StorePullout::with(['transportTypes','reasons','lines', 'statuses', 'storesFrom', 'storesTo' ,'lines.serials', 'lines.item'])->find($id);
+
+			return view('store-pullout.print', $data);
+
 		}
 
 

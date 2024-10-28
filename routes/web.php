@@ -71,6 +71,8 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
     Route::group(['prefix' => 'store_pullouts'], function(){
         Route::get('create-pullout-stw', [AdminStorePulloutsController::class,'createSTW'])->name('createSTW');
         Route::get('create-pullout-str', [AdminStorePulloutsController::class,'createSTR'])->name('createSTR');
+        Route::get('void_pullout/{id}', [AdminStorePulloutsController::class, 'voidPullout'])->name('voidPullout');
+        Route::get('print/{id}', [AdminStorePulloutsController::class, 'printPullout'])->name('printPullout');
         Route::post('post-stw-pullout', [AdminStorePulloutsController::class,'postStwPullout'])->name('post-stw-pullout');
        
     });
@@ -91,12 +93,14 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
        
     Route::group(['prefix' => 'store_transfers'], function(){
         Route::get('create-sts', [AdminStoreTransfersController::class,'createSTS'])->name('createSTS');
+        Route::get('void_sts/{id}', [AdminStoreTransfersController::class, 'voidSTS'])->name('voidSTS');
         Route::post('scan-digits-code', [AdminStoreTransfersController::class,'scanDigitsCode'])->name('scan-digits-code');
         Route::post('check-serial', [AdminStoreTransfersController::class,'checkSerial'])->name('check-serial');
         Route::post('post-sts-transfer', [AdminStoreTransfersController::class,'postStsTransfer'])->name('post-sts-transfer');
         Route::get('schedule/{id}', [AdminStoreTransfersController::class, 'getSchedule'])->name('stsSchedule');
         Route::post('save-schedule',[AdminStoreTransfersController::class, 'saveSchedule'])->name('saveScheduleTransfer');
     
+        
     });
 });
 

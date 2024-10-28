@@ -12,6 +12,8 @@ use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Concerns\ToArray;
 
 	class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controllers\CBController {
+
+		private const Pending = '0';
 		private const Scheduler = [1];
 		private const Schedule = 6;
 		private const Receiving = 5;
@@ -38,6 +40,7 @@ use Maatwebsite\Excel\Concerns\ToArray;
 
 			# START COLUMNS DO NOT REMOVE THIS LINE
 			$this->col = [];
+			$this->col[] = ["label"=>"Reference #","name"=>"ref_number"];
 			$this->col[] = ["label"=>"ST#","name"=>"document_number"];
 			$this->col[] = ["label"=>"Received ST#","name"=>"received_document_number"];
 			$this->col[] = ["label"=>"From WH","name"=>"wh_from","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
@@ -50,6 +53,24 @@ use Maatwebsite\Excel\Concerns\ToArray;
 			$this->form = [];
 
 			$this->index_button[] = ['label'=>'Create STS','url'=>route('createSTS'),'icon'=>'fa fa-plus','color'=>'success'];
+
+			$this->addaction = [];
+			if(!in_array(CRUDBooster::myPrivilegeName(),["LOG TM","LOG TL","Warehouse","RMA", "Operations Manager", "Area Manager"])){
+				$this->addaction[] = [
+					'title'=>'Void ST',
+					'url' => CRUDBooster::mainpath('void_sts/[id]'),
+					'icon'=>'fa fa-times',
+					'color'=>'danger',
+					'showIf'=>"[status]==".self::Pending."",
+					'confirmation'=>'yes',
+					'confirmation_title'=>'Confirm Voiding',
+					'confirmation_text'=>'Are you sure to VOID this transaction?'
+				];
+			}
+
+			if(CRUDBooster::isSuperadmin() || in_array(CRUDBooster::myPrivilegeName() ,["LOG TM","LOG TL"])){
+				$this->addaction[] = ['title'=>'Schedule','url'=>CRUDBooster::mainpath('schedule').'/[st_document_number]','icon'=>'fa fa-calendar','color'=>'warning','showIf'=>"[status]=='FOR SCHEDULE'"];
+			}
 			
 			if(in_array(CRUDBooster::myPrivilegeId(),self::Scheduler)){
 				$this->addaction[] = [
@@ -66,15 +87,16 @@ use Maatwebsite\Excel\Concerns\ToArray;
 		}
 
 		public function hook_row_index($column_index,&$column_value){
-			if($column_index == 6){
-				if($column_value == "Logistics"){
+			if($column_index == 7){
+				if($column_value == "LOGISTICS"){
 					$column_value = '<span class="label label-info">LOGISTICS</span>';
 				}
-				elseif($column_value == "Hand Carry"){
+				elseif($column_value == "HAND CARRY"){
 					$column_value = '<span class="label label-primary">HAND CARRY</span>';
 				}
 			}
 		}
+		
 
 	    public function actionButtonSelected($id_selected,$button_name) {
 	        //Your code here
@@ -94,8 +116,7 @@ use Maatwebsite\Excel\Concerns\ToArray;
 			
             $data = [];
             $data['page_title'] = "STS Details";
-			$data['store_transfer'] = StoreTransfer::with(['transport_types','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
-
+			$data['store_transfer'] = StoreTransfer::with(['transportTypes','reasons','lines', 'statuses', 'storesFrom', 'storesTo' ,'lines.serials', 'lines.item'])->find($id);
 
             return view('store-transfer.detail', $data);
 
@@ -162,8 +183,7 @@ use Maatwebsite\Excel\Concerns\ToArray;
 			return response()->json(['exists' => $exists]);
 		}
 
-		public function postStsTransfer(Request $request)
-		{
+		public function postStsTransfer(Request $request){
 			try {
 				$validatedData = $request->validate([
 					'transfer_from' => 'required|max:255', 
@@ -238,6 +258,14 @@ use Maatwebsite\Excel\Concerns\ToArray;
 			DB::table('serial_numbers')->insert($serial_table);
 
 			CRUDBooster::redirect(CRUDBooster::mainpath(), trans("STS created successfully!"), 'success');
+		}
+
+		public function voidSTS($id){
+
+			StoreTransfer::where('id', $id)->update(['status' => '8']); //VOID
+
+			CRUDBooster::redirect(CRUDBooster::mainpath(),'STS voided successfully!','success')->send();
+
 		}
 		
 

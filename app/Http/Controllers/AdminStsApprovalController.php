@@ -94,10 +94,10 @@
 			
             $data = [];
             $data['page_title'] = "Stock Transfer Details";
-			$data['store_transfer'] = StoreTransfer::with(['transport_types','reasons','lines', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
+			$data['store_transfer'] = StoreTransfer::with(['transportTypes','reasons','lines', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
 
 
-			return view('store-transfer.sts-confirmation-detail', $data);
+			return view('store-transfer.sts-approval-detail', $data);
 		}
 
 		public function getApproval($id) {
@@ -108,7 +108,7 @@
 			
             $data = [];
             $data['page_title'] = "Stock Transfer Approval";
-			$data['store_transfer'] = StoreTransfer::with(['transport_types','reasons','lines', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
+			$data['store_transfer'] = StoreTransfer::with(['transportTypes','reasons','lines', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
 
 			return view('store-transfer.approval', $data);
 		}

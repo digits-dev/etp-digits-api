@@ -51,6 +51,7 @@ class StorePullout extends Model
 
     public function scopeStr(){
         return $this->where('transaction_type', 'STR');
+    }
 
     public function lines() : HasMany {
         return $this->hasMany(StorePulloutLine::class, 'store_pullouts_id');
@@ -60,15 +61,19 @@ class StorePullout extends Model
         return $this->belongsTo(Reason::class, 'reasons_id', 'bea_mo_reason');
     }
 
-    public function transport_types() : BelongsTo {
+    public function transportTypes() : BelongsTo {
         return $this->belongsTo(TransportType::class, 'transport_types_id', 'id');
     }
 
-    public function storesfrom() : BelongsTo {
+    public function transactionTypes() : BelongsTo{
+        return $this->belongsTo(TransactionType::class, 'transaction_type', 'id');
+    }
+
+    public function storesFrom() : BelongsTo {
         return $this->belongsTo(StoreMaster::class, 'wh_from', 'warehouse_code');
     }
     
-    public function storesto() : BelongsTo {
+    public function storesTo() : BelongsTo {
         return $this->belongsTo(StoreMaster::class, 'wh_to', 'warehouse_code');
     }
 
