@@ -52,12 +52,12 @@
                                            class='{{($child->color)?"text-".$child->color:""}}'>
                                             <i class='{{$child->icon}}'></i> <span>{{$child->name}}</span>
 
-                                            @if ($child->name == 'Gashapon Item Approval')
-                                                <span class="badge"> {{ Helper::getGisPendingList() }}</span>
-                                            @elseif ($child->name == 'Item Master Approval')
-                                                <span class="badge"> {{ Helper::getItemPendingList() }}</span>
-                                            @elseif ($child->name == 'Rma Master Approval')
-                                                <span class="badge"> {{ Helper::getRmaPendingList() }}</span>
+                                            @if ($child->name == 'STS Approval')
+                                                <span class="badge"> {{ Helper::getPendingSTS() }}</span>
+                                            @elseif ($child->name == 'STW Approval')
+                                                <span class="badge"> {{ Helper::getPendingSTW() }}</span>
+                                            @elseif ($child->name == 'STR Approval')
+                                                <span class="badge"> {{ Helper::getPendingSTR() }}</span>
                                             @endif
                                         </a>
                                     </li>

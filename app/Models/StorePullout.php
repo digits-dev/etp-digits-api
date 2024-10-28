@@ -41,6 +41,16 @@ class StorePullout extends Model
         'rejected_at'
     ];
 
+    public function scopePending(){
+        return $this->where('status', OrderStatus::PENDING);
+    }
+
+    public function scopeStw(){
+        return $this->where('transaction_type', 'STW');
+    }
+
+    public function scopeStr(){
+        return $this->where('transaction_type', 'STR');
 
     public function lines() : HasMany {
         return $this->hasMany(StorePulloutLine::class, 'store_pullouts_id');
@@ -65,7 +75,6 @@ class StorePullout extends Model
     public function statuses() : BelongsTo {
         return $this->belongsTo(OrderStatus::class, 'status', 'id');
     }
-
 
     public function calculateTotals(){
         return $this->lines->sum('qty');

@@ -41,6 +41,10 @@ class StoreTransfer extends Model
         'rejected_at'
     ];
 
+    public function scopeConfirmed(){
+        return $this->where('status', OrderStatus::CONFIRMED);
+    }
+  
     public function lines() : HasMany {
         return $this->hasMany(StoreTransferLine::class, 'store_transfers_id');
     }
@@ -69,6 +73,5 @@ class StoreTransfer extends Model
     public function calculateTotals(){
         return $this->lines->sum('qty');
     }
-
 
 }
