@@ -124,7 +124,7 @@
 					'updated_at' => $date
 				]);
 
-				CRUDBooster::redirect(CRUDBooster::mainpath(),'STW#'.$request->st_number.' has been approved!','success')->send();
+				CRUDBooster::redirect(CRUDBooster::mainpath(),'STW#'.$request->ref_number.' has been approved!','success')->send();
 			}else{
 				
 				StorePullout::where('id',$request->header_id)->update([
@@ -133,7 +133,7 @@
 					'rejected_by' => $user,
 					'updated_at' => $date
 				]);
-				CRUDBooster::redirect(CRUDBooster::mainpath(),'STW#'.$request->st_number.' has been rejected!','info')->send();
+				CRUDBooster::redirect(CRUDBooster::mainpath(),'STW#'.$request->ref_number.' has been rejected!','info')->send();
 			}
 		}
 

@@ -90,6 +90,7 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
 
     Route::group(['prefix' => 'sts_confirmation'], function(){
         Route::get('confirm/{id}', [AdminStsConfirmationController::class, 'getConfirm'])->name('stsConfirm');
+        Route::post('save-confirm',[AdminStsConfirmationController::class, 'saveConfirmST'])->name('saveConfirmST');
     });
 
     Route::group(['prefix' => 'sts_approval'], function(){

@@ -276,7 +276,7 @@ use Maatwebsite\Excel\Concerns\ToArray;
 			
             $data = [];
             $data['page_title'] = "Schedule Stock Transfer";
-			$data['store_transfer'] = StoreTransfer::with(['transport_types','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
+			$data['store_transfer'] = StoreTransfer::with(['transportTypes','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
 
             return view('store-transfer.schedule', $data);
 
