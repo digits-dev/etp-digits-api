@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StorePullout extends Model
@@ -49,5 +51,32 @@ class StorePullout extends Model
 
     public function scopeStr(){
         return $this->where('transaction_type', 'STR');
+
+    public function lines() : HasMany {
+        return $this->hasMany(StorePulloutLine::class, 'store_pullouts_id');
+    }
+
+    public function reasons() : BelongsTo {
+        return $this->belongsTo(Reason::class, 'reasons_id', 'bea_mo_reason');
+    }
+
+    public function transport_types() : BelongsTo {
+        return $this->belongsTo(TransportType::class, 'transport_types_id', 'id');
+    }
+
+    public function storesfrom() : BelongsTo {
+        return $this->belongsTo(StoreMaster::class, 'wh_from', 'warehouse_code');
+    }
+    
+    public function storesto() : BelongsTo {
+        return $this->belongsTo(StoreMaster::class, 'wh_to', 'warehouse_code');
+    }
+
+    public function statuses() : BelongsTo {
+        return $this->belongsTo(OrderStatus::class, 'status', 'id');
+    }
+
+    public function calculateTotals(){
+        return $this->lines->sum('qty');
     }
 }

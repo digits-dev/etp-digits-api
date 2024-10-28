@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StoreTransfer extends Model
@@ -42,4 +44,34 @@ class StoreTransfer extends Model
     public function scopeConfirmed(){
         return $this->where('status', OrderStatus::CONFIRMED);
     }
+  
+    public function lines() : HasMany {
+        return $this->hasMany(StoreTransferLine::class, 'store_transfers_id');
+    }
+
+    public function reasons() : BelongsTo {
+        return $this->belongsTo(Reason::class, 'reasons_id', 'id');
+    }
+
+    public function transport_types() : BelongsTo {
+        return $this->belongsTo(TransportType::class, 'transport_types_id', 'id');
+    }
+
+    public function storesfrom() : BelongsTo {
+        return $this->belongsTo(StoreMaster::class, 'wh_from', 'warehouse_code');
+    }
+    
+    public function storesto() : BelongsTo {
+        return $this->belongsTo(StoreMaster::class, 'wh_to', 'warehouse_code');
+    }
+
+    public function statuses() : BelongsTo {
+        return $this->belongsTo(OrderStatus::class, 'status', 'id');
+    }
+
+
+    public function calculateTotals(){
+        return $this->lines->sum('qty');
+    }
+
 }

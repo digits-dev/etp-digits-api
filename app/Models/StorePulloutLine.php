@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class StorePulloutLine extends Model
@@ -20,4 +22,13 @@ class StorePulloutLine extends Model
         'created_at',
         'updated_at'
     ];
+
+    public function item() : BelongsTo {
+        return $this->belongsTo(Item::class, 'item_code', 'digits_code');
+    }
+
+    public function serials() : HasMany {
+        return $this->hasMany(SerialNumber::class, 'store_pullout_lines_id');
+    }
+
 }

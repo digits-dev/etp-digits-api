@@ -148,11 +148,14 @@ table.table.table-bordered th {
                             <thead>
                                 <tr style="background: #0047ab; color: white">
                                     <th width="10%" class="text-center">Digits Code</th>
-                                    <th width="15%" class="text-center">UPC Code</th>
+                                    @if(is_null($store_transfer->location_id_from) || empty($store_transfer->location_id_from))
+                                        <th width="15%" class="text-center">UPC Code</th>
+                                    @endif
                                     <th width="25%" class="text-center">Item Description</th>
                                     <th width="5%" class="text-center">Qty</th>
-                                    <th width="20%" class="text-center">Serial #</th>
-                              
+                                    @if(is_null($store_transfer->location_id_from) || empty($store_transfer->location_id_from))
+                                        <th width="20%" class="text-center">Serial #</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody>
@@ -166,17 +169,18 @@ table.table.table-bordered th {
                                             @foreach ($lines->serials as $serial)
                                                 <input type="text" class="form-control serial-input mb-1" name="serial[]" style="text-align:center; margin-top: 5px;" readonly value=" {{$serial->serial_number}}">
                                             @endforeach
-                                        </td>                                                                      
+                                        </td>
                                     </tr>    
                                 @endforeach
-                                    <tr class="tableInfo">
-                                        <td colspan="3" align="right"><strong>Total Qty</strong></td>
-                                        <td align="left" colspan="1">
-                                            <input type='text' name="total_quantity" class="form-control text-center" id="totalQuantity" value="{{$store_transfer->calculateTotals()}}" readonly>
-                                        </td>
-                                        <td colspan="1"></td>
-                                    </tr>
-                           
+                                
+                                <tr class="tableInfo">
+                                    <td colspan="3" align="right"><strong>Total Qty</strong></td>
+                                    <td align="left" colspan="1">
+                                        <input type='text' name="total_quantity" class="form-control text-center" id="totalQuantity" value="{{$store_transfer->calculateTotals()}}" readonly>
+                                    </td>
+                                    <td colspan="1"></td>
+                                </tr>
+                              
                             </tbody>
                         </table>
                     </div>
@@ -196,13 +200,10 @@ table.table.table-bordered th {
         </form>
     </div>
 
-
-
 @endsection
 
 @push('bottom')
 <script type="text/javascript">
-$(document).ready(function() {
 
     $("form").bind("keypress", function(e) {
         if (e.keyCode == 13) {
@@ -214,18 +215,15 @@ $(document).ready(function() {
         $('body').addClass("sidebar-collapse");
     });
 
-
-    @if($store_transfer->statuses->order_status == "RECEIVED")
+    @if($store_transfer->status == "RECEIVED")
         $("#st-details").attr("style",'background-image: url("https://dms.digitstrading.ph/public/images/received.png"); background-repeat: no-repeat; background-position: top center; background-size: 500px 300px;');
-    @elseif($store_transfer->statuses->order_status  == "VOID")
+    @elseif($store_transfer->status == "VOID")
         $("#st-details").attr("style",'background-image: url("https://dms.digitstrading.ph/public/images/void.png"); background-repeat: no-repeat; background-position: top center; background-size: 500px 300px;');
-    @elseif($store_transfer->statuses->order_status  == "CLOSED")
+    @elseif($store_transfer->status == "CLOSED")
         $("#st-details").attr("style",'background-image: url("https://dms.digitstrading.ph/public/images/closed.png"); background-repeat: no-repeat; background-position: top center; background-size: 500px 300px;');
     @else
-    
-    @endif
 
-});
+    @endif
+    
 </script>
 @endpush
-
