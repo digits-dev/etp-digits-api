@@ -133,10 +133,10 @@ use Illuminate\Validation\ValidationException;
 			$transport_type = $validatedData['transport_type'];
 			$memo = $validatedData['memo'];
 			$scanned_digits_code = $validatedData['scanned_digits_code'];
-			$qty = $validatedData['qty'];
+			$qty = $request->input('qty');
 			$hand_carrier = $transport_type == 2 ? $request->input('hand_carrier') : "";
 
-			// Insert store transfer headers
+			//Insert store transfer headers
 			$store_transfer_header_id = DB::table('store_transfers')->insertGetId([
 				'memo' => $memo,
 				'transaction_type' => 4, // STS
@@ -152,13 +152,18 @@ use Illuminate\Validation\ValidationException;
 				'created_at' => now()
 			]);
 
-			// Insert store transfer lines
-			DB::table('store_transfer_lines')->insert([
-				'store_transfers_id' => $store_transfer_header_id, 
-				'item_code' => $scanned_digits_code,
-				'qty' => $qty,
-				'created_at' => now()
-			]);
+			$store_transfer_lines = [];
+
+			for ($i = 0; $i < count($scanned_digits_code); $i++) {
+				$store_transfer_lines[] = [
+					'store_transfers_id' => $store_transfer_header_id,
+					'item_code' => $scanned_digits_code[$i],
+					'qty' => $qty[$i],
+					'created_at' => now()
+				];
+			}
+			// Insert all the store transfer lines
+			DB::table('store_transfer_lines')->insert($store_transfer_lines);
 			CRUDBooster::redirect(CRUDBooster::mainpath(), trans("STS created successfully!"), 'success');
 		}
 	}

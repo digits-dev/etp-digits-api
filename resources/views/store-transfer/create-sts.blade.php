@@ -299,6 +299,27 @@
         </div>
     </div>
 
+    <!-- The Modal -->
+    <div class="modal fade" id="SerialModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h4 class="modal-title" id="exampleModalCenterTitle"> <i class="fa fa-barcode"></i> Serial Number</h4>
+            </div>
+            <div class="modal-body">
+            <div class="form-group">
+                <label for="">Serial Number</label>
+                <input type="text" name="createSerial" id="createSerial" class="form-control">
+            </div>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            {{-- <button type="button" class="btn btn-success">Create</button> --}}
+            </div>
+        </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('bottom')
@@ -348,7 +369,6 @@
             this.value = this.value.replace(/[^0-9]/g, '');
         });
 
-        // Handle the Enter key press
         $('#item_search').keypress(function(event) {
             if (event.which === 13) { 
                 event.preventDefault();
@@ -369,26 +389,29 @@
                             const row = response.data;
                             const digitsCode = row.digits_code;
                             const qty = 1; 
+                            const existingRow = tbody.find(`input[name="scanned_digits_code[]"][value="${digitsCode}"]`).closest('tr');
 
-                            if (scannedDigitsCodes[digitsCode]) {
-                                const existingRow = tbody.find(`input[name="scanned_digits_code[]"][value="${digitsCode}"]`).closest('tr');
+                            if (existingRow.length) {
                                 const currentQty = parseInt(existingRow.find('input[name="qty[]"]').val()) || 0;
                                 existingRow.find('input[name="qty[]"]').val(currentQty + 1);
                             } else {
-                                scannedDigitsCodes[digitsCode] = qty; 
+                                scannedDigitsCodes[digitsCode] = qty;
 
                                 const tr = `
                                     <tr>
-                                        <td class="text-center"><input type="text" class="form-control" name="scanned_digits_code[]" id="scanned_digits_code" style="text-align:center" readonly value="${digitsCode || ''}"></td>
-                                        <td class="text-center"><input type="text" class="form-control" name="upc_code[]" id="upc_code" style="text-align:center" readonly value="${row.upc_code || ''}"></td>
-                                        <td class="text-center"><input type="text" class="form-control" name="item_description[]" id="item_description" style="text-align:center" readonly value="${row.item_description || ''}"></td>
-                                        <td class="text-center"><input type="text" class="form-control" name="qty[]" id="qty" style="text-align:center" readonly value="${qty}"></td>
-                                        <td class="text-center"><input type="text" class="form-control" name="serial[]" id="serial" style="text-align:center" readonly value="${row.has_serial || ''}"></td>
+                                        <td class="text-center"><input type="text" class="form-control" name="scanned_digits_code[]" style="text-align:center" readonly value="${digitsCode || ''}"></td>
+                                        <td class="text-center"><input type="text" class="form-control" name="upc_code[]" style="text-align:center" readonly value="${row.upc_code || ''}"></td>
+                                        <td class="text-center"><input type="text" class="form-control" name="item_description[]" style="text-align:center" readonly value="${row.item_description || ''}"></td>
+                                        <td class="text-center"><input type="text" class="form-control" name="qty[]" style="text-align:center" readonly value="${qty}"></td>
+                                        <td class="text-center"><input type="text" class="form-control" id="serial_input" name="serial[]" style="text-align:center" readonly value="${row.has_serial || ''}"></td>
                                         <td class="text-center"><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fa fa-trash"></i></button></td>
                                     </tr>
                                 `;
                                 tbody.append(tr);
-                                $('#totalQuantity').val(parseInt($('#totalQuantity').val() || 0) + qty);
+                                $('#totalQuantity').val(parseInt($('#totalQuantity').val() || 0) + qty); 
+                            }
+                            if(row.has_serial == 1){
+                                $('#SerialModal').modal('show');
                             }
                         } else {
                             Swal.fire({
@@ -408,5 +431,45 @@
                 });
             }
         });
+
+        function removeRow(button) {
+            const row = $(button).closest('tr'); 
+            const qty = parseInt(row.find('input[name="qty[]"]').val()) || 0;
+            const totalQuantityInput = $('#totalQuantity');
+            const currentTotal = parseInt(totalQuantityInput.val()) || 0;
+
+            totalQuantityInput.val(currentTotal - qty);
+            row.remove();
+        }
+
+        $('#createSerial').keypress(function(event) {
+            if (event.which === 13) { 
+                event.preventDefault();
+                const serial = $('#createSerial').val(); 
+                $('#serial_input').val(serial);
+                $('#SerialModal').modal('hide');
+            }
+        });
+
+        // $('#btnSubmit').on('click', function(event) {
+        //     event.preventDefault(); 
+
+        //     // Show the confirmation Swal
+        //     Swal.fire({
+        //         title: 'Are you sure?',
+        //         text: "You won't be able to revert this!",
+        //         icon: 'warning',
+        //         showCancelButton: true,
+        //         confirmButtonColor: '#3085d6',
+        //         cancelButtonColor: '#d33',
+        //         confirmButtonText: 'Yes, create it!'
+        //     }).then((result) => {
+        //         if (result.isConfirmed) {
+        //             // If confirmed, submit the form
+        //             $(this).closest('form').submit();
+        //         }
+        //     });
+        // });
+        
     </script>
 @endpush
