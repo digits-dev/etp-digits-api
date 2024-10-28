@@ -201,7 +201,7 @@ use Illuminate\Support\Carbon;
 					$individual_serials = explode(',', $validatedData['allSerial'][$index]);
 					foreach ($individual_serials as $ser) {
 						$serial_table[] = [
-							'store_pullout_lines' => $line_id,
+							'store_pullout_lines_id' => $line_id,
 							'serial_number' => trim($ser),
 							'status' => 0, //Pending
 							'created_at' => now()

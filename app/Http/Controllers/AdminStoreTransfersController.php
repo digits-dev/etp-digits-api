@@ -143,7 +143,7 @@ use Maatwebsite\Excel\Concerns\ToArray;
 			$exists = DB::table('serial_numbers')
 				->where(DB::raw('BINARY serial_number'), $request->serial)
 				->exists();
-				
+
 			return response()->json(['exists' => $exists]);
 		}
 
@@ -212,7 +212,7 @@ use Maatwebsite\Excel\Concerns\ToArray;
 					$individual_serials = explode(',', $validatedData['allSerial'][$index]);
 					foreach ($individual_serials as $ser) {
 						$serial_table[] = [
-							'store_transfer_lines' => $line_id,
+							'store_transfer_lines_id' => $line_id,
 							'serial_number' => trim($ser),
 							'status' => 0, //Pending
 							'created_at' => now()
