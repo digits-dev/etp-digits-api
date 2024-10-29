@@ -293,7 +293,7 @@ input[type=number]::-webkit-outer-spin-button {
     let pendingSerials = []; // serials tracker
 
     $('#item_search').keypress(function(event) {
-            if (event.which === 13) {
+        if (event.which === 13) {
                 $(this).prop('disabled', true);
                 event.preventDefault();
                 let scannedDigitsCodes = {};
@@ -364,12 +364,12 @@ input[type=number]::-webkit-outer-spin-button {
                         }
                         $('#scanningSpinner').hide();
                         $('#item_search').val("");
-                        $(this).prop('disabled', false);
+                        $('#item_search').prop('disabled', false); 
                     },
                     error: function(xhr, status, error) {
                         alert('Error: ' + error);
                         $('#scanningSpinner').hide();
-                        $(this).prop('disabled', false);  
+                        $('#item_search').prop('disabled', false); 
                     }
                 });
             }

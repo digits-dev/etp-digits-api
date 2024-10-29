@@ -429,13 +429,13 @@
                         }
                         $('#scanningSpinner').hide();
                         $('#item_search').val("");
-                        $(this).prop('disabled', false);
+                        $('#item_search').prop('disabled', false); 
 
                     },
                     error: function(xhr, status, error) {
                         alert('Error: ' + error);
                         $('#scanningSpinner').hide();
-                        $(this).prop('disabled', false);
+                        $('#item_search').prop('disabled', false); 
                     }
                 });
             }
