@@ -62,7 +62,11 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 		$this->form = [];
 
-		$this->index_button[] = ['label' => 'Create STS', 'url' => route('createSTS'), 'icon' => 'fa fa-plus', 'color' => 'success'];
+		
+		if (CRUDBooster::isCreate()){
+			$this->index_button[] = ['label' => 'Create STS', 'url' => route('createSTS'), 'icon' => 'fa fa-plus', 'color' => 'success'];
+		}
+		
 
 		$this->addaction = [];
 		if (!in_array(CRUDBooster::myPrivilegeName(), [self::CANVOID])) {

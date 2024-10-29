@@ -60,8 +60,10 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 		$this->form = [];
 
-		$this->index_button[] = ['label' => 'Create STW', 'url' => route('createSTW'), 'icon' => 'fa fa-plus', 'color' => 'success'];
-		$this->index_button[] = ['label' => 'Create ST RMA', 'url' => route('createSTR'), 'icon' => 'fa fa-plus', 'color' => 'success'];
+		if (CRUDBooster::isCreate()){
+			$this->index_button[] = ['label' => 'Create STW', 'url' => route('createSTW'), 'icon' => 'fa fa-plus', 'color' => 'success'];
+			$this->index_button[] = ['label' => 'Create ST RMA', 'url' => route('createSTR'), 'icon' => 'fa fa-plus', 'color' => 'success'];
+		}
 
 		$this->addaction = [];
 		if (!in_array(CRUDBooster::myPrivilegeName(), [self::CANVOID])) {
