@@ -137,7 +137,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 		if (CRUDBooster::isSuperadmin()) {
 		 
-			$data['transfer_from'] = Cache::remember('transfer_from_if', 36000, function () {
+			$data['transfer_from'] = Cache::remember('transfer_from_if'. CRUDBooster::myStore(), 36000, function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
@@ -147,7 +147,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		
 		} else {
 			
-			$data['transfer_from'] = Cache::remember('transfer_from_else', 36000, function () {
+			$data['transfer_from'] = Cache::remember('transfer_from_else' . CRUDBooster::myStore(), 36000, function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->whereIn('id', [CRUDBooster::myStore()])
 				->where('status', 'ACTIVE')
@@ -157,7 +157,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			});
 		}
 		
-		$data['transfer_to'] = Cache::remember('stw_transfer_to', 36000, function () {
+		$data['transfer_to'] = Cache::remember('stw_transfer_to' . CRUDBooster::myStore(), 36000, function () {
 			return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->where('store_name', 'DIGITS WAREHOUSE')
@@ -167,7 +167,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		
 
 		if (CRUDBooster::myChannel() == 1) { //RETAIL
-			$data['reasons'] = Cache::remember('stw_reason_mo', 36000, function () {
+			$data['reasons'] = Cache::remember('stw_reason_mo' . CRUDBooster::myStore(), 36000, function () {
 				return Reason::select('bea_mo_reason as bea_reason', 'pullout_reason')
 					->where('transaction_types_id', TransactionType::STW) 
 					->where('status', 'ACTIVE')
@@ -175,7 +175,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			});
 
 		} else {
-			$data['reasons'] = Cache::remember('stw_reason_so', 36000, function () {
+			$data['reasons'] = Cache::remember('stw_reason_so' . CRUDBooster::myStore(), 36000, function () {
 				return Reason::select('bea_so_reason as bea_reason', 'pullout_reason')
 					->where('transaction_types_id', TransactionType::STW) 
 					->where('status', 'ACTIVE')
@@ -274,7 +274,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 		if (CRUDBooster::isSuperadmin()) {
 		 
-			$data['transfer_from'] = Cache::remember('transfer_from_if', 36000, function () {
+			$data['transfer_from'] = Cache::remember('transfer_from_if' . CRUDBooster::myStore(), 36000, function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
@@ -284,7 +284,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		
 		} else {
 			
-			$data['transfer_from'] = Cache::remember('transfer_from_else', 36000, function () {
+			$data['transfer_from'] = Cache::remember('transfer_from_else' . CRUDBooster::myStore(), 36000, function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->whereIn('id', [CRUDBooster::myStore()])
 				->where('status', 'ACTIVE')
@@ -294,7 +294,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			});
 		}
 
-		$data['transfer_to'] = Cache::remember('str_transfer_to', 36000, function () {
+		$data['transfer_to'] = Cache::remember('str_transfer_to' . CRUDBooster::myStore(), 36000, function () {
 			return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->where('store_name', 'RMA WAREHOUSE')
@@ -303,14 +303,14 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		});
 
 		if (CRUDBooster::myChannel() == 1) { //RETAIL
-			$data['reasons'] = Cache::remember('rma_reasons_mo', 36000, function () {
+			$data['reasons'] = Cache::remember('rma_reasons_mo' . CRUDBooster::myStore(), 36000, function () {
 				return Reason::select('bea_mo_reason as bea_reason', 'pullout_reason', 'allow_multi_items')
 					->where('transaction_types_id', TransactionType::RMA)
 					->where('status', 'ACTIVE')
 					->get();
 			});
 		} else {
-			$data['reasons'] = Cache::remember('rma_reasons_so', 36000, function () {
+			$data['reasons'] = Cache::remember('rma_reasons_so' . CRUDBooster::myStore(), 36000, function () {
 				return Reason::select('bea_so_reason as bea_reason', 'pullout_reason', 'allow_multi_items')
 					->where('transaction_types_id', TransactionType::RMA)
 					->where('status', 'ACTIVE')

@@ -144,7 +144,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 		$data = [];
 		$data['page_title'] = "STS Details";
-		$data['store_transfer'] = StoreTransfer::with(['transportTypes', 'approvedBy', 'rejectedBy', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
+		$data['store_transfer'] = StoreTransfer::with(['transportTypes', 'approvedBy', 'rejectedBy', 'reasons', 'lines', 'statuses', 'scheduledBy', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
 
 		return view('store-transfer.detail', $data);
 	}
@@ -156,7 +156,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 		if (CRUDBooster::isSuperadmin()) {
 		 
-			$data['transfer_from'] = Cache::remember('transfer_from_if', 36000, function () {
+			$data['transfer_from'] = Cache::remember('transfer_from_if' . CRUDBooster::myStore(), 36000, function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
@@ -166,7 +166,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		
 		} else {
 
-			$data['transfer_from'] = Cache::remember('transfer_from_else', 36000, function () {
+			$data['transfer_from'] = Cache::remember('transfer_from_else' . CRUDBooster::myStore(), 36000, function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->whereIn('id', [CRUDBooster::myStore()])
 				->where('status', 'ACTIVE')
@@ -176,7 +176,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 			});
 		}
 
-		$data['transfer_to'] = Cache::remember('sts_transfer_to', 36000, function () {
+		$data['transfer_to'] = Cache::remember('sts_transfer_to' . CRUDBooster::myStore(), 36000, function () {
 			return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->whereNotIn('id', [CRUDBooster::myStore()])
@@ -185,7 +185,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 				->get();
 		});
 	
-		$data['reasons'] = Cache::remember('sts_reason', 36000, function () {
+		$data['reasons'] = Cache::remember('sts_reason' . CRUDBooster::myStore(), 36000, function () {
 			return Reason::select('id', 'pullout_reason')
 				->where('transaction_types_id', 4) // STS
 				->where('status', 'ACTIVE')
@@ -363,7 +363,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 		$data = [];
 		$data['page_title'] = "Print STW Details";
-		$data['store_transfer'] = StoreTransfer::with(['transportTypes', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
+		$data['store_transfer'] = StoreTransfer::with(['transportTypes', 'approvedBy', 'rejectedBy', 'reasons', 'lines', 'statuses', 'scheduledBy', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
 
 		return view('store-transfer.print', $data);
 	}

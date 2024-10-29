@@ -77,6 +77,10 @@ class StoreTransfer extends Model
         return $this->belongsTo(CmsUser::class, 'rejected_by', 'id');
     }
 
+    public function scheduledBy() : BelongsTo {
+        return $this->belongsTo(CmsUser::class, 'scheduled_by', 'id');
+    }
+
     public function calculateTotals(){
         return $this->lines->sum('qty');
     }
