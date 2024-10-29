@@ -3,7 +3,7 @@
 	use Session;
 	use Illuminate\Http\Request;
 	use DB;
-	use CRUDBooster;
+	use crocodicstudio\crudbooster\helpers\CRUDBooster;
 	use App\Models\StorePullout;
 	use App\Models\StorePulloutLine;
 
@@ -67,20 +67,9 @@
 	            
 	    }
 
-		public function hook_row_index($column_index,&$column_value){
-			if($column_index == 6){
-				if($column_value == "Logistics"){
-					$column_value = '<span class="label label-info">LOGISTICS</span>';
-				}
-				elseif($column_value == "Hand Carry"){
-					$column_value = '<span class="label label-primary">HAND CARRY</span>';
-				}
-			}
-		}
 
 	    public function hook_query_index(&$query) {
-	        //Your code here
-	            
+	        $query->where('store_pullouts.status', 0);   //PENDING
 	    }
 
 		

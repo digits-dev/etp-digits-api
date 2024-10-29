@@ -36,12 +36,13 @@
 
 			# START COLUMNS DO NOT REMOVE THIS LINE
 			$this->col = [];
-			$this->col[] = ["label"=>"ST/REF#","name"=>"ref_number"];
+			$this->col[] = ["label"=>"Reference #","name"=>"ref_number"];
+			$this->col[] = ["label"=>"ST #","name"=>"document_number"];
 			$this->col[] = ["label"=>"MOR/SOR#","name"=>"sor_mor_number"];
 			$this->col[] = ["label"=>"From WH","name"=>"wh_from","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
 			$this->col[] = ["label"=>"To WH","name"=>"wh_to","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
 			$this->col[] = ["label"=>"Status","name"=>"status","join"=>"order_statuses,style"];
-			$this->col[] = ["label"=>"Transport Type","name"=>"transport_types_id","join"=>"transport_types,transport_type"];
+			$this->col[] = ["label"=>"Transport Type","name"=>"transport_types_id","join"=>"transport_types,style"];
 			$this->col[] = ["label"=>"Created Date","name"=>"created_at"];
 			# END COLUMNS DO NOT REMOVE THIS LINE
 
@@ -67,19 +68,8 @@
 	            
 	    }
 
-		public function hook_row_index($column_index,&$column_value){
-			if($column_index == 6){
-				if($column_value == "Logistics"){
-					$column_value = '<span class="label label-info">LOGISTICS</span>';
-				}
-				elseif($column_value == "Hand Carry"){
-					$column_value = '<span class="label label-primary">HAND CARRY</span>';
-				}
-			}
-		}
-
 	    public function hook_query_index(&$query) {
-	        //Your code here
+	        $query->where('store_pullouts.status', 0);   //PENDING
 	            
 	    }
 
@@ -92,8 +82,6 @@
 			$data = [];
             $data['page_title'] = "Pullout Details";
 			$data['store_pullout'] = StorePullout::with(['transportTypes','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
-
-			// dd($data['store_pullout']);
 
 			return view('store-pullout.detail', $data);
 

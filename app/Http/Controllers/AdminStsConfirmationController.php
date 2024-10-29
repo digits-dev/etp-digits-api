@@ -1,5 +1,6 @@
 <?php namespace App\Http\Controllers;
 
+use App\Helpers\Helper;
 use App\Models\StoreTransfer;
 use App\Models\StoreTransferLine;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
@@ -30,14 +31,17 @@ class AdminStsConfirmationController extends \crocodicstudio\crudbooster\control
 		$this->button_export = true;
 		$this->table = "store_transfers";
 		# END CONFIGURATION DO NOT REMOVE THIS LINE
+		
 
 		# START COLUMNS DO NOT REMOVE THIS LINE
 		$this->col = [];
+		$this->col[] = ["label" => "Reference #", "name" => "ref_number"];
 		$this->col[] = ["label"=>"ST#","name"=>"document_number"];
-		$this->col[] = ["label"=>"From WH","name"=>"wh_from","join"=>"store_masters,store_name","join_id"=>"id"];
-		$this->col[] = ["label"=>"To WH","name"=>"wh_to","join"=>"store_masters,store_name","join_id"=>"id"];
+		$this->col[] = ["label" => "Received ST#", "name" => "received_document_number"];
+		$this->col[] = ["label"=>"From WH","name"=>"wh_from","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
+		$this->col[] = ["label"=>"To WH","name"=>"wh_to","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
 		$this->col[] = ["label"=>"Status","name"=>"status","join"=>"order_statuses,style"];
-		$this->col[] = ["label"=>"Transport Type","name"=>"transport_types_id","join"=>"transport_types,transport_type"];
+		$this->col[] = ["label"=>"Transport Type","name"=>"transport_types_id","join"=>"transport_types,style"];
 		$this->col[] = ["label"=>"Reason","name"=>"reasons_id","join"=>"reasons,pullout_reason"];
 		$this->col[] = ["label"=>"Created By","name"=>"created_by","join"=>"cms_users,name"];
 		$this->col[] = ["label"=>"Created Date","name"=>"created_at"];
@@ -66,7 +70,7 @@ class AdminStsConfirmationController extends \crocodicstudio\crudbooster\control
 		if(CRUDBooster::isSuperAdmin()){
 			$query->where('store_transfers.status', '9');     
 		}else{
-			$query->where('store_transfers.stores_id_destination', CRUDBooster::myStore())
+			$query->where('store_transfers.stores_id_destination', Helper::myStore())
 			->where('store_transfers.status', '9');     
 		}
 			

@@ -170,7 +170,7 @@ table.table.table-bordered th {
             </div>
 
         <div class='panel-footer'>
-            <a href="{{ CRUDBooster::mainpath() }}" class="btn btn-default">{{ trans('message.form.back') }}</a>
+            <a href="{{ CRUDBooster::mainpath() }}" class="btn btn-default">Back</a>
             <button class="btn btn-danger pull-right" type="button" id="btnReject" style="margin-left: 5px;"> <i class="fa fa-thumbs-down" ></i> Reject</button>
             <button class="btn btn-success pull-right" type="button" id="btnApprove"> <i class="fa fa-thumbs-up" ></i> Approve</button>
         </div>

@@ -53,7 +53,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		$this->col[] = ["label" => "From WH", "name" => "wh_from", "join" => "store_masters,store_name", "join_id" => "warehouse_code"];
 		$this->col[] = ["label" => "To WH", "name" => "wh_to", "join" => "store_masters,store_name", "join_id" => "warehouse_code"];
 		$this->col[] = ["label" => "Status", "name" => "status", "join" => "order_statuses,style"];
-		$this->col[] = ["label" => "Transport Type", "name" => "transport_types_id", "join" => "transport_types,transport_type"];
+		$this->col[] = ["label" => "Transport Type", "name" => "transport_types_id", "join" => "transport_types,style"];
 		$this->col[] = ["label" => "Created By", "name" => "created_by", "join" => "cms_users,name"];
 		$this->col[] = ["label" => "Created Date", "name" => "created_at"];
 
@@ -102,18 +102,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		$this->load_css[] = asset("css/select2-style.css");
 	}
 
-	public function hook_row_index($column_index, &$column_value)
-	{
-		if ($column_index == 7) {
-			if ($column_value == "LOGISTICS") {
-				$column_value = '<span class="label label-info">LOGISTICS</span>';
-			} elseif ($column_value == "HAND CARRY") {
-				$column_value = '<span class="label label-primary">HAND CARRY</span>';
-			}
-		}
-	}
-
-
+	
 	public function actionButtonSelected($id_selected, $button_name)
 	{
 		//Your code here

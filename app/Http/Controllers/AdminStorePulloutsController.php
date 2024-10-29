@@ -52,7 +52,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		$this->col[] = ["label" => "To WH", "name" => "wh_to", "join" => "store_masters,store_name", "join_id" => "warehouse_code"];
 		$this->col[] = ["label" => "Transaction Type", "name" => "transaction_type", "join" => "transaction_types,transaction_type", "join_id" => "id"];
 		$this->col[] = ["label" => "Status", "name" => "status", "join" => "order_statuses,style"];
-		$this->col[] = ["label" => "Transport Type", "name" => "transport_types_id", "join" => "transport_types,transport_type"];
+		$this->col[] = ["label" => "Transport Type", "name" => "transport_types_id", "join" => "transport_types,style"];
 		$this->col[] = ["label" => "Created Date", "name" => "created_at"];
 
 
@@ -104,18 +104,9 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 	}
 
-	public function hook_row_index($column_index, &$column_value)
-	{
-		if ($column_index == 8) {
-			if ($column_value == "LOGISTICS") {
-				$column_value = '<span class="label label-info">LOGISTICS</span>';
-			} elseif ($column_value == "HAND CARRY") {
-				$column_value = '<span class="label label-primary">HAND CARRY</span>';
-			}
-		}
+	public function hook_query_index(&$query) {
+		
 	}
-
-	public function hook_query_index(&$query) {}
 
 	public function getDetail($id)
 	{

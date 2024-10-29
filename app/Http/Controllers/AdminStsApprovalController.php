@@ -36,11 +36,13 @@
 
 			# START COLUMNS DO NOT REMOVE THIS LINE
 			$this->col = [];
+			$this->col[] = ["label" => "Reference #", "name" => "ref_number"];
 			$this->col[] = ["label"=>"ST #","name"=>"document_number"];
-			$this->col[] = ["label"=>"From WH","name"=>"wh_from","join"=>"store_masters,store_name","join_id"=>"id"];
-			$this->col[] = ["label"=>"To WH","name"=>"wh_to","join"=>"store_masters,store_name","join_id"=>"id"];
+			$this->col[] = ["label" => "Received ST#", "name" => "received_document_number"];
+			$this->col[] = ["label"=>"From WH","name"=>"wh_from","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
+			$this->col[] = ["label"=>"To WH","name"=>"wh_to","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
 			$this->col[] = ["label"=>"Status","name"=>"status","join"=>"order_statuses,style"];
-			$this->col[] = ["label"=>"Transport Type","name"=>"transport_types_id","join"=>"transport_types,transport_type"];
+			$this->col[] = ["label"=>"Transport Type","name"=>"transport_types_id","join"=>"transport_types,style"];
 			$this->col[] = ["label"=>"Reason","name"=>"reasons_id","join"=>"reasons,pullout_reason"];
 			$this->col[] = ["label"=>"Created By","name"=>"created_by","join"=>"cms_users,name"];
 			$this->col[] = ["label"=>"Created Date","name"=>"created_at"];
@@ -67,18 +69,6 @@
 	            
 	    }
 
-		public function hook_row_index($column_index,&$column_value){
-			
-			if($column_index == 5){
-				if($column_value == "LOGISTICS"){
-					$column_value = '<span class="label label-info">LOGISTICS</span>';
-				}
-				elseif($column_value == "HAND CARRY"){
-					$column_value = '<span class="label label-primary">HAND CARRY</span>';
-				}
-			}
-		}
-
 		public function getDetail($id) {
 
 			if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
@@ -87,7 +77,7 @@
 			
             $data = [];
             $data['page_title'] = "Stock Transfer Details";
-			$data['store_transfer'] = StoreTransfer::with(['transportTypes','reasons','lines', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
+			$data['store_transfer'] = StoreTransfer::with(['transportTypes','reasons','lines', 'storesFrom', 'storesTo' ,'lines.serials', 'lines.item'])->find($id);
 
 
 			return view('store-transfer.sts-approval-detail', $data);
@@ -101,7 +91,7 @@
 			
             $data = [];
             $data['page_title'] = "Stock Transfer Approval";
-			$data['store_transfer'] = StoreTransfer::with(['transportTypes','reasons','lines', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
+			$data['store_transfer'] = StoreTransfer::with(['transportTypes','reasons','lines', 'storesFrom', 'storesTo' ,'lines.serials', 'lines.item'])->find($id);
 
 			return view('store-transfer.approval', $data);
 		}
@@ -130,7 +120,7 @@
 
 
 	    public function hook_query_index(&$query) {
-	            
+			$query->where('store_transfers.status', '10');    
 	    }
 
 	}
