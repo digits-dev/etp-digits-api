@@ -114,8 +114,11 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 	public function hook_query_index(&$query)
 	{
-		//Your code here
-
+		if(!CRUDBooster::isSuperadmin()){
+			if (in_array(CRUDBooster::myPrivilegeId() ,self::Scheduler)) {
+				$query->where('store_transfer.status', self::Schedule)->where('transport_types_id',1);
+			}
+		}
 	}
 
 	public function getDetail($id)
