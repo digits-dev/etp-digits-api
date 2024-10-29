@@ -99,7 +99,7 @@ table.table.table-bordered th {
                                     <b>Pullout Date:</b>
                                 </td>
                                 <td>
-                                    @if(!empty($store_pullout->scheduled_at)) : {{ $store_pullout->scheduled_at }} @else {{ $store_pullout->pullout_date }} @endif  
+                                    @if(!empty($store_pullout->pullout_schedule_date)) {{ $store_pullout->pullout_schedule_date }} @else {{ $store_pullout->pullout_date }} @endif  
                                 </td>
                             </tr>
                             @if(!empty($store_pullout->approved_at) || !empty($store_pullout->rejected_at))
@@ -114,9 +114,9 @@ table.table.table-bordered th {
                                 </td>
                                 <td>
                                     @if(!empty($store_pullout->approved_at))
-                                        {{ $store_pullout->approved_at }} / {{ $store_pullout->approvedby }} 
+                                        {{ $store_pullout->approved_at }} / {{ $store_pullout->approvedBy->name }} 
                                     @elseif(!empty($store_pullout->rejected_at)) 
-                                        {{ $store_pullout->rejected_at }} / {{ $store_pullout->rejectedby }} 
+                                        {{ $store_pullout->rejected_at }} / {{ $store_pullout->rejectedBy->name }} 
                                     @endif
                                 </td>
                             </tr>

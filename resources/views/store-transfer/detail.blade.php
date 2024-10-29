@@ -103,7 +103,7 @@ table.table.table-bordered th {
                                     <b>Transfer Date:</b>
                                 </td>
                                 <td>
-                                    @if(!empty($store_transfer->scheduled_at)) {{ $store_transfer->scheduled_at }} @else {{ $store_transfer->transfer_date }} @endif  
+                                    @if(!empty($store_transfer->transfer_schedule_date)) {{ $store_transfer->transfer_schedule_date }} @else {{ $store_transfer->transfer_date }} @endif  
                                 </td>
                             </tr>
                             <tr>

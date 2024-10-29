@@ -125,8 +125,8 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 		$data = [];
 		$data['page_title'] = "Pullout Details";
-		$data['store_pullout'] = StorePullout::with(['transportTypes', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
-
+		$data['store_pullout'] = StorePullout::with(['transportTypes', 'approvedBy', 'rejectedBy', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
+		
 		return view('store-pullout.detail', $data);
 	}
 
@@ -195,6 +195,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 	public function postStwPullout(Request $request)
 	{
+		// Validations
 		try {
 			$validatedData = $request->validate([
 				'pullout_from' => 'required|max:255',
@@ -203,11 +204,11 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 				'transport_type' => 'required|integer',
 				'memo' => 'nullable|string|max:255',
 				'hand_carrier' => 'nullable|string|max:100',
-				'pullout_date' => 'required',
-				'scanned_digits_code' => 'required|max:100',
-				'allSerial' => 'required',
-				'qty' => 'required',
-				'current_srp' => 'required',
+				'pullout_date' => 'required|date',
+				'scanned_digits_code' => 'required|array',
+				'allSerial' => 'required|array',
+				'qty' => 'required|array',
+				'current_srp' => 'required|array',
 				'stores_id_destination_to' => 'required'
 			]);
 		} catch (ValidationException $e) {
@@ -216,13 +217,14 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			CRUDBooster::redirect(CRUDBooster::mainpath(), $errorMessage, 'danger');
 		}
 
-		$transport_type = $validatedData['transport_type'];
-		$hand_carrier = $transport_type == 2 ? $request->input('hand_carrier') : "";
-		$lastRefNum = Counter::orderBy('id', 'desc')->first();
-		$ref_number = $lastRefNum ? $lastRefNum->referece_number + 1 : 1;
-		$combined_ref = 'ETP-' . $ref_number;
+		// Generated ref_number
+		$counter = Counter::find(2);
+		$ref_number = $counter->reference_number;
+		$combined_ref = $counter->reference_code . '-' . $ref_number;
+		$hand_carrier = $validatedData['transport_type'] == 2 ? $validatedData['hand_carrier'] : "";
 
-		$store_pullout_header_id = DB::table('store_pullouts')->insertGetId([
+		// Store Pullout creation
+		$storePullout = StorePullout::firstOrCreate([
 			'ref_number' => $combined_ref,
 			'memo' => $validatedData['memo'],
 			'pullout_date' => Carbon::parse($validatedData['pullout_date']),
@@ -235,46 +237,33 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			'channels_id' => Helper::myChannel(),
 			'stores_id' => Helper::myStore(),
 			'stores_id_destination' => $validatedData['stores_id_destination_to'],
-			'status' => 0, // Pending
+			'status' => OrderStatus::PENDING,
 			'created_by' => CRUDBooster::myId(),
-			'created_at' => now()
+			'created_at' => now(),
 		]);
-		Counter::create(['referece_number' => $ref_number, 'reference_code' => 'ETP', 'type' => 'STW', 'created_by' => CRUDBooster::myId()]);
 
-		$store_pullout_lines = [];
-
+		// Store Pullout Lines creation
 		foreach ($validatedData['scanned_digits_code'] as $index => $item_code) {
-			$store_pullout_lines[] = [
-				'store_pullouts_id' => $store_pullout_header_id,
+			$storePulloutLine = $storePullout->lines()->create([
 				'item_code' => $item_code,
 				'qty' => $validatedData['qty'][$index],
 				'unit_price' => $validatedData['current_srp'][$index],
-				'created_at' => now()
-			];
-		}
-		DB::table('store_pullout_lines')->insert($store_pullout_lines);
+				'created_at' => now(),
+			]);
 
-		$line_ids = DB::table('store_pullout_lines')
-			->where('store_pullouts_id', $store_pullout_header_id)
-			->pluck('id');
-
-		$serial_table = [];
-		foreach ($line_ids as $index => $line_id) {
+			// serial numbers creation
 			if (!empty($validatedData['allSerial'][$index])) {
-
-				$individual_serials = explode(',', $validatedData['allSerial'][$index]);
-				foreach ($individual_serials as $ser) {
-					$serial_table[] = [
-						'store_pullout_lines_id' => $line_id,
-						'serial_number' => trim($ser),
-						'status' => 0, //Pending
-						'created_at' => now()
-					];
-				}
+				$serial_numbers = array_map('trim', explode(',', $validatedData['allSerial'][$index]));
+				$serial_data = array_map(fn($serial) => [
+					'serial_number' => $serial,
+					'status' => OrderStatus::PENDING,
+					'created_at' => now()
+				], $serial_numbers);
+				$storePulloutLine->serials()->createMany($serial_data);
 			}
 		}
-		DB::table('serial_numbers')->insert($serial_table);
 
+		$counter->increment('reference_number');
 		CRUDBooster::redirect(CRUDBooster::mainpath(), trans("STS created successfully!"), 'success');
 	}
 
@@ -366,9 +355,9 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		$hand_carrier = $transport_type == 2 ? $request->input('hand_carrier') : "";
 		$allProblems = $request->input('all_problems');
 
-		$lastRefNum = Counter::orderBy('id', 'desc')->first();
-		$ref_number = $lastRefNum ? $lastRefNum->referece_number + 1 : 1;
-		$combined_ref = 'ETP-' . $ref_number;
+		$lastRefNum = Counter::where('id', 3)->first();
+		$ref_number = $lastRefNum->reference_number;
+		$combined_ref = $lastRefNum->reference_code. '-' . $ref_number;
 
 		$store_pullout_header_id = DB::table('store_pullouts')->insertGetId([
 			'ref_number' => $combined_ref,
@@ -387,7 +376,6 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			'created_by' => CRUDBooster::myId(),
 			'created_at' => now()
 		]);
-		Counter::create(['referece_number' => $ref_number, 'reference_code' => 'ETP', 'type' => 'STR', 'created_by' => CRUDBooster::myId()]);
 
 		$store_pullout_lines = [];
 
@@ -436,6 +424,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			}
 		}
 		DB::table('serial_numbers')->insert($serial_table);
+		Counter::where('id', 3)->increment('reference_number');
 
 		CRUDBooster::redirect(CRUDBooster::mainpath(), trans("STS created successfully!"), 'success');
 	}
@@ -480,7 +469,8 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 	{
 		$record = StorePullout::where('id', $request->header_id)
 			->update([
-				'scheduled_at' => $request->schedule_date,
+				'pullout_schedule_date' => $request->schedule_date,
+				'scheduled_at' => now(),
 				'scheduled_by' => CRUDBooster::myId(),
 				'status' => OrderStatus::FORRECEIVING
 			]);

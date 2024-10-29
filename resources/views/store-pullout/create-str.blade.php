@@ -253,6 +253,14 @@
             });
         })
 
+        function playScanSound(){
+            $.playSound('https://assets.mixkit.co/active_storage/sfx/931/931-preview.mp3');
+        }
+
+        function erroScanSound(){
+            $.playSound('https://assets.mixkit.co/active_storage/sfx/950/950-preview.mp3');
+        }
+
         $('#pullout_to').change(function() {
             const selectedDataId = $(this).find('option:selected').data('id');
             $('#stores_id_destination_to').val(selectedDataId);
@@ -301,6 +309,7 @@
                     },
                     success: function(response) {
                         if (response.success && response.data) {
+                            playScanSound();
                             const tbody = $('#st_items tbody');
                             const row = response.data;
                             const problemRow = response.problems;
@@ -409,6 +418,7 @@
 
                             updateTotalQuantity(updatedQtyInput);
                         } else {
+                            erroScanSound();
                             Swal.fire({
                                 icon: "error",
                                 title: "Oops...",
@@ -464,6 +474,7 @@
                         },
                         success: function(response) {
                             if (response.exists) {
+                                erroScanSound();
                                 Swal.fire({
                                     icon: "error",
                                     title: "Oops...",
@@ -471,6 +482,7 @@
                                     confirmButtonText: '<i class="fa fa-thumbs-up"></i> Okay'
                                 });
                             } else {
+                                playScanSound();
                                 const serialContainer = currentSerialRow.find('.serial-container');
                                 const qty = parseInt(currentSerialRow.find('input[name="qty[]"]')
                             .val());
@@ -538,12 +550,26 @@
                     confirmButtonText: 'Yes, create it!'
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        Swal.fire({
+                            allowEscapeKey: false,
+                            allowOutsideClick: false,
+                            showConfirmButton: false,
+                            title: "Please wait while saving...",
+                            didOpen: () => Swal.showLoading()
+                        });
+                        
                         form.submit();
                     }
                 });
             } else {
                 form.reportValidity();
             }
+        });
+
+        $(document).ready(function() {
+            $(document).on("cut copy paste", function(e) {
+                e.preventDefault();
+            });
         });
     </script>
 @endpush

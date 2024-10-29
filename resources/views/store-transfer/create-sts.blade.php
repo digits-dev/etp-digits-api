@@ -21,9 +21,7 @@
             .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
                 color: #fff !important;
             }
-            .highlight-qty {
-                background-color: yellow;
-            }
+            
         </style>
     @endpush
 
@@ -321,10 +319,18 @@
         </div>
     </div>
 
+    <div id="loadingModal" class="modal">
+        <div class="modal-content">
+            <div class="spinner"></div>
+            <p>Loading, please wait...</p>
+        </div>
+    </div>
+
 @endsection
 
 @push('bottom')
     <script src='<?php echo asset('vendor/crudbooster/assets/select2/dist/js/select2.full.min.js'); ?>'></script>
+    <script src='https://cdn.jsdelivr.net/gh/admsev/jquery-play-sound@master/jquery.playSound.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
@@ -344,6 +350,14 @@
 
             });
         })
+
+        function playScanSound(){
+            $.playSound('https://assets.mixkit.co/active_storage/sfx/931/931-preview.mp3');
+        }
+
+        function erroScanSound(){
+            $.playSound('https://assets.mixkit.co/active_storage/sfx/950/950-preview.mp3');
+        }
 
         $('#transfer_to').change(function(){
             const selectedDataId = $(this).find('option:selected').data('id');
@@ -393,6 +407,7 @@
                     },
                     success: function(response) {
                         if (response.success && response.data) {
+                            playScanSound();
                             const tbody = $('#st_items tbody');
                             const row = response.data;
                             const digitsCode = row.digits_code;
@@ -437,6 +452,7 @@
 
                             updateTotalQuantity(updatedQtyInput);
                         } else {
+                            erroScanSound();
                             Swal.fire({
                                 icon: "error",
                                 title: "Oops...",
@@ -490,6 +506,7 @@
                         data: { serial: serial },
                         success: function(response) {
                             if (response.exists) {
+                                erroScanSound();
                                 Swal.fire({
                                     icon: "error",
                                     title: "Oops...",
@@ -497,6 +514,7 @@
                                     confirmButtonText: '<i class="fa fa-thumbs-up"></i> Okay'
                                 });
                             } else {
+                                playScanSound();
                                 const serialContainer = currentSerialRow.find('.serial-container');
                                 const qty = parseInt(currentSerialRow.find('input[name="qty[]"]').val());
 
@@ -561,6 +579,14 @@
                     confirmButtonText: 'Yes, create it!'
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        Swal.fire({
+                            allowEscapeKey: false,
+                            allowOutsideClick: false,
+                            showConfirmButton: false,
+                            title: "Please wait while saving...",
+                            didOpen: () => Swal.showLoading()
+                        });
+                        
                         form.submit(); 
                     }
                 });
@@ -568,5 +594,12 @@
                 form.reportValidity();
             }
         });
+
+        $(document).ready(function() {
+            $(document).on("cut copy paste", function(e) {
+                e.preventDefault();
+            });
+        });
+
     </script>
 @endpush

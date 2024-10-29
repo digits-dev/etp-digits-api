@@ -41,16 +41,16 @@ class StorePullout extends Model
         'rejected_at'
     ];
 
-    public function scopePending(){
-        return $this->where('status', OrderStatus::PENDING);
+    public function scopePending($query){
+        return $query->where('status', OrderStatus::PENDING);
     }
 
-    public function scopeStw(){
-        return $this->where('transaction_type', TransactionType::STW);
+    public function scopeStw($query){
+        return $query->where('transaction_type', TransactionType::STW);
     }
 
-    public function scopeStr(){
-        return $this->where('transaction_type', TransactionType::RMA);
+    public function scopeStr($query){
+        return $query->where('transaction_type', TransactionType::RMA);
     }
 
     public function lines() : HasMany {
@@ -83,5 +83,13 @@ class StorePullout extends Model
 
     public function calculateTotals(){
         return $this->lines->sum('qty');
+    }
+
+    public function approvedBy() : BelongsTo {
+        return $this->belongsTo(CmsUser::class, 'approved_by', 'id');
+    }
+
+    public function rejectedBy() : BelongsTo {
+        return $this->belongsTo(CmsUser::class, 'rejected_by', 'id');
     }
 }

@@ -2,17 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\Helper;
 use App\Models\CmsPrivilege;
 use App\Models\Item;
 use App\Models\StoreTransfer;
+use App\Models\StoreTransferLine;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use Illuminate\Contracts\Session\Session;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Concerns\ToArray;
 use App\Models\Problem;
 use App\Models\Counter;
 use App\Models\OrderStatus;
+use App\Models\SerialNumber;
+use Doctrine\DBAL\Driver\SQLSrv\LastInsertId;
+use Dompdf\Helpers;
+use App\Helpers\Helper;
 use App\Models\Reason;
 use App\Models\StoreMaster;
 use App\Models\TransportType;
@@ -110,11 +117,17 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 	}
 
 
+	public function actionButtonSelected($id_selected, $button_name)
+	{
+		//Your code here
+
+	}
+
 	public function hook_query_index(&$query)
 	{
 		if(!CRUDBooster::isSuperadmin()){
 			if (in_array(CRUDBooster::myPrivilegeId() ,self::SCHEDULER)) {
-				$query->where('store_transfer.status', OrderStatus::FORSCHEDULE)->where('transport_types_id', 1);
+				$query->where('store_transfers.status', OrderStatus::FORSCHEDULE)->where('transport_types_id', 1);
 			}
 			else{
 				$query->where('store_transfers.created_by', CRUDBooster::myId());
@@ -125,7 +138,6 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 	public function getDetail($id)
 	{
-
 		if (!CRUDBooster::isRead() && $this->global_privilege == FALSE || $this->button_detail == FALSE) {
 			CRUDBooster::redirect(CRUDBooster::adminPath(), trans("crudbooster.denied_access"));
 		}
@@ -184,9 +196,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 			return TransportType::select('id', 'transport_type')
 				->where('status', 'ACTIVE')
 				->get();
-		});   
-
-		
+		});
 		
 		return view("store-transfer.create-sts", $data);
 	}
@@ -209,16 +219,12 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 	public function checkSerial(Request $request)
 	{
-
-		$exists = DB::table('serial_numbers')
-			->where(DB::raw('BINARY serial_number'), $request->serial)
-			->exists();
-
-		return response()->json(['exists' => $exists]);
+		return response()->json(['exists' => SerialNumber::checkIfExists($request->serial)]);
 	}
 
 	public function postStsTransfer(Request $request)
 	{
+		// validations
 		try {
 			$validatedData = $request->validate([
 				'transfer_from' => 'required|max:255',
@@ -227,10 +233,10 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 				'transport_type' => 'required|integer',
 				'memo' => 'nullable|string|max:255',
 				'hand_carrier' => 'nullable|string|max:100',
-				'scanned_digits_code' => 'required|max:100',
-				'allSerial' => 'required',
-				'qty' => 'required',
-				'current_srp' => 'required',
+				'scanned_digits_code' => 'required|array',
+				'allSerial' => 'required|array',
+				'qty' => 'required|array',
+				'current_srp' => 'required|array',
 				'stores_id_destination_to' => 'required'
 			]);
 		} catch (ValidationException $e) {
@@ -239,14 +245,14 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 			CRUDBooster::redirect(CRUDBooster::mainpath(), $errorMessage, 'danger');
 		}
 
-		$transport_type = $validatedData['transport_type'];
-		$hand_carrier = $transport_type == 2 ? $request->input('hand_carrier') : "";
+		// generated ref_number
+		$counter = Counter::find(1);
+		$ref_number = $counter->reference_number;
+		$combined_ref = $counter->reference_code . '-' . $ref_number;
+		$hand_carrier = $validatedData['transport_type'] == 2 ? $request->input('hand_carrier') : "";
 
-		$lastRefNum = Counter::orderBy('id', 'desc')->first();
-		$ref_number = $lastRefNum ? $lastRefNum->referece_number + 1 : 1;
-		$combined_ref = 'ETP-' . $ref_number;
-
-		$store_transfer_header_id = DB::table('store_transfers')->insertGetId([
+		// sts headers
+		$storeTransfer = StoreTransfer::firstOrCreate([
 			'ref_number' => $combined_ref,
 			'memo' => $validatedData['memo'],
 			'transaction_type' => 3, // STS
@@ -255,64 +261,47 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 			'hand_carrier' => $hand_carrier,
 			'reasons_id' => $validatedData['reason'],
 			'transport_types_id' => $validatedData['transport_type'],
-			'channels_id' => CRUDBooster::myChannel(),
-			'stores_id' => CRUDBooster::myStore(),
+			'channels_id' => Helper::myChannel(),
+			'stores_id' => Helper::myStore(),
 			'stores_id_destination' => $validatedData['stores_id_destination_to'],
 			'status' => OrderStatus::FORCONFIRMATION,
 			'created_by' => CRUDBooster::myId(),
-			'created_at' => now()
+			'created_at' => now(),
 		]);
-		Counter::create(['referece_number' => $ref_number, 'reference_code' => 'ETP', 'type' => 'STS', 'created_by' => CRUDBooster::myId()]);
 
-		$store_transfer_lines = [];
-
+		// sts lines
 		foreach ($validatedData['scanned_digits_code'] as $index => $item_code) {
-			$store_transfer_lines[] = [
-				'store_transfers_id' => $store_transfer_header_id,
+			$storeTransferLine = $storeTransfer->lines()->create([
 				'item_code' => $item_code,
 				'qty' => $validatedData['qty'][$index],
 				'unit_price' => $validatedData['current_srp'][$index],
-				'created_at' => now()
-			];
-		}
-		DB::table('store_transfer_lines')->insert($store_transfer_lines);
+				'created_at' => now(),
+			]);
 
-		$line_ids = DB::table('store_transfer_lines')
-			->where('store_transfers_id', $store_transfer_header_id)
-			->pluck('id');
-
-		$serial_table = [];
-		foreach ($line_ids as $index => $line_id) {
+			// sts serial
 			if (!empty($validatedData['allSerial'][$index])) {
-
-				$individual_serials = explode(',', $validatedData['allSerial'][$index]);
-				foreach ($individual_serials as $ser) {
-					$serial_table[] = [
-						'store_transfer_lines_id' => $line_id,
-						'serial_number' => trim($ser),
-						'status' => OrderStatus::PENDING,
-						'created_at' => now()
-					];
-				}
+				$serial_numbers = array_map('trim', explode(',', $validatedData['allSerial'][$index]));
+				$serial_data = array_map(fn($serial) => [
+					'serial_number' => $serial,
+					'status' => OrderStatus::PENDING,
+					'created_at' => now()
+				], $serial_numbers);
+				$storeTransferLine->serials()->createMany($serial_data);
 			}
 		}
-		DB::table('serial_numbers')->insert($serial_table);
 
+		$counter->increment('reference_number');
 		CRUDBooster::redirect(CRUDBooster::mainpath(), trans("STS created successfully!"), 'success');
 	}
 
 	public function voidSTS($id)
 	{
-
 		StoreTransfer::where('id', $id)->update(['status' => OrderStatus::VOID]); 
-
 		CRUDBooster::redirect(CRUDBooster::mainpath(), 'STS voided successfully!', 'success')->send();
 	}
 
-
 	public function getSchedule($id)
 	{
-
 		if (!CRUDBooster::isRead() && $this->global_privilege == FALSE || $this->button_detail == FALSE) {
 			CRUDBooster::redirect(CRUDBooster::adminPath(), trans("crudbooster.denied_access"));
 		}
@@ -328,7 +317,8 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 	{
 		$record = StoreTransfer::where('id', $request->header_id)
 			->update([
-				'scheduled_at' => $request->schedule_date,
+				'transfer_schedule_date' => $request->schedule_date,
+				'scheduled_at' => now(),
 				'scheduled_by' => CRUDBooster::myId(),
 				'status' => OrderStatus::FORRECEIVING
 			]);
@@ -342,7 +332,6 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 	public function getCreateDoNo($id)
 	{
-
 		if (!CRUDBooster::isRead() && $this->global_privilege == FALSE || $this->button_detail == FALSE) {
 			CRUDBooster::redirect(CRUDBooster::adminPath(), trans("crudbooster.denied_access"));
 		}
@@ -355,18 +344,14 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 	}
 
 	public function saveCreateDoNo(Request $request) {
-		$isExist = StoreTransfer::where('document_number',$request->do_number)->exists();
-		if(!$isExist){
-			StoreTransfer::where('id',$request->header_id)->update([
-				'document_number' => $request->do_number,
-				'status' =>  ($request->transport_type == 1) ? OrderStatus::FORSCHEDULE : OrderStatus::FORRECEIVING,
-				'updated_by' => CRUDBooster::myId(),
-				'updated_at' => date('Y-m-d H:i:s')
-			]);
-			CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->do_number.' has been created!','success')->send();
-		}else{
-			CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->do_number.' already exist!','danger')->send();
-		}
+		StoreTransfer::where('id',$request->header_id)->update([
+			'document_number' => $request->do_number,
+			'status' =>  ($request->transport_type == 1) ? OrderStatus::FORSCHEDULE : OrderStatus::FORRECEIVING,
+			'updated_by' => CRUDBooster::myId(),
+			'updated_at' => date('Y-m-d H:i:s')
+		]);
+
+		CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->ref_number.' has been approved!','success')->send();
 	}
 
 	public function printSTS($id)

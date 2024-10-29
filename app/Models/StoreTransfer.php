@@ -69,7 +69,6 @@ class StoreTransfer extends Model
         return $this->belongsTo(OrderStatus::class, 'status', 'id');
     }
 
-
     public function calculateTotals(){
         return $this->lines->sum('qty');
     }
