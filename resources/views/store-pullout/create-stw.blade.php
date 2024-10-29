@@ -115,8 +115,9 @@ input[type=number]::-webkit-outer-spin-button {
                 <label class="control-label">Transport By: <span class="required">*</span></label>
                 <select class="form-control select2" style="width: 100%;" required name="transport_type" id="transport_type">
                     <option value="">Please select a transport type</option>
-                    <option value="1">Logistics</option>
-                    <option value="2">Hand Carry</option>
+                    @foreach ($transport_type as $data)
+                        <option value="{{ $data->id }}">{{ $data->transport_type }}</option>
+                    @endforeach
                 </select>
             </div>
         </div>
