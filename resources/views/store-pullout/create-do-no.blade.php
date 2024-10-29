@@ -47,10 +47,10 @@ table.table.table-bordered th {
                         <tbody>
                             <tr>
                                 <td style="width: 30%">
-                                    <b>ST:</b>
+                                    <b>Reference #:</b>
                                 </td>
                                 <td>
-                                    {{ $stock_transfer->document_number }}
+                                    {{ $store_pullout->ref_number }}
                                     <input type="hidden" name="st_number" id="st_number" value="{{$stock_transfer->document_number}}" >
                                 </td>
                             </tr>
@@ -97,9 +97,12 @@ table.table.table-bordered th {
                 </div>
             </div>
 
+        
             <br>
 
+           
             <div class="col-md-12">
+                <strong style="color: red">Note: </strong><strong>Please create a Dispatch Order in your ETP Store Operations Module in the POS.</strong>
                 <div class="box-header text-center">
                     <h3 class="box-title"><b>Stock Transfer Items</b></h3>
                 </div>
