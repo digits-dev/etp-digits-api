@@ -469,13 +469,17 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 	}
 
 	public function saveCreateDoNo(Request $request) {
-		StorePullout::where('id',$request->header_id)->update([
-			'document_number' => $request->do_number,
-			'status' =>  ($request->transport_type == 1) ? self::Schedule : self::Receiving,
-			'updated_by' => CRUDBooster::myId(),
-			'updated_at' => date('Y-m-d H:i:s')
-		]);
-
-		CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->ref_number.' has been approved!','success')->send();
+		$isExist = StorePullout::where('document_number',$request->do_number)->exists();
+		if(!$isExist){
+			StorePullout::where('id',$request->header_id)->update([
+				'document_number' => $request->do_number,
+				'status' =>  ($request->transport_type == 1) ? self::Schedule : self::Receiving,
+				'updated_by' => CRUDBooster::myId(),
+				'updated_at' => date('Y-m-d H:i:s')
+			]);
+			CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->do_number.' has been created!','success')->send();
+		}else{
+			CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->do_number.' already exist!','danger')->send();
+		}
 	}
 }
