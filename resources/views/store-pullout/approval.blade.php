@@ -62,11 +62,10 @@ table.table.table-bordered th {
                         <tbody>
                             <tr>
                                 <td>
-                                    <b>ST/REF:</b>
+                                    <b>Reference #:</b>
                                 </td>
                                 <td>
-                                    {{ $store_pullout->document_number }}
-                                    <input type="hidden" name="st_number" id="st_number" value="{{$store_pullout->document_number}}" >
+                                    {{ $store_pullout->ref_number }}
                                 </td>
                             </tr>
 
