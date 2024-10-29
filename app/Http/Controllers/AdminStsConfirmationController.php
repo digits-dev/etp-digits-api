@@ -10,6 +10,7 @@ class AdminStsConfirmationController extends \crocodicstudio\crudbooster\control
 	private const ForConfirmation = 9;
 	private const Rejected = 4;
 	private const ForApproval = 10;
+	private const Confirmed = 12;
 	public function cbInit() {
 
 		# START CONFIGURATION DO NOT REMOVE THIS LINE
@@ -116,7 +117,7 @@ class AdminStsConfirmationController extends \crocodicstudio\crudbooster\control
 		$user = CRUDBooster::myId();
 		if($request->approval_action == 1){ // approve
 			StoreTransfer::where('id',$request->header_id)->update([
-				'status' => self::ForApproval,
+				'status' => self::Confirmed,
 				'confirmed_at' => $date,
 				'confirmed_by' => $user,
 				'updated_at' => $date
