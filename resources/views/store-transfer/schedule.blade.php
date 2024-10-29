@@ -50,8 +50,7 @@ table.table.table-bordered th {
                                     <b>ST:</b>
                                 </td>
                                 <td>
-                                    {{ $stock_transfer->document_number }}
-                                    <input type="hidden" name="st_number" id="st_number" value="{{$stock_transfer->document_number}}" >
+                                    {{ $store_transfer->document_number }}
                                 </td>
                             </tr>
                             
