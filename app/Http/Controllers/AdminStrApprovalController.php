@@ -10,11 +10,7 @@ use Session;
 use App\Models\TransactionType;
 
 	class AdminStrApprovalController extends \crocodicstudio\crudbooster\controllers\CBController {
-		private const Pending = 0;
-		private const Schedule = 6;
-		private const Rejected = 4;
-		private const Receiving = 5;
-		private const CreateInPos = 11;
+	
 
 	    public function cbInit() {
 
@@ -56,7 +52,7 @@ use App\Models\TransactionType;
 				'url' => CRUDBooster::mainpath('review/[id]'),
 				'icon' => 'fa fa-thumbs-up',
 				'color' => 'info',
-				'showIf' => "[status] == '" . Self::Pending . "'"
+				'showIf' => "[status] == '" . OrderStatus::PENDING . "'"
 			];
 
 			$this->load_css = [];
@@ -64,13 +60,6 @@ use App\Models\TransactionType;
 			$this->load_css[] = asset("css/select2-style.css");
 	        
 	    }
-
-
-	    public function actionButtonSelected($id_selected,$button_name) {
-	        //Your code here
-	            
-	    }
-
 
 	    public function hook_query_index(&$query) {
 	        $query->where('store_pullouts.status', OrderStatus::PENDING)
@@ -112,7 +101,7 @@ use App\Models\TransactionType;
 			$user = CRUDBooster::myId();
 			if($request->approval_action == 1){ 
 				StorePullout::where('id',$request->header_id)->update([
-					'status' =>  self::CreateInPos,
+					'status' => OrderStatus::CREATEINPOS,
 					'approved_at' => $date,
 					'approved_by' => $user
 				]);
@@ -121,7 +110,7 @@ use App\Models\TransactionType;
 			}else{
 				
 				StorePullout::where('id',$request->header_id)->update([
-					'status' => self::Rejected,
+					'status' => OrderStatus::REJECTED,
 					'rejected_at' => $date,
 					'rejected_by' => $user
 				]);

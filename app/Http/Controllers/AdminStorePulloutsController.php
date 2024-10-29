@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\Helper;
+use App\Models\CmsPrivilege;
 use App\Models\StorePullout;
 use App\Models\StorePulloutLine;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
@@ -11,17 +12,13 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Carbon;
 use App\Models\Counter;
+use App\Models\OrderStatus;
 
 class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controllers\CBController
 {
-
-	private const Pending = '0';
-	private const Void = '8';
-	private const Scheduler = [1, 7];
-	private const Schedule = 6;
-	private const Receiving = 5;
-	private const CreateInPos = 11;
-	private const DoCreator = [1, 3];
+	private const SCHEDULER = [CmsPrivilege::SUPERADMIN, CmsPrivilege::LOGISTICS];
+	private const DOCREATOR = [CmsPrivilege::SUPERADMIN, CmsPrivilege::CASHIER];
+	private const CANVOID = [CmsPrivilege::SUPERADMIN, CmsPrivilege::CASHIER];
 
 	public function cbInit()
 	{
@@ -63,46 +60,40 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		$this->index_button[] = ['label' => 'Create ST RMA', 'url' => route('createSTR'), 'icon' => 'fa fa-plus', 'color' => 'success'];
 
 		$this->addaction = [];
-		if (!in_array(CRUDBooster::myPrivilegeName(), ["LOG TM", "LOG TL", "Warehouse", "RMA", "Operations Manager", "Area Manager"])) {
+		if (!in_array(CRUDBooster::myPrivilegeName(), [self::CANVOID])) {
 			$this->addaction[] = [
 				'title' => 'Void ST',
 				'url' => CRUDBooster::mainpath('void_pullout/[id]'),
 				'icon' => 'fa fa-times',
 				'color' => 'danger',
-				'showIf' => "[status]==" . self::Pending . "",
+				'showIf' => "[status]==" . OrderStatus::PENDING. "",
 				'confirmation' => 'yes',
 				'confirmation_title' => 'Confirm Voiding',
 				'confirmation_text' => 'Are you sure to VOID this transaction?'
 			];
 		}
 
-		if (in_array(CRUDBooster::myPrivilegeId(), self::Scheduler)) {
+		if (in_array(CRUDBooster::myPrivilegeId(), self::SCHEDULER)) {
 			$this->addaction[] = [
 				'title' => 'Schedule',
 				'url' => CRUDBooster::mainpath('schedule/[id]'),
 				'icon' => 'fa fa-calendar',
 				'color' => 'warning',
-				'showIf' => "[status]=='" . Self::Schedule . "'"
+				'showIf' => "[status]=='" . OrderStatus::FORSCHEDULE . "'"
 			];
 		}
 
-		if (in_array(CRUDBooster::myPrivilegeId(), self::DoCreator)) {
+		if (in_array(CRUDBooster::myPrivilegeId(), self::DOCREATOR)) {
 			$this->addaction[] = [
 				'title' => 'Input DO#',
 				'url' => CRUDBooster::mainpath('create-do-no/[id]'),
 				'icon' => 'fa fa-edit',
 				'color' => 'warning',
-				'showIf' => "[status]=='" . Self::CreateInPos . "'"
+				'showIf' => "[status]=='" . OrderStatus::CREATEINPOS . "'"
 			];
 		}
 
 		$this->addaction[] = ['title' => 'Print', 'url' => CRUDBooster::mainpath('print') . '/[id]', 'icon' => 'fa fa-print', 'color' => 'info'];
-	}
-
-	public function actionButtonSelected($id_selected, $button_name)
-	{
-		//Your code here
-
 	}
 
 	public function hook_query_index(&$query) {
@@ -405,7 +396,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 	public function voidPullout($id)
 	{
 
-		StorePullout::where('id', $id)->update(['status' => '8']); //VOID
+		StorePullout::where('id', $id)->update(['status' => OrderStatus::VOID]);
 
 		CRUDBooster::redirect(CRUDBooster::mainpath(), 'Pullout voided successfully!', 'success')->send();
 	}
@@ -444,7 +435,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			->update([
 				'scheduled_at' => $request->schedule_date,
 				'scheduled_by' => CRUDBooster::myId(),
-				'status' => self::Receiving
+				'status' => OrderStatus::FORRECEIVING
 			]);
 
 		if ($record)
@@ -473,7 +464,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		if(!$isExist){
 			StorePullout::where('id',$request->header_id)->update([
 				'document_number' => $request->do_number,
-				'status' =>  ($request->transport_type == 1) ? self::Schedule : self::Receiving,
+				'status' =>  ($request->transport_type == 1) ? OrderStatus::FORSCHEDULE : OrderStatus::FORRECEIVING,
 				'updated_by' => CRUDBooster::myId(),
 				'updated_at' => date('Y-m-d H:i:s')
 			]);

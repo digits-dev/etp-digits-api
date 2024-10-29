@@ -8,12 +8,7 @@ use App\Models\StoreTransfer;
 	use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
 	class AdminStsApprovalController extends \crocodicstudio\crudbooster\controllers\CBController {
-		private const Confirmed = 12;
-		private const Schedule = 6;
-		private const Rejected = 4;
-		private const Receiving = 5;
-		private const CreateInPos = 11;
-
+	
 	    public function cbInit() {
 
 			# START CONFIGURATION DO NOT REMOVE THIS LINE
@@ -55,7 +50,7 @@ use App\Models\StoreTransfer;
 				'url' => CRUDBooster::mainpath('review/[id]'),
 				'icon' => 'fa fa-thumbs-up',
 				'color' => 'info',
-				'showIf' => "[status] == '" . Self::Confirmed . "'"
+				'showIf' => "[status] == '" . OrderStatus::CONFIRMED . "'"
 			];
 
 			$this->load_css = [];
@@ -102,7 +97,7 @@ use App\Models\StoreTransfer;
 			$user = CRUDBooster::myId();
 			if($request->approval_action  == 1){
 				StoreTransfer::where('id',$request->header_id)->update([
-					'status' =>  self::CreateInPos,
+					'status' =>  OrderStatus::CREATEINPOS,
 					'approved_at' => $date,
 					'approved_by' => $user
 				]);
@@ -110,7 +105,7 @@ use App\Models\StoreTransfer;
 				CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->ref_number.' has been approved!','success')->send();
 			}else{
 				StoreTransfer::where('id',$request->header_id)->update([
-					'status' => self::Rejected,
+					'status' => OrderStatus::REJECTED,
 					'rejected_at' => $date,
 					'rejected_by' => $user
 				]);

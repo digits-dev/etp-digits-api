@@ -57,12 +57,6 @@ class AdminStsConfirmationController extends \crocodicstudio\crudbooster\control
 
 	}
 
-	
-	public function actionButtonSelected($id_selected,$button_name) {
-		//Your code here
-			
-	}
-
 
 	public function hook_query_index(&$query) {
 		if(CRUDBooster::isSuperAdmin()){
@@ -72,17 +66,6 @@ class AdminStsConfirmationController extends \crocodicstudio\crudbooster\control
 			->where('store_transfers.status', OrderStatus::FORCONFIRMATION);     
 		}
 			
-	}
-
-	public function hook_row_index($column_index,&$column_value) {	        
-		if($column_index == 5){
-			if($column_value == "Logistics"){
-				$column_value = '<span class="label label-info">LOGISTICS</span>';
-			}
-			elseif($column_value == "Hand Carry"){
-				$column_value = '<span class="label label-primary">HAND CARRY</span>';
-			}
-		}
 	}
 
 	public function getDetail($id) {

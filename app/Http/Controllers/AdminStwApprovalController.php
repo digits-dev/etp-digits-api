@@ -9,11 +9,6 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 	use Illuminate\Http\Request;
 
 	class AdminStwApprovalController extends \crocodicstudio\crudbooster\controllers\CBController {
-		private const Pending = 0;
-		private const Schedule = 6;
-		private const Rejected = 4;
-		private const Receiving = 5;
-		private const CreateInPos = 11;
 
 	    public function cbInit() {
 
@@ -56,7 +51,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 				'url' => CRUDBooster::mainpath('review/[id]'),
 				'icon' => 'fa fa-thumbs-up',
 				'color' => 'info',
-				'showIf' => "[status] == '" . Self::Pending . "'"
+				'showIf' => "[status] == '" . OrderStatus::PENDING . "'"
 			];
 
 			$this->load_css = [];
@@ -110,7 +105,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			$user = CRUDBooster::myId();
 			if($request->approval_action == 1){ 
 				StorePullout::where('id',$request->header_id)->update([
-					'status' =>  self::CreateInPos,
+					'status' =>  OrderStatus::CREATEINPOS,
 					'approved_at' => $date,
 					'approved_by' => $user
 				]);
@@ -119,7 +114,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			}else{
 				
 				StorePullout::where('id',$request->header_id)->update([
-					'status' => self::Rejected,
+					'status' => OrderStatus::REJECTED,
 					'rejected_at' => $date,
 					'rejected_by' => $user
 				]);
