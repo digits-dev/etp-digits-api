@@ -12,6 +12,7 @@
 		private const Schedule = 6;
 		private const Rejected = 4;
 		private const Receiving = 5;
+		private const CreateInPos = 11;
 	    public function cbInit() {
 
 			# START CONFIGURATION DO NOT REMOVE THIS LINE
@@ -118,10 +119,9 @@
 			$user = CRUDBooster::myId();
 			if($request->approval_action == 1){ 
 				StorePullout::where('id',$request->header_id)->update([
-					'status' =>  ($request->transport_type == 1) ? self::Schedule : self::Receiving,
+					'status' =>  self::CreateInPos,
 					'approved_at' => $date,
-					'approved_by' => $user,
-					'updated_at' => $date
+					'approved_by' => $user
 				]);
 
 				CRUDBooster::redirect(CRUDBooster::mainpath(),'STW#'.$request->ref_number.' has been approved!','success')->send();
@@ -130,8 +130,7 @@
 				StorePullout::where('id',$request->header_id)->update([
 					'status' => self::Rejected,
 					'rejected_at' => $date,
-					'rejected_by' => $user,
-					'updated_at' => $date
+					'rejected_by' => $user
 				]);
 				CRUDBooster::redirect(CRUDBooster::mainpath(),'STW#'.$request->ref_number.' has been rejected!','info')->send();
 			}

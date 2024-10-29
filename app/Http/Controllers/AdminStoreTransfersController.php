@@ -352,13 +352,11 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		StoreTransfer::where('id',$request->header_id)->update([
 			'document_number' => $request->do_number,
 			'status' =>  ($request->transport_type == 1) ? self::Schedule : self::Receiving,
-			'approved_at' => date('Y-m-d H:i:s'),
 			'updated_by' => CRUDBooster::myId(),
 			'updated_at' => date('Y-m-d H:i:s')
 		]);
 
 		CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->ref_number.' has been approved!','success')->send();
-		
 	}
 
 	public function printSTS($id)

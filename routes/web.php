@@ -76,6 +76,8 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::post('post-stw-pullout', [AdminStorePulloutsController::class,'postStwPullout'])->name('post-stw-pullout');
         Route::get('schedule/{id}', [AdminStorePulloutsController::class, 'getSchedule'])->name('stwSchedule');
         Route::post('save-schedule',[AdminStorePulloutsController::class, 'saveSchedule'])->name('saveSchedulePullout');
+        Route::get('create-do-no/{id}', [AdminStorePulloutsController::class, 'getCreateDoNo'])->name('showPulloutCreateDoNo');  
+        Route::post('save-create-do-no',[AdminStorePulloutsController::class, 'saveCreateDoNo'])->name('savePulloutCreateDoNo');
     });
 
     Route::group(['prefix' => 'stw_approval'], function(){

@@ -111,11 +111,9 @@
 			$user = CRUDBooster::myId();
 			if($request->approval_action  == 1){
 				StoreTransfer::where('id',$request->header_id)->update([
-					// 'status' =>  ($request->transport_type == 1) ? self::Schedule : self::Receiving,
 					'status' =>  self::CreateInPos,
 					'approved_at' => $date,
-					'approved_by' => $user,
-					'updated_at' => $date
+					'approved_by' => $user
 				]);
 
 				CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->ref_number.' has been approved!','success')->send();
@@ -123,8 +121,7 @@
 				StoreTransfer::where('id',$request->header_id)->update([
 					'status' => self::Rejected,
 					'rejected_at' => $date,
-					'rejected_by' => $user,
-					'updated_at' => $date
+					'rejected_by' => $user
 				]);
 
 				CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->ref_number.' has been rejected!','info')->send();
