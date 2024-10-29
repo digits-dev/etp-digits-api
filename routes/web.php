@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminReasonsController;
 use App\Http\Controllers\AdminStorePulloutsController;
 use App\Http\Controllers\AdminStwApprovalController;
 use App\Http\Controllers\AdminStoreTransfersController;
+use App\Http\Controllers\AdminStrApprovalController;
 use App\Http\Controllers\AdminStsConfirmationController;
 use App\Http\Controllers\AdminStsApprovalController;
 use App\Http\Controllers\DeliveryController;
@@ -86,8 +87,8 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
     });
 
     Route::group(['prefix' => 'str_approval'], function(){
-        Route::get('review/{id}',[AdminStwApprovalController::class,'getApproval'])->name('pullout-approval.review');
-        Route::post('save-stw-review',[AdminStwApprovalController::class,'saveReviewPullout'])->name('saveReviewStw');        Route::post('post-strma-pullout', [AdminStorePulloutsController::class,'postStRmaPullout'])->name('post-strma-pullout');
+        Route::get('review/{id}',[AdminStrApprovalController::class,'getApproval'])->name('pullout-approval.review');
+        Route::post('save-stw-review',[AdminStrApprovalController::class,'saveReviewPullout'])->name('saveReviewStw');        Route::post('post-strma-pullout', [AdminStorePulloutsController::class,'postStRmaPullout'])->name('post-strma-pullout');
 
     });
 

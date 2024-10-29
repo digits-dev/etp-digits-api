@@ -1,6 +1,7 @@
 <?php namespace App\Http\Controllers;
 
-	use App\Models\StoreTransfer;
+use App\Models\OrderStatus;
+use App\Models\StoreTransfer;
 	use Session;
 	use Illuminate\Http\Request;
 	use DB;
@@ -120,7 +121,7 @@
 
 
 	    public function hook_query_index(&$query) {
-			$query->where('store_transfers.status', '10');    
+			$query->where('store_transfers.status', OrderStatus::CONFIRMED);
 	    }
 
 	}

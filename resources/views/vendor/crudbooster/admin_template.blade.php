@@ -51,6 +51,31 @@
             cursor: default
         }
 
+        .badge-primary {
+            background-color: #337ab7; /* Primary color */
+            color: white;
+        }
+
+        .badge-success {
+            background-color: #5cb85c; /* Success color */
+            color: white;
+        }
+
+        .badge-info {
+            background-color: #5bc0de; /* Info color */
+            color: white;
+        }
+
+        .badge-warning {
+            background-color: #f0ad4e; /* Warning color */
+            color: white;
+        }
+
+        .badge-danger {
+            background-color: #d9534f; /* Danger color */
+            color: white;
+        }
+
         #box-header-module {
             box-shadow: 10px 10px 10px #dddddd;
         }
@@ -58,6 +83,10 @@
         .sub-module-tab li {
             background: #F9F9F9;
             cursor: pointer;
+        }
+
+        .wrapper{
+            overflow: hidden;
         }
 
         .sub-module-tab li.active {

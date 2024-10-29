@@ -1,9 +1,11 @@
 <?php namespace App\Http\Controllers;
 
-	use Session;
+use App\Models\OrderStatus;
+use Session;
 	use DB;
 	use App\Models\StorePullout;
-	use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use App\Models\TransactionType;
+use crocodicstudio\crudbooster\helpers\CRUDBooster;
 	use Illuminate\Http\Request;
 
 	class AdminStwApprovalController extends \crocodicstudio\crudbooster\controllers\CBController {
@@ -69,7 +71,8 @@
 	    }
 
 	    public function hook_query_index(&$query) {
-	        $query->where('store_pullouts.status', 0);   //PENDING
+	        $query->where('store_pullouts.status', OrderStatus::PENDING)
+				->where('transaction_type', TransactionType::STW);
 	            
 	    }
 
@@ -97,6 +100,7 @@
             $data['page_title'] = "Review Pullout Details";
 			$data['store_pullout'] = StorePullout::with(['transportTypes','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
 			$data['action_url'] = route('saveReviewStw');
+
 			return view('store-pullout.approval', $data);
 
 		}

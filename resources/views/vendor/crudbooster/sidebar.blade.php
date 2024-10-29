@@ -40,7 +40,7 @@
                            class='{{($menu->color)?"text-".$menu->color:""}}'>
                             <i class='{{$menu->icon}} {{($menu->color)?"text-".$menu->color:""}}'></i> <span>{{$menu->name}}</span>
                             @if($menu->name == 'Approvals')
-                                <span class="badge"> {{ App\Helpers\Helper::getTotalPendingList() }}</span>
+                                <span class="badge badge-danger"> {{ App\Helpers\Helper::getTotalPendingList() }} </span>
                             @endif
                             @if(!empty($menu->children))<i class="fa fa-angle-{{ cbLang("right") }} pull-{{ cbLang("right") }}"></i>@endif
                         </a>
@@ -53,11 +53,11 @@
                                             <i class='{{$child->icon}}'></i> <span>{{$child->name}}</span>
 
                                             @if ($child->name == 'STS Approval')
-                                                <span class="badge"> {{ App\Helpers\Helper::getPendingSTS() }}</span>
+                                                <span class="badge badge-danger"> {{ App\Helpers\Helper::getPendingSTS() }}</span>
                                             @elseif ($child->name == 'STW Approval')
-                                                <span class="badge"> {{ App\Helpers\Helper::getPendingSTW() }}</span>
+                                                <span class="badge badge-danger"> {{ App\Helpers\Helper::getPendingSTW() }}</span>
                                             @elseif ($child->name == 'STR Approval')
-                                                <span class="badge"> {{ App\Helpers\Helper::getPendingSTR() }}</span>
+                                                <span class="badge badge-danger"> {{ App\Helpers\Helper::getPendingSTR() }}</span>
                                             @endif
                                         </a>
                                     </li>

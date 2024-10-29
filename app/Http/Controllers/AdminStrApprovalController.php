@@ -1,11 +1,13 @@
 <?php namespace App\Http\Controllers;
 
-	use Session;
+use App\Models\OrderStatus;
+use Session;
 	use Illuminate\Http\Request;
 	use DB;
 	use crocodicstudio\crudbooster\helpers\CRUDBooster;
 	use App\Models\StorePullout;
 	use App\Models\StorePulloutLine;
+use App\Models\TransactionType;
 
 	class AdminStrApprovalController extends \crocodicstudio\crudbooster\controllers\CBController {
 		private const Pending = 0;
@@ -13,6 +15,7 @@
 		private const Rejected = 4;
 		private const Receiving = 5;
 		private const CreateInPos = 11;
+
 	    public function cbInit() {
 
 			# START CONFIGURATION DO NOT REMOVE THIS LINE
@@ -36,12 +39,13 @@
 
 			# START COLUMNS DO NOT REMOVE THIS LINE
 			$this->col = [];
-			$this->col[] = ["label"=>"ST/REF#","name"=>"ref_number"];
+			$this->col[] = ["label"=>"Reference #","name"=>"ref_number"];
+			$this->col[] = ["label"=>"ST #","name"=>"document_number"];
 			$this->col[] = ["label"=>"MOR/SOR#","name"=>"sor_mor_number"];
 			$this->col[] = ["label"=>"From WH","name"=>"wh_from","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
 			$this->col[] = ["label"=>"To WH","name"=>"wh_to","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
 			$this->col[] = ["label"=>"Status","name"=>"status","join"=>"order_statuses,style"];
-			$this->col[] = ["label"=>"Transport Type","name"=>"transport_types_id","join"=>"transport_types,transport_type"];
+			$this->col[] = ["label"=>"Transport Type","name"=>"transport_types_id","join"=>"transport_types,style"];
 			$this->col[] = ["label"=>"Created Date","name"=>"created_at"];
 			# END COLUMNS DO NOT REMOVE THIS LINE
 
@@ -69,7 +73,8 @@
 
 
 	    public function hook_query_index(&$query) {
-	        $query->where('store_pullouts.status', 0);   //PENDING
+	        $query->where('store_pullouts.status', OrderStatus::PENDING)
+				->where('transaction_type', TransactionType::RMA);
 	    }
 
 		
@@ -82,8 +87,6 @@
 			$data = [];
             $data['page_title'] = "Pullout Details";
 			$data['store_pullout'] = StorePullout::with(['transportTypes','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
-
-			// dd($data['store_pullout']);
 
 			return view('store-pullout.detail', $data);
 
@@ -98,6 +101,7 @@
 			$data = [];
             $data['page_title'] = "Review Pullout Details";
 			$data['store_pullout'] = StorePullout::with(['transportTypes','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
+	
 			$data['action_url'] = route('saveReviewStw');
 			return view('store-pullout.approval', $data);
 

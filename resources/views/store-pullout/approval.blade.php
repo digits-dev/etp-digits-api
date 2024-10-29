@@ -118,12 +118,11 @@ table.table.table-bordered th {
                 <div class="box-header text-center">
                     <h3 class="box-title"><b>Pullout Items</b></h3>
                 </div>
-                
-                <div class="box-body no-padding">
-                    <div class="table-responsive">
-                        <table class="table table-bordered noselect" id="st-items">
-                            <thead>
-                                <tr style="background: #0047ab; color: white">
+                @if($store_pullout->transaction_type == '1') {{-- STW --}}
+                    <div class="box-body no-padding">
+                        <div class="table-responsive">
+                            <table class="table table-bordered noselect" id="st-items">
+                                <thead>
                                     <tr style="background: #0047ab; color: white">
                                         <th width="10%" class="text-center">Digits Code</th>
                                         <th width="15%" class="text-center">UPC Code</th>
@@ -132,34 +131,82 @@ table.table.table-bordered th {
                                         <th width="5%" class="text-center">Qty</th>
                                         <th width="20%" class="text-center">Serial #</th>
                                     </tr>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if(!empty($store_pullout->lines))
-                                    @foreach ($store_pullout->lines as $lines)
-                                        <tr>
-                                            <td class="text-center">{{$lines->item_code}}</td>
-                                            <td class="text-center">{{$lines->item->upc_code}} </td>
-                                            <td class="text-center">{{$lines->item->brand}} </td>
-                                            <td class="text-center">{{$lines->item->item_description}}</td>
-                                            <td class="text-center">{{$lines->qty}}</td>
-                                            <td>
-                                                @foreach ($lines->serials as $serial)
-                                                    <input type="text" class="form-control serial-input mb-1" name="serial[]" style="text-align:center; margin-top: 5px;" readonly value=" {{$serial->serial_number}}">
-                                                @endforeach
-                                            </td>  
-                                        </tr>    
-                                    @endforeach
-                                @endif
-                                <tr class="tableInfo">
-                                    <td colspan="4" align="right"><strong>Total Qty</strong></td>
-                                    <td align="center" colspan="1"><input type='text' name="total_quantity" class="form-control text-center" id="totalQuantity" value="{{$store_pullout->calculateTotals()}}" readonly> </td>
-                                    <td colspan="1"></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    @if(!empty($store_pullout->lines))
+                                        @foreach ($store_pullout->lines as $lines)
+                                            <tr>
+                                                <td class="text-center">{{$lines->item_code}}</td>
+                                                <td class="text-center">{{$lines->item->upc_code}} </td>
+                                                <td class="text-center">{{$lines->item->brand}} </td>
+                                                <td class="text-center">{{$lines->item->item_description}}</td>
+                                                <td class="text-center">{{$lines->qty}}</td>
+                                                <td>
+                                                    @foreach ($lines->serials as $serial)
+                                                        <input type="text" class="form-control serial-input mb-1" name="serial[]" style="text-align:center; margin-top: 5px;" readonly value=" {{$serial->serial_number}}">
+                                                    @endforeach
+                                                </td>  
+                                            </tr>    
+                                        @endforeach
+                                    @endif
+                                    <tr class="tableInfo">
+                                        <td colspan="4" align="right"><strong>Total Qty</strong></td>
+                                        <td align="center" colspan="1"><input type='text' name="total_quantity" class="form-control text-center" id="totalQuantity" value="{{$store_pullout->calculateTotals()}}" readonly> </td>
+                                        <td colspan="1"></td>
+                                    </tr>
+                            
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+                @else
+                    <div class="box-body no-padding">
+                        <div class="table-responsive">
+                            <table class="table table-bordered noselect" id="st-items">
+                                <thead>
+                                    <tr style="background: #0047ab; color: white">
+                                        <th width="10%" class="text-center">Digits Code</th>
+                                        <th width="15%" class="text-center">UPC Code</th>
+                                        <th width="10%" class="text-center">Brand</th>
+                                        <th width="25%" class="text-center">Item Description</th>
+                                        <th width="15%" class="text-center">Problems</th>
+                                        <th width="5%" class="text-center">Qty</th>
+                                        <th width="20%" class="text-center">Serial #</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if(!empty($store_pullout->lines))
+                                        @foreach ($store_pullout->lines as $lines)
+                                            <tr>
+                                                <td class="text-center">{{$lines->item_code}}</td>
+                                                <td class="text-center">{{$lines->item->upc_code}} </td>
+                                                <td class="text-center">{{$lines->item->brand}} </td>
+                                                <td>{{$lines->item->item_description}}</td>
+                                                <td class="text-center">{{$lines->problems}} - {{$lines->problem_details}}</td>
+                                                <td class="text-center">{{$lines->qty}}</td>
+                                                <td>
+                                                    @foreach ($lines->serials as $serial)
+                                                        <input type="text" class="form-control serial-input mb-1" name="serial[]" style="text-align:center; margin-top: 5px;" readonly value=" {{$serial->serial_number}}">
+                                                    @endforeach
+                                                </td>  
+                                            </tr>    
+                                        @endforeach
+                                    @endif
+                                
+                                    <tr class="tableInfo">
+                                        <td colspan="5" align="right"><strong>Total Qty</strong></td>
+                                        <td align="left" colspan="1">
+                                            <input type='text' name="total_quantity" class="form-control text-center" id="totalQuantity" value="{{$store_pullout->calculateTotals()}}" readonly>
+                                        </td>
+                                        <td colspan="1"></td>
+                                    </tr>
+                            
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @endif
+                
             </div>
 
             <div class="col-md-12">

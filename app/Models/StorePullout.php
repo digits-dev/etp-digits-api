@@ -46,11 +46,11 @@ class StorePullout extends Model
     }
 
     public function scopeStw(){
-        return $this->where('transaction_type', 'STW');
+        return $this->where('transaction_type', TransactionType::STW);
     }
 
     public function scopeStr(){
-        return $this->where('transaction_type', 'STR');
+        return $this->where('transaction_type', TransactionType::RMA);
     }
 
     public function lines() : HasMany {
