@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\Helper;
 use App\Models\CmsPrivilege;
 use App\Models\Item;
 use App\Models\StoreTransfer;
@@ -111,7 +112,11 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 			if (in_array(CRUDBooster::myPrivilegeId() ,self::SCHEDULER)) {
 				$query->where('store_transfer.status', OrderStatus::FORSCHEDULE)->where('transport_types_id', 1);
 			}
+			else{
+				$query->where('store_transfers.created_by', CRUDBooster::myId());
+			}
 		}
+
 	}
 
 	public function getDetail($id)

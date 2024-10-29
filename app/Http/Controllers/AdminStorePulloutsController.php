@@ -101,7 +101,17 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 	}
 
 	public function hook_query_index(&$query) {
+		if(!CRUDBooster::isSuperadmin()){
 		
+			if (in_array(CRUDBooster::myPrivilegeId() ,self::SCHEDULER)) {
+				$query->where('store_pullouts.status', OrderStatus::FORSCHEDULE)->where('transport_types_id', 1);
+			}
+			else{
+				$query->where('store_pullouts.created_by', CRUDBooster::myId());
+			}
+			
+		}
+
 	}
 
 	public function getDetail($id)
