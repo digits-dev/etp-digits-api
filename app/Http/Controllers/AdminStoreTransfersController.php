@@ -5,18 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\CmsPrivilege;
 use App\Models\Item;
 use App\Models\StoreTransfer;
-use App\Models\StoreTransferLine;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
-use Illuminate\Contracts\Session\Session;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
-use Maatwebsite\Excel\Concerns\ToArray;
 use App\Models\Problem;
 use App\Models\Counter;
 use App\Models\OrderStatus;
-use Doctrine\DBAL\Driver\SQLSrv\LastInsertId;
+use App\Models\Reason;
+use App\Models\StoreMaster;
+use App\Models\TransportType;
+use Illuminate\Support\Facades\Cache;
 
 class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controllers\CBController
 {
@@ -105,12 +104,6 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		$this->load_css[] = asset("css/select2-style.css");
 	}
 
-	
-	public function actionButtonSelected($id_selected, $button_name)
-	{
-		//Your code here
-
-	}
 
 	public function hook_query_index(&$query)
 	{
@@ -141,37 +134,49 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		$data['page_title'] = 'Create STS';
 
 		if (CRUDBooster::isSuperadmin()) {
-			$data['transfer_from'] = DB::table('store_masters')
-				->select('id', 'store_name', 'warehouse_code')
+		 
+			$data['transfer_from'] = Cache::remember('transfer_from_if', 36000, function () {
+				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
+			});
+		
 		} else {
-			$data['transfer_from'] = DB::table('store_masters')
-				->select('id', 'store_name', 'warehouse_code')
-				->whereIn('id', (array) CRUDBooster::myStore())
+
+			$data['transfer_from'] = Cache::remember('transfer_from_else', 36000, function () {
+				return StoreMaster::select('id', 'store_name', 'warehouse_code')
+				->whereIn('id', [CRUDBooster::myStore()])
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
+			});
 		}
 
-		$data['transfer_to'] = DB::table('store_masters')
-			->select('id', 'store_name', 'warehouse_code')
-			->where('status', 'ACTIVE')
-			->whereNotIn('id', (array) CRUDBooster::myStore())
-			->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
-			->orderBy('bea_so_store_name', 'ASC')
-			->get();
+		$data['transfer_to'] = Cache::remember('sts_transfer_to', 36000, function () {
+			return StoreMaster::select('id', 'store_name', 'warehouse_code')
+				->where('status', 'ACTIVE')
+				->whereNotIn('id', [CRUDBooster::myStore()])
+				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
+				->orderBy('bea_so_store_name', 'ASC')
+				->get();
+		});
+	
+		$data['reasons'] = Cache::remember('sts_reason', 36000, function () {
+			return Reason::select('id', 'pullout_reason')
+				->where('transaction_types_id', 4) // STS
+				->where('status', 'ACTIVE')
+				->get();
+		});
 
-		$data['reasons'] = DB::table('reasons')
-			->select('id', 'pullout_reason')
-			->where('transaction_types_id', 4)  //STS
-			->where('status', 'ACTIVE')
-			->get();
-
-
+		$data['transport_type'] = Cache::remember('transport_type', 36000, function () {
+			return TransportType::select('id', 'transport_type')
+				->where('status', 'ACTIVE')
+				->get();
+		});
+		
 		return view("store-transfer.create-sts", $data);
 	}
 

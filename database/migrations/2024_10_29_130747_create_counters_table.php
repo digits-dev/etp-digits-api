@@ -16,7 +16,7 @@ class CreateCountersTable extends Migration
         Schema::create('counters', function (Blueprint $table) {
             $table->id();
             $table->string('reference_code')->nullable();
-            $table->bigInteger('referece_number')->nullable();
+            $table->bigInteger('reference_number')->nullable();
             $table->string('type')->nullable();
             $table->string('status', 10)->nullable();
             $table->integer('created_by')->nullable();
