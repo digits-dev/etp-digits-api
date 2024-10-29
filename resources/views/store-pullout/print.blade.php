@@ -111,7 +111,7 @@ tfoot { display:table-footer-group }
                                     <b>Scheduled:</b>
                                 </td>
                                 <td width="35%">
-                                    @if(!empty($store_pullout->pullout_schedule_date)) {{ $store_pullout->pullout_schedule_date }} - {{ $store_pullout->scheduled_by }} @else {{ $store_pullout->pullout_date }} @endif
+                                    @if(!empty($store_pullout->pullout_schedule_date)) {{ $store_pullout->pullout_schedule_date }} / {{ $store_pullout->scheduledBy->name }} @else {{ $store_pullout->pullout_date }} @endif
                                 </td>
                                 <td>
                                     <b>To:</b>
@@ -140,7 +140,7 @@ tfoot { display:table-footer-group }
                                     <b>Transport By:</b>
                                 </td>
                                 <td>
-                                    {{ $store_pullout->transport_types->transport_type }} @if(!empty($store_pullout->hand_carrier)) : {{ $store_pullout->hand_carrier }} @endif
+                                    {{ $store_pullout->transportTypes->transport_type }} @if(!empty($store_pullout->hand_carrier)) : {{ $store_pullout->hand_carrier }} @endif
                                 </td>
                             
                                 <td>

@@ -111,7 +111,7 @@ tfoot { display:table-footer-group }
                                     <b>Scheduled:</b>
                                 </td>
                                 <td width="35%">
-                                    @if(!empty($store_transfer->scheduled_at)) {{ $store_transfer->scheduled_at }} @else {{ $store_transfer->transfer_date }} @endif  
+                                    @if(!empty($store_transfer->transfer_schedule_date)) {{ $store_transfer->transfer_schedule_date }} @else {{ $store_transfer->transfer_date }} @endif  
                                 </td>
                                 <td>
                                     <b>To:</b>

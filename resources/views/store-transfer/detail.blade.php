@@ -76,13 +76,13 @@ table.table.table-bordered th {
                             @if(!is_null($store_transfer->approved_by) || !empty($store_transfer->approved_by))
                                 <tr>
                                     <td width="30%"><b>Approved By:</b></td>
-                                    <td>{{ $store_transfer->approved_by }} / {{ $store_transfer->approved_at != null ? date('M d, Y',strtotime($store_transfer->approved_at)) : "" }}</td>
+                                    <td>{{ $store_transfer->approvedBy->name }} / {{ $store_transfer->approved_at != null ? date('M d, Y',strtotime($store_transfer->approved_at)) : "" }}</td>
                                     
                                 </tr>
                             @elseif(!is_null($store_transfer->rejected_by) || !empty($store_transfer->rejected_by))
                                 <tr>
                                     <td width="30%"><b>Rejected By:</b></td>
-                                    <td>{{ $store_transfer->rejected_by }} / {{ $store_transfer->rejected_at != null ? date('M d, Y',strtotime($store_transfer->rejected_at)) : "" }}</td>
+                                    <td>{{ $store_transfer->rejectedBy->name }} / {{ $store_transfer->rejected_at != null ? date('M d, Y',strtotime($store_transfer->rejected_at)) : "" }}</td>
                                         
                                 </tr>
                             @endif

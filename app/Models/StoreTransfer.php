@@ -69,6 +69,14 @@ class StoreTransfer extends Model
         return $this->belongsTo(OrderStatus::class, 'status', 'id');
     }
 
+    public function approvedBy() : BelongsTo {
+        return $this->belongsTo(CmsUser::class, 'approved_by', 'id');
+    }
+
+    public function rejectedBy() : BelongsTo {
+        return $this->belongsTo(CmsUser::class, 'rejected_by', 'id');
+    }
+
     public function calculateTotals(){
         return $this->lines->sum('qty');
     }

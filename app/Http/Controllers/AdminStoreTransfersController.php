@@ -144,7 +144,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 		$data = [];
 		$data['page_title'] = "STS Details";
-		$data['store_transfer'] = StoreTransfer::with(['transportTypes', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
+		$data['store_transfer'] = StoreTransfer::with(['transportTypes', 'approvedBy', 'rejectedBy', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
 
 		return view('store-transfer.detail', $data);
 	}

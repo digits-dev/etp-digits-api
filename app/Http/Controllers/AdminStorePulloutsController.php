@@ -125,7 +125,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 		$data = [];
 		$data['page_title'] = "Pullout Details";
-		$data['store_pullout'] = StorePullout::with(['transportTypes', 'approvedBy', 'rejectedBy', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
+		$data['store_pullout'] = StorePullout::with(['transportTypes', 'approvedBy', 'rejectedBy', 'scheduledBy', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
 		
 		return view('store-pullout.detail', $data);
 	}
@@ -446,7 +446,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 		$data = [];
 		$data['page_title'] = "Print Pullout Details";
-		$data['store_pullout'] = StorePullout::with(['transportTypes', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
+		$data['store_pullout'] = StorePullout::with(['transportTypes', 'scheduledBy', 'approvedBy', 'rejectedBy', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
 
 		return view('store-pullout.print', $data);
 	}
