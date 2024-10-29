@@ -208,7 +208,7 @@ table.table.table-bordered th {
 
         $('#btnApprove').click(function() {
             Swal.fire({
-                title: 'Are you sure you want to approve?',
+                title: 'Are you sure you want to confirm?',
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#3085d6',

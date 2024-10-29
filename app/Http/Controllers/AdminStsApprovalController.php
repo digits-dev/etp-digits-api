@@ -7,7 +7,7 @@
 	use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
 	class AdminStsApprovalController extends \crocodicstudio\crudbooster\controllers\CBController {
-		private const forApproval = 10;
+		private const Confirmed = 12;
 		private const Schedule = 6;
 		private const Rejected = 4;
 		private const Receiving = 5;
@@ -54,7 +54,7 @@
 				'url' => CRUDBooster::mainpath('review/[id]'),
 				'icon' => 'fa fa-thumbs-up',
 				'color' => 'info',
-				'showIf' => "[status] == '" . Self::forApproval . "'"
+				'showIf' => "[status] == '" . Self::Confirmed . "'"
 			];
 
 			$this->load_css = [];
