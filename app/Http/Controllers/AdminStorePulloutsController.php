@@ -10,17 +10,18 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Carbon;
+use App\Models\Counter;
 
 class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controllers\CBController
 {
 
 	private const Pending = '0';
 	private const Void = '8';
-	private const Scheduler = [1];
+	private const Scheduler = [1, 7];
 	private const Schedule = 6;
 	private const Receiving = 5;
 	private const CreateInPos = 11;
-	private const DoCreator = [1];
+	private const DoCreator = [1, 3];
 
 	public function cbInit()
 	{
@@ -194,8 +195,12 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 		$transport_type = $validatedData['transport_type'];
 		$hand_carrier = $transport_type == 2 ? $request->input('hand_carrier') : "";
+		$lastRefNum = Counter::orderBy('id', 'desc')->first();
+		$ref_number = $lastRefNum ? $lastRefNum->referece_number + 1 : 1;
+		$combined_ref = 'ETP-' . $ref_number;
 
 		$store_pullout_header_id = DB::table('store_pullouts')->insertGetId([
+			'ref_number' => $combined_ref,
 			'memo' => $validatedData['memo'],
 			'pullout_date' => Carbon::parse($validatedData['pullout_date']),
 			'transaction_type' => 1, // STW
@@ -211,8 +216,8 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			'created_by' => CRUDBooster::myId(),
 			'created_at' => now()
 		]);
+		Counter::create(['referece_number' => $ref_number, 'reference_code' => 'ETP', 'type' => 'STW', 'created_by' => CRUDBooster::myId()]);
 
-		$this->generateStwReferenceNumber($store_pullout_header_id);
 		$store_pullout_lines = [];
 
 		foreach ($validatedData['scanned_digits_code'] as $index => $item_code) {
@@ -323,7 +328,12 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		$hand_carrier = $transport_type == 2 ? $request->input('hand_carrier') : "";
 		$allProblems = $request->input('all_problems');
 
+		$lastRefNum = Counter::orderBy('id', 'desc')->first();
+		$ref_number = $lastRefNum ? $lastRefNum->referece_number + 1 : 1;
+		$combined_ref = 'ETP-' . $ref_number;
+
 		$store_pullout_header_id = DB::table('store_pullouts')->insertGetId([
+			'ref_number' => $combined_ref,
 			'memo' => $validatedData['memo'],
 			'pullout_date' => Carbon::parse($validatedData['pullout_date']),
 			'transaction_type' => 2, // STR
@@ -339,8 +349,8 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			'created_by' => CRUDBooster::myId(),
 			'created_at' => now()
 		]);
+		Counter::create(['referece_number' => $ref_number, 'reference_code' => 'ETP', 'type' => 'STR', 'created_by' => CRUDBooster::myId()]);
 
-		$this->generateStwReferenceNumber($store_pullout_header_id);
 		$store_pullout_lines = [];
 
 		foreach ($validatedData['scanned_digits_code'] as $index => $item_code) {
@@ -392,15 +402,6 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		CRUDBooster::redirect(CRUDBooster::mainpath(), trans("STS created successfully!"), 'success');
 	}
 
-	private function generateStwReferenceNumber($store_header_id)
-	{
-		$incrementNumber = str_pad($store_header_id, 2, '00', STR_PAD_LEFT);
-		$referenceNumber = "PULLOUTS-REF-{$incrementNumber}";
-
-		DB::table('store_pullouts')
-			->where('id', $store_header_id)
-			->update(['ref_number' => $referenceNumber]);
-	}
 	public function voidPullout($id)
 	{
 

@@ -197,7 +197,7 @@ table.table.table-bordered th {
                 event.preventDefault();
             }else{
                 Swal.fire({
-                    title: 'Are you sure you?',
+                    title: 'Are you sure?',
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',

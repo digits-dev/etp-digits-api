@@ -199,7 +199,7 @@ input[type=number]::-webkit-outer-spin-button {
 
     <div class='panel-footer'>
         <a href="#" id="cancelBtn" class="btn btn-default">Cancel</a>
-        <button class="btn btn-primary pull-right" type="submit" id="btnSubmit"> <i class="fa fa-save" ></i> Create</button>
+        <button class="btn btn-primary pull-right" type="button" id="btnSubmit"> <i class="fa fa-save" ></i> Create</button>
     </div>
     </form>
 </div>
@@ -208,11 +208,8 @@ input[type=number]::-webkit-outer-spin-button {
 <div class="modal fade" id="SerialModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
-        <div class="modal-header">
-          <h4 class="modal-title" id="exampleModalCenterTitle"> <i class="fa fa-barcode"></i> Create Serial Number</h4>
-          {{-- <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button> --}}
+        <div class="modal-header bg-primary">
+          <h4 class="modal-title" id="exampleModalCenterTitle"> <i class="fa fa-barcode"></i> Serial Number</h4>
         </div>
         <div class="modal-body">
           <div class="form-group">
@@ -309,11 +306,9 @@ input[type=number]::-webkit-outer-spin-button {
                             const existingRow = tbody.find(`input[name="scanned_digits_code[]"][value="${digitsCode}"]`).closest('tr');
 
                             if (existingRow.length) {
-                                // Item already exists; increment qty and show modal if serials are needed
                                 const currentQty = parseInt(existingRow.find('input[name="qty[]"]').val()) || 0;
                                 existingRow.find('input[name="qty[]"]').val(currentQty + 1);
 
-                                // Track the row and show modal to enter additional serials if item has serials
                                 if (row.has_serial == 1) {
                                     currentSerialRow = existingRow;
                                     $('#SerialModal').modal('show');
@@ -331,7 +326,7 @@ input[type=number]::-webkit-outer-spin-button {
                                         <td class="text-center"><input type="text" class="form-control" name="item_description[]" style="text-align:center" readonly value="${row.item_description || ''}"></td>
                                         <td class="text-center"><input type="text" class="form-control" name="qty[]" style="text-align:center" readonly value="${qty}"></td>
                                         <td class="text-center serial-container">
-                                            <input type="text" class="form-control serial-input" name="serial[]" style="text-align:center" readonly> 
+                                            ${row.has_serial == 1 ? `<input type="text" class="form-control serial-input" name="serial[]" style="text-align:center" readonly>` : ''} 
                                             <input type="hidden" class="form-control all-serial-input" name="allSerial[]" style="text-align:center" readonly>
                                         </td>
                                         <td class="text-center"><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fa fa-trash"></i></button></td>
@@ -343,9 +338,10 @@ input[type=number]::-webkit-outer-spin-button {
                                     currentSerialRow = tbody.find(`input[name="scanned_digits_code[]"][value="${digitsCode}"]`).closest('tr');
                                     $('#SerialModal').modal('show');
                                 }
+                                updatedQtyInput = tbody.find(`input[name="scanned_digits_code[]"][value="${digitsCode}"]`).closest('tr').find('input[name="qty[]"]');
                             }
 
-                            updateTotalQuantity();
+                            updateTotalQuantity(updatedQtyInput);
                         } else {
                             Swal.fire({
                                 icon: "error",
@@ -371,11 +367,20 @@ input[type=number]::-webkit-outer-spin-button {
             updateTotalQuantity(); 
         }
 
-        function updateTotalQuantity() {
+        function updateTotalQuantity(updatedQtyInput) {
             let totalQty = 0;
+
+            $('#st_items tbody').find('input[name="qty[]"]').css('background-color', '');
+
             $('#st_items tbody').find('input[name="qty[]"]').each(function() {
-                totalQty += parseInt($(this).val()) || 0;
+                let qty = parseInt($(this).val()) || 0;
+                totalQty += qty;
             });
+
+            if (updatedQtyInput) {
+                $(updatedQtyInput).css('background-color', 'yellow');
+            }
+
             $('#totalQuantity').val(totalQty);
         }
 
@@ -446,6 +451,29 @@ input[type=number]::-webkit-outer-spin-button {
 
             $('#SerialModal').modal('hide');
         }
+
+        $('#btnSubmit').on('click', function(e) {
+            e.preventDefault(); 
+
+            const form = document.getElementById('stw_create');
+            if (form.checkValidity()) {
+                Swal.fire({
+                    title: 'Confirmation',
+                    text: "Are you sure you want to create STW?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, create it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit(); 
+                    }
+                });
+            } else {
+                form.reportValidity();
+            }
+        });
 
 </script>
 

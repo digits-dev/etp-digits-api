@@ -13,16 +13,19 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Concerns\ToArray;
 use App\Models\Problem;
+use App\Models\Counter;
+use App\Models\OrderStatus;
+use Doctrine\DBAL\Driver\SQLSrv\LastInsertId;
 
 class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controllers\CBController
 {
 
 	private const Pending = '0';
-	private const Scheduler = [1];
+	private const Scheduler = [1, 7];
 	private const Schedule = 6;
 	private const Receiving = 5;
 	private const CreateInPos = 11;
-	private const DoCreator = [1];
+	private const DoCreator = [1,3];
 	public function cbInit()
 	{
 
@@ -220,9 +223,14 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		$transport_type = $validatedData['transport_type'];
 		$hand_carrier = $transport_type == 2 ? $request->input('hand_carrier') : "";
 
+		$lastRefNum = Counter::orderBy('id', 'desc')->first();
+		$ref_number = $lastRefNum ? $lastRefNum->referece_number + 1 : 1;
+		$combined_ref = 'ETP-' . $ref_number;
+
 		$store_transfer_header_id = DB::table('store_transfers')->insertGetId([
+			'ref_number' => $combined_ref,
 			'memo' => $validatedData['memo'],
-			'transaction_type' => 4, // STS
+			'transaction_type' => 3, // STS
 			'wh_from' => $validatedData['transfer_from'],
 			'wh_to' => $validatedData['transfer_to'],
 			'hand_carrier' => $hand_carrier,
@@ -231,12 +239,12 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 			'channels_id' => CRUDBooster::myChannel(),
 			'stores_id' => CRUDBooster::myStore(),
 			'stores_id_destination' => $validatedData['stores_id_destination_to'],
-			'status' => 9, // For Confirmation
+			'status' => OrderStatus::FORCONFIRMATION, // For Confirmation
 			'created_by' => CRUDBooster::myId(),
 			'created_at' => now()
 		]);
+		Counter::create(['referece_number' => $ref_number, 'reference_code' => 'ETP', 'type' => 'STS', 'created_by' => CRUDBooster::myId()]);
 
-		$this->generateStsReferenceNumber($store_transfer_header_id);
 		$store_transfer_lines = [];
 
 		foreach ($validatedData['scanned_digits_code'] as $index => $item_code) {
@@ -272,16 +280,6 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		DB::table('serial_numbers')->insert($serial_table);
 
 		CRUDBooster::redirect(CRUDBooster::mainpath(), trans("STS created successfully!"), 'success');
-	}
-
-	private function generateStsReferenceNumber($store_header_id)
-	{
-		$incrementNumber = str_pad($store_header_id, 2, '00', STR_PAD_LEFT);
-		$referenceNumber = "STS-REF-{$incrementNumber}";
-
-		DB::table('store_transfers')
-			->where('id', $store_header_id)
-			->update(['ref_number' => $referenceNumber]);
 	}
 
 	public function voidSTS($id)

@@ -72,7 +72,7 @@
                                         <b>Transport By:</b>
                                     </td>
                                     <td>
-                                        {{ $store_transfer->transport_types->transport_type }} @if(!empty($store_transfer->hand_carrier)) : {{ $store_transfer->hand_carrier }} @endif
+                                        {{ $store_transfer->transportTypes->transport_type }} @if(!empty($store_transfer->hand_carrier)) : {{ $store_transfer->hand_carrier }} @endif
                                     </td>
                                 </tr>
                                 
