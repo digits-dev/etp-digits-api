@@ -11,7 +11,7 @@
 		private const Schedule = 6;
 		private const Rejected = 4;
 		private const Receiving = 5;
-	
+		private const CreateInPos = 11;
 
 	    public function cbInit() {
 
@@ -111,7 +111,8 @@
 			$user = CRUDBooster::myId();
 			if($request->approval_action  == 1){
 				StoreTransfer::where('id',$request->header_id)->update([
-					'status' =>  ($request->transport_type == 1) ? self::Schedule : self::Receiving,
+					// 'status' =>  ($request->transport_type == 1) ? self::Schedule : self::Receiving,
+					'status' =>  self::CreateInPos,
 					'approved_at' => $date,
 					'approved_by' => $user,
 					'updated_at' => $date

@@ -21,6 +21,8 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 	private const Scheduler = [1];
 	private const Schedule = 6;
 	private const Receiving = 5;
+	private const CreateInPos = 11;
+	private const DoCreator = [1];
 	public function cbInit()
 	{
 
@@ -82,6 +84,16 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 				'icon' => 'fa fa-calendar',
 				'color' => 'warning',
 				'showIf' => "[status]=='" . Self::Schedule . "'"
+			];
+		}
+
+		if (in_array(CRUDBooster::myPrivilegeId(), self::DoCreator)) {
+			$this->addaction[] = [
+				'title' => 'Input DO#',
+				'url' => CRUDBooster::mainpath('create-do-no/[id]'),
+				'icon' => 'fa fa-edit',
+				'color' => 'warning',
+				'showIf' => "[status]=='" . Self::CreateInPos . "'"
 			];
 		}
 
@@ -320,6 +332,33 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		else {
 			CRUDBooster::redirect(CRUDBooster::mainpath(), 'Failed! No transaction has been scheduled for transfer.', 'danger')->send();
 		}
+	}
+
+	public function getCreateDoNo($id)
+	{
+
+		if (!CRUDBooster::isRead() && $this->global_privilege == FALSE || $this->button_detail == FALSE) {
+			CRUDBooster::redirect(CRUDBooster::adminPath(), trans("crudbooster.denied_access"));
+		}
+
+		$data = [];
+		$data['page_title'] = "Stock Transfer Create Do";
+		$data['store_transfer'] = StoreTransfer::with(['transportTypes', 'reasons', 'lines', 'statuses', 'storesfrom', 'storesto', 'lines.serials', 'lines.item'])->find($id);
+		$data['action_url'] = route('saveCreateDoNo');
+		return view('store-transfer.create-do-no', $data);
+	}
+
+	public function saveCreateDoNo(Request $request) {
+		StoreTransfer::where('id',$request->header_id)->update([
+			'document_number' => $request->do_number,
+			'status' =>  ($request->transport_type == 1) ? self::Schedule : self::Receiving,
+			'approved_at' => date('Y-m-d H:i:s'),
+			'updated_by' => CRUDBooster::myId(),
+			'updated_at' => date('Y-m-d H:i:s')
+		]);
+
+		CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->ref_number.' has been approved!','success')->send();
+		
 	}
 
 	public function printSTS($id)
