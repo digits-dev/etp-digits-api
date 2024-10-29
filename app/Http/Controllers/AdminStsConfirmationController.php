@@ -1,6 +1,7 @@
 <?php namespace App\Http\Controllers;
 
 use App\Helpers\Helper;
+use App\Models\OrderStatus;
 use App\Models\StoreTransfer;
 use App\Models\StoreTransferLine;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
@@ -8,10 +9,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 class AdminStsConfirmationController extends \crocodicstudio\crudbooster\controllers\CBController {
 
-	private const ForConfirmation = 9;
-	private const Rejected = 4;
-	private const ForApproval = 10;
-	private const Confirmed = 12;
 	public function cbInit() {
 
 		# START CONFIGURATION DO NOT REMOVE THIS LINE
@@ -55,7 +52,7 @@ class AdminStsConfirmationController extends \crocodicstudio\crudbooster\control
 			'url' => CRUDBooster::mainpath('confirm/[id]'),
 			'icon' => 'fa fa-thumbs-up',
 			'color' => 'info',
-			'showIf' => "[status] == '" . self::ForConfirmation . "'"
+			'showIf' => "[status] == '" . OrderStatus::FORCONFIRMATION . "'"
 		];
 
 	}
@@ -69,10 +66,10 @@ class AdminStsConfirmationController extends \crocodicstudio\crudbooster\control
 
 	public function hook_query_index(&$query) {
 		if(CRUDBooster::isSuperAdmin()){
-			$query->where('store_transfers.status', '9');     
+			$query->where('store_transfers.status', OrderStatus::FORCONFIRMATION);     
 		}else{
 			$query->where('store_transfers.stores_id_destination', Helper::myStore())
-			->where('store_transfers.status', '9');     
+			->where('store_transfers.status', OrderStatus::FORCONFIRMATION);     
 		}
 			
 	}
@@ -121,7 +118,7 @@ class AdminStsConfirmationController extends \crocodicstudio\crudbooster\control
 		$user = CRUDBooster::myId();
 		if($request->approval_action == 1){ // approve
 			StoreTransfer::where('id',$request->header_id)->update([
-				'status' => self::Confirmed,
+				'status' => OrderStatus::CONFIRMED,
 				'confirmed_at' => $date,
 				'confirmed_by' => $user,
 				'updated_at' => $date
@@ -131,7 +128,7 @@ class AdminStsConfirmationController extends \crocodicstudio\crudbooster\control
 		}else{
 
 			StoreTransfer::where('id',$request->header_id)->update([
-				'status' => self::Rejected,
+				'status' => OrderStatus::REJECTED,
 				'rejected_at' => $date,
 				'rejected_by' => $user,
 				'updated_at' => $date
