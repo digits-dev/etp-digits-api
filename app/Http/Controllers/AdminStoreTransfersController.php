@@ -180,7 +180,9 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 			return TransportType::select('id', 'transport_type')
 				->where('status', 'ACTIVE')
 				->get();
-		});
+		});   
+
+		
 		
 		return view("store-transfer.create-sts", $data);
 	}
