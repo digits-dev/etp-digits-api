@@ -110,7 +110,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 					'approved_by' => $user
 				]);
 
-				CRUDBooster::redirect(CRUDBooster::mainpath(),'STW#'.$request->ref_number.' has been approved!','success')->send();
+				CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->ref_number.' has been approved!','success')->send();
 			}else{
 				
 				StorePullout::where('id',$request->header_id)->update([
@@ -118,7 +118,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 					'rejected_at' => $date,
 					'rejected_by' => $user
 				]);
-				CRUDBooster::redirect(CRUDBooster::mainpath(),'STW#'.$request->ref_number.' has been rejected!','info')->send();
+				CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->ref_number.' has been rejected!','info')->send();
 			}
 		}
 

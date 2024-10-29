@@ -103,20 +103,18 @@ class AdminStsConfirmationController extends \crocodicstudio\crudbooster\control
 			StoreTransfer::where('id',$request->header_id)->update([
 				'status' => OrderStatus::CONFIRMED,
 				'confirmed_at' => $date,
-				'confirmed_by' => $user,
-				'updated_at' => $date
+				'confirmed_by' => $user
 			]);
 			
-			CRUDBooster::redirect(CRUDBooster::mainpath(),'ST#'.$request->ref_number.' has been confirmed!','success')->send();
+			CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->ref_number.' has been confirmed!','success')->send();
 		}else{
 
 			StoreTransfer::where('id',$request->header_id)->update([
 				'status' => OrderStatus::REJECTED,
 				'rejected_at' => $date,
-				'rejected_by' => $user,
-				'updated_at' => $date
+				'rejected_by' => $user
 			]);
-			CRUDBooster::redirect(CRUDBooster::mainpath(),'ST#'.$request->ref_number.' has been rejected!','info')->send();
+			CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->ref_number.' has been rejected!','info')->send();
 			
 		}
 	}
