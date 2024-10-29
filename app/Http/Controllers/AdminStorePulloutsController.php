@@ -330,6 +330,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 	public function postStRmaPullout(Request $request)
 	{
+		// Validations
 		try {
 			$validatedData = $request->validate([
 				'pullout_from' => 'required|max:255',
@@ -338,11 +339,11 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 				'transport_type' => 'required|integer',
 				'memo' => 'nullable|string|max:255',
 				'hand_carrier' => 'nullable|string|max:100',
-				'pullout_date' => 'required',
-				'scanned_digits_code' => 'required|max:100',
-				'allSerial' => 'required',
-				'qty' => 'required',
-				'current_srp' => 'required',
+				'pullout_date' => 'required|date',
+				'scanned_digits_code' => 'required|array',
+				'allSerial' => 'required|array',
+				'qty' => 'required|array',
+				'current_srp' => 'required|array',
 				'stores_id_destination_to' => 'required'
 			]);
 		} catch (ValidationException $e) {
@@ -351,15 +352,16 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			CRUDBooster::redirect(CRUDBooster::mainpath(), $errorMessage, 'danger');
 		}
 
-		$transport_type = $validatedData['transport_type'];
-		$hand_carrier = $transport_type == 2 ? $request->input('hand_carrier') : "";
+		$hand_carrier = $validatedData['transport_type'] == 2 ? $validatedData['hand_carrier'] : "";
 		$allProblems = $request->input('all_problems');
 
-		$lastRefNum = Counter::where('id', 3)->first();
-		$ref_number = $lastRefNum->reference_number;
-		$combined_ref = $lastRefNum->reference_code. '-' . $ref_number;
+		// Generate ref_number
+		$counter = Counter::where('id', 3)->first();
+		$ref_number = $counter->reference_number;
+		$combined_ref = $counter->reference_code . '-' . $ref_number;
 
-		$store_pullout_header_id = DB::table('store_pullouts')->insertGetId([
+		// Store Pullout header creation
+		$storePullout = StorePullout::firstOrCreate([
 			'ref_number' => $combined_ref,
 			'memo' => $validatedData['memo'],
 			'pullout_date' => Carbon::parse($validatedData['pullout_date']),
@@ -372,13 +374,12 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			'channels_id' => Helper::myChannel(),
 			'stores_id' => Helper::myStore(),
 			'stores_id_destination' => $validatedData['stores_id_destination_to'],
-			'status' => 0, // Pending
+			'status' => OrderStatus::PENDING,
 			'created_by' => CRUDBooster::myId(),
-			'created_at' => now()
+			'created_at' => now(),
 		]);
 
-		$store_pullout_lines = [];
-
+		// Store Pullout Lines creation with problem details
 		foreach ($validatedData['scanned_digits_code'] as $index => $item_code) {
 			$problems = [];
 			$problemDetails = [];
@@ -386,48 +387,34 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 			foreach ($problemsArray as $problem) {
 				list($category, $detail) = array_map('trim', explode('-', $problem, 2));
-
 				$problems[] = $category;
 				$problemDetails[] = $detail;
 			}
 
-			$store_pullout_lines[] = [
-				'store_pullouts_id' => $store_pullout_header_id,
+			$storePulloutLine = $storePullout->lines()->create([
 				'item_code' => $item_code,
 				'qty' => $validatedData['qty'][$index],
 				'unit_price' => $validatedData['current_srp'][$index],
 				'problems' => implode(', ', $problems),
 				'problem_details' => implode(', ', $problemDetails),
-				'created_at' => now()
-			];
-		}
-		DB::table('store_pullout_lines')->insert($store_pullout_lines);
+				'created_at' => now(),
+			]);
 
-
-		$line_ids = DB::table('store_pullout_lines')
-			->where('store_pullouts_id', $store_pullout_header_id)
-			->pluck('id');
-
-		$serial_table = [];
-		foreach ($line_ids as $index => $line_id) {
+			// Handle serial numbers creations
 			if (!empty($validatedData['allSerial'][$index])) {
-
-				$individual_serials = explode(',', $validatedData['allSerial'][$index]);
-				foreach ($individual_serials as $ser) {
-					$serial_table[] = [
-						'store_pullout_lines_id' => $line_id,
-						'serial_number' => trim($ser),
-						'status' => 0, //Pending
-						'created_at' => now()
-					];
-				}
+				$serial_numbers = array_map('trim', explode(',', $validatedData['allSerial'][$index]));
+				$serial_data = array_map(fn($serial) => [
+					'serial_number' => $serial,
+					'status' => OrderStatus::PENDING,
+					'created_at' => now()
+				], $serial_numbers);
+				$storePulloutLine->serials()->createMany($serial_data);
 			}
 		}
-		DB::table('serial_numbers')->insert($serial_table);
-		Counter::where('id', 3)->increment('reference_number');
-
-		CRUDBooster::redirect(CRUDBooster::mainpath(), trans("STS created successfully!"), 'success');
+		$counter->increment('reference_number');
+		CRUDBooster::redirect(CRUDBooster::mainpath(), trans("STR created successfully!"), 'success');
 	}
+
 
 	public function voidPullout($id)
 	{

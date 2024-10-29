@@ -393,7 +393,9 @@
 
         $('#item_search').keypress(function(event) {
             if (event.which === 13) {
+                $(this).prop('disabled', true);
                 event.preventDefault();
+
                 let scannedDigitsCodes = {};
                 const digits_code = $(this).val();
                 $('#scanningSpinner').show();
@@ -462,10 +464,12 @@
                         }
                         $('#scanningSpinner').hide();
                         $('#item_search').val("");
+                        $('#item_search').prop('disabled', false); 
                     },
                     error: function(xhr, status, error) {
                         alert('Error: ' + error);
                         $('#scanningSpinner').hide();
+                        $('#item_search').prop('disabled', false); 
                     }
                 });
             }
@@ -495,53 +499,47 @@
         }
 
         $('#createSerial').keypress(function(event) {
-            if (event.which === 13) {
+            if (event.which === 13) {  
                 event.preventDefault();
                 const serial = $('#createSerial').val().trim();
 
-                if (serial && currentSerialRow) {
-                    $.ajax({
-                        url: '{{ route("check-serial") }}', 
-                        method: 'POST',
-                        data: { serial: serial },
-                        success: function(response) {
-                            if (response.exists) {
-                                erroScanSound();
-                                Swal.fire({
-                                    icon: "error",
-                                    title: "Oops...",
-                                    html: "<h5><strong>Serial number already exists</strong> <br> Please double check your serial and enter again.</h5>",
-                                    confirmButtonText: '<i class="fa fa-thumbs-up"></i> Okay'
-                                });
-                            } else {
-                                playScanSound();
-                                const serialContainer = currentSerialRow.find('.serial-container');
-                                const qty = parseInt(currentSerialRow.find('input[name="qty[]"]').val());
+                if (serial) {
+                    const allSerialsInTable = $('.serial-input').map(function() {
+                        return $(this).val();
+                    }).get();
 
-                                if (qty > 1) {
-                                    const newSerialInput = `
-                                        <input type="text" class="form-control serial-input mb-1" name="serial[]" style="text-align:center; margin-top: 5px;" readonly value="${serial}">
-                                    `;
-                                    serialContainer.append(newSerialInput);
-                                } else {
-                                    const singleSerialInput = serialContainer.find('.serial-input');
-                                    singleSerialInput.val(serial);
-                                }
+                    if (allSerialsInTable.includes(serial)) {
+                        erroScanSound();
+                        Swal.fire({
+                            icon: "error",
+                            title: "Oops...",
+                            html: "<h5><strong>Serial number already exists</strong> <br> Please double check your serial and enter again.</h5>",
+                            confirmButtonText: '<i class="fa fa-thumbs-up"></i> Okay'
+                        });
+                    } else {
+                        playScanSound();
 
-                                // Collect all serials and update allSerial input
-                                const allSerials = serialContainer.find('.serial-input').map(function() {
-                                    return $(this).val();
-                                }).get().join(', ');
-                                serialContainer.find('.all-serial-input').val(allSerials);
+                        const serialContainer = currentSerialRow.find('.serial-container');
+                        const qty = parseInt(currentSerialRow.find('input[name="qty[]"]').val());
 
-                                $('#createSerial').val('');
-                                $('#SerialModal').modal('hide');
-                            }
-                        },
-                        error: function() {
-                            alert('An error occurred while checking the serial number. Please try again.');
+                        if (qty > 1) {
+                            const newSerialInput = `
+                                <input type="text" class="form-control serial-input mb-1" name="serial[]" style="text-align:center; margin-top: 5px;" readonly value="${serial}">
+                            `;
+                            serialContainer.append(newSerialInput);
+                        } else {
+                            const singleSerialInput = serialContainer.find('.serial-input');
+                            singleSerialInput.val(serial);
                         }
-                    });
+
+                        const allSerials = serialContainer.find('.serial-input').map(function() {
+                            return $(this).val();
+                        }).get().join(', ');
+                        serialContainer.find('.all-serial-input').val(allSerials);
+
+                        $('#createSerial').val('');  
+                        $('#SerialModal').modal('hide');  
+                    }
                 }
             }
         });
