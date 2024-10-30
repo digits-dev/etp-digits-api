@@ -76,16 +76,15 @@ class AdminStsHistoryController extends \crocodicstudio\crudbooster\controllers\
 		return view('store-transfer.detail', $data);
 	}
 
-	public function exportWithSerial()
+	public function exportWithSerial(Request $request)
 	{
-		$filter_column = \Request::get('filter_column');
-		return Excel::download(new ExportStsWithSerial($filter_column), 'sts_items_export.xlsx');
+		$filter_column = $request->get('filter_column');
+		return Excel::download(new ExportStsWithSerial($filter_column), 'Export STS with Serial- ' . now()->format('Ymd h_i_sa') . '.xlsx');
 	}
 
-
-	public function exportSts()
+	public function exportSts(Request $request)
 	{
-		$filter_column = \Request::get('filter_column');
+		$filter_column = $request->get('filter_column');
 
 		dd($filter_column);
 	}

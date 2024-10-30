@@ -47,7 +47,7 @@ class ExportStsWithSerial implements FromCollection, WithHeadings, WithStyles
                 'stores_to.store_name AS destination',
                 'store_transfers.transfer_date',
                 'store_transfers.transfer_schedule_date',
-                DB::raw('SUM(store_transfer_lines.qty) AS qty'), // Use SUM to aggregate qty
+                DB::raw('SUM(store_transfer_lines.qty) AS qty'), //sum for each qty
                 'store_transfers.created_at',
                 'store_transfers.scheduled_at',
                 DB::raw('GROUP_CONCAT(serial_numbers.serial_number) AS serial_numbers'),
@@ -131,7 +131,6 @@ class ExportStsWithSerial implements FromCollection, WithHeadings, WithStyles
         });
     }
 
-
     public function styles(Worksheet $sheet)
     {
         $sheet->getStyle('A1:P1')->applyFromArray([
@@ -144,6 +143,11 @@ class ExportStsWithSerial implements FromCollection, WithHeadings, WithStyles
             ]
         ]);
 
+        foreach (range('A', 'P') as $column) {
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
+
         return [];
     }
+
 }
