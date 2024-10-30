@@ -5,7 +5,7 @@ namespace App\Helpers;
 use App\Models\StorePullout;
 use App\Models\StoreTransfer;
 use Illuminate\Support\Facades\Session;
-
+use crocodicstudio\crudbooster\helpers\CRUDBooster;
 class Helper
 {
     public static function myChannel(){
@@ -16,19 +16,35 @@ class Helper
         return Session::get('store_id');
     }
 
+    public static function myApprovalStore(){
+        return Session::get('approval_stores');
+    }
+
     public static function getTotalPendingList(){
         return self::getPendingSTR() + self::getPendingSTW() + self::getPendingSTS();
     }
 
     public static function getPendingSTW(){
-        return StorePullout::pending()->stw()->count();
+        if(CRUDBooster::isSuperAdmin()){
+            return StorePullout::pending()->stw()->count();
+        }else{
+            return StorePullout::pending()->whereIn('stores_id',self::myApprovalStore())->stw()->count();
+        }
     }
 
     public static function getPendingSTR(){
-        return StorePullout::pending()->str()->count();
+        if(CRUDBooster::isSuperAdmin()){
+            return StorePullout::pending()->str()->count();
+        }else{
+            return StorePullout::pending()->whereIn('stores_id',self::myApprovalStore())->str()->count();
+        }
     }
 
     public static function getPendingSTS(){
-        return StoreTransfer::confirmed()->count();
+        if(CRUDBooster::isSuperAdmin()){
+            return StoreTransfer::confirmed()->count();
+        }else{
+            return StoreTransfer::confirmed()->whereIn('stores_id',self::myApprovalStore())->count();
+        }
     }
 }

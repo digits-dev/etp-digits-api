@@ -1,15 +1,17 @@
 <?php namespace App\Http\Controllers;
 
-use App\Models\OrderStatus;
-use Session;
+	use App\Models\OrderStatus;
+	use Session;
 	use DB;
 	use App\Models\StorePullout;
-use App\Models\TransactionType;
-use crocodicstudio\crudbooster\helpers\CRUDBooster;
+	use App\Models\TransactionType;
+	use crocodicstudio\crudbooster\helpers\CRUDBooster;
 	use Illuminate\Http\Request;
+	use App\Helpers\Helper;
+	use App\Models\CmsPrivilege;
 
 	class AdminStwApprovalController extends \crocodicstudio\crudbooster\controllers\CBController {
-
+	private const APPROVER = [CmsPrivilege::APPROVER];
 	    public function cbInit() {
 
 			# START CONFIGURATION DO NOT REMOVE THIS LINE
@@ -66,6 +68,11 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 	    }
 
 	    public function hook_query_index(&$query) {
+			if(!CRUDBooster::isSuperAdmin()){
+				if(in_array(CRUDBooster::myPrivilegeId(), self::APPROVER)){
+					$query->whereIn('store_pullouts.stores_id', Helper::myApprovalStore());
+				}
+			}
 	        $query->where('store_pullouts.status', OrderStatus::PENDING)
 				->where('transaction_type', TransactionType::STW);
 	            

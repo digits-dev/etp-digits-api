@@ -1,16 +1,18 @@
 <?php namespace App\Http\Controllers;
 
-use App\Models\OrderStatus;
-use Session;
+	use App\Models\OrderStatus;
+	use Session;
 	use Illuminate\Http\Request;
 	use DB;
 	use crocodicstudio\crudbooster\helpers\CRUDBooster;
 	use App\Models\StorePullout;
 	use App\Models\StorePulloutLine;
-use App\Models\TransactionType;
+	use App\Models\TransactionType;
+	use App\Helpers\Helper;
+	use App\Models\CmsPrivilege;
 
 	class AdminStrApprovalController extends \crocodicstudio\crudbooster\controllers\CBController {
-	
+		private const APPROVER = [CmsPrivilege::APPROVER];
 
 	    public function cbInit() {
 
@@ -62,6 +64,11 @@ use App\Models\TransactionType;
 	    }
 
 	    public function hook_query_index(&$query) {
+			if(!CRUDBooster::isSuperAdmin()){
+				if(in_array(CRUDBooster::myPrivilegeId(), self::APPROVER)){
+					$query->whereIn('store_pullouts.stores_id', Helper::myApprovalStore());
+				}
+			}
 	        $query->where('store_pullouts.status', OrderStatus::PENDING)
 				->where('transaction_type', TransactionType::RMA);
 	    }

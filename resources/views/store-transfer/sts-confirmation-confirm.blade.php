@@ -51,6 +51,7 @@ table.table.table-bordered th {
             <input type="hidden" name="transport_type" id="transport_type" value="{{$store_transfer->transport_type}}" >
             <input type="hidden" name="header_id" id="header_id" value="{{$store_transfer->id}}" >
             <input type="hidden" value="" name="approval_action" id="approval_action">
+            <input type="hidden" value="{{$store_transfer->ref_number}}" name="ref_number" id="ref_number">
 
             <div class="col-md-4">
                 <div class="table-responsive">

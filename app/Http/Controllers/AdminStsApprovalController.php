@@ -2,13 +2,15 @@
 
 use App\Models\OrderStatus;
 use App\Models\StoreTransfer;
+use App\Models\CmsPrivilege;
 	use Session;
 	use Illuminate\Http\Request;
 	use DB;
 	use crocodicstudio\crudbooster\helpers\CRUDBooster;
+	use App\Helpers\Helper;
 
 	class AdminStsApprovalController extends \crocodicstudio\crudbooster\controllers\CBController {
-	
+		private const APPROVER = [CmsPrivilege::APPROVER];
 	    public function cbInit() {
 
 			# START CONFIGURATION DO NOT REMOVE THIS LINE
@@ -116,6 +118,11 @@ use App\Models\StoreTransfer;
 
 
 	    public function hook_query_index(&$query) {
+			if(!CRUDBooster::isSuperAdmin()){
+				if(in_array(CRUDBooster::myPrivilegeId(), self::APPROVER)){
+					$query->whereIn('store_transfers.stores_id', Helper::myApprovalStore());
+				}
+			}
 			$query->where('store_transfers.status', OrderStatus::CONFIRMED);
 	    }
 

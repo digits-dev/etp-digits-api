@@ -16,6 +16,7 @@ use App\Http\Controllers\ItemMasterController;
 use App\Http\Controllers\OraclePullController;
 use App\Http\Controllers\OraclePushController;
 use App\Http\Controllers\WarehouseMasterController;
+use App\Http\Controllers\AdminApprovalMatrixController;
 use App\Services\ItemSyncService;
 use App\Services\WarehouseSyncService;
 use Illuminate\Support\Facades\Route;
@@ -114,6 +115,13 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::get('print/{id}', [AdminStoreTransfersController::class, 'printSTS'])->name('printSTS');
         Route::get('create-do-no/{id}', [AdminStoreTransfersController::class, 'getCreateDoNo'])->name('showCreateDoNo');  
         Route::post('save-create-do-no',[AdminStoreTransfersController::class, 'saveCreateDoNo'])->name('saveCreateDoNo');
+    });
+
+    Route::group(['prefix' => 'approval_matrix'], function(){
+        Route::post('get-approver', [AdminApprovalMatrixController::class, 'getApprovers'])->name('getApprovers');
+        Route::post('get-stores', [AdminApprovalMatrixController::class, 'getStores'])->name('getStores');
+        Route::post('add-approval-matrix', [AdminApprovalMatrixController::class, 'saveApprovalMatrix'])->name('add-approval-matrix');
+        Route::post('update-approval-matrix', [AdminApprovalMatrixController::class, 'updateApprovalMatrix'])->name('update-approval-matrix');
     });
 
     Route::group(['prefix' => 'sts_history'], function(){

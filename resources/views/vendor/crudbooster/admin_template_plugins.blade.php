@@ -7,7 +7,8 @@
 
 <!-- jQuery 2.2.3 -->
 <script src="{{ asset ('vendor/crudbooster/assets/adminlte/plugins/jQuery/jquery-2.2.3.min.js') }}"></script>
-
+<script src="{{ asset ('vendor/crudbooster/assets/adminlte/plugins/select2/select2.min.js') }}"></script>
+<link rel="stylesheet" href="{{ asset ('vendor/crudbooster/assets/adminlte/plugins/select2/select2.min.css') }}">
 <!-- Bootstrap 3.4.1 JS -->
 <script src="{{ asset ('vendor/crudbooster/assets/adminlte/bootstrap/js/bootstrap.min.js') }}" type="text/javascript"></script>
 <!-- AdminLTE App -->
