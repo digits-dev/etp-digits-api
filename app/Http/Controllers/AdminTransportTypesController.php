@@ -27,6 +27,8 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
 			$this->col = [];
 			$this->col[] = ["label"=>"Transport Type","name"=>"transport_type"];
+			$this->col[] = ["label"=>"Style","name"=>"style"];
+
 			$this->col[] = ["label"=>"Status","name"=>"status"];
 			$this->col[] = ["label"=>"Created By","name"=>"created_by","join"=>"cms_users,name"];
 			$this->col[] = ["label"=>"Created Date","name"=>"created_at"];
@@ -66,6 +68,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
             TransportType::whereIn('id', $id_selected)->update($value);
 
 	    }
+
 
         public function hook_before_add(&$postdata) {
 	        //Your code here

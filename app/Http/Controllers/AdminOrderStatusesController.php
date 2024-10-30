@@ -31,6 +31,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			# START COLUMNS DO NOT REMOVE THIS LINE
 			$this->col = [];
 			$this->col[] = ["label"=>"Order Status","name"=>"order_status"];
+			$this->col[] = ["label"=>"Style","name"=>"style"];
 			$this->col[] = ["label"=>"Status","name"=>"status"];
 			$this->col[] = ["label"=>"Created By","name"=>"created_by","join"=>"cms_users,name"];
 			$this->col[] = ["label"=>"Created Date","name"=>"created_at"];
