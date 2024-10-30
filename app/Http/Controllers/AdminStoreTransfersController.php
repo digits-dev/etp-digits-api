@@ -349,14 +349,19 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 	}
 
 	public function saveCreateDoNo(Request $request) {
-		StoreTransfer::where('id',$request->header_id)->update([
-			'document_number' => $request->do_number,
-			'status' =>  ($request->transport_type == 1) ? OrderStatus::FORSCHEDULE : OrderStatus::FORRECEIVING,
-			'updated_by' => CRUDBooster::myId(),
-			'updated_at' => date('Y-m-d H:i:s')
-		]);
+		$isExist = StoreTransfer::where('document_number',$request->do_number)->exists();
+		if(!$isExist){
+			StoreTransfer::where('id',$request->header_id)->update([
+				'document_number' => $request->do_number,
+				'status' =>  ($request->transport_type == 1) ? OrderStatus::FORSCHEDULE : OrderStatus::FORRECEIVING,
+				'updated_by' => CRUDBooster::myId(),
+				'updated_at' => date('Y-m-d H:i:s')
+			]);
+			CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->do_number.' has been created!','success')->send();
+		}else{
+			CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->do_number.' already exist!','danger')->send();
+		}
 
-		CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->ref_number.' has been approved!','success')->send();
 	}
 
 	public function printSTS($id)
