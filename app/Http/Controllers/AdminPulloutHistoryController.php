@@ -91,16 +91,17 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 					$query->where('store_pullouts.channels_id',Helper::myChannel())
 					->whereIn('store_pullouts.stores_id',Helper::myStore());
 				}
-			}elseif(in_array(CRUDBooster::myPrivilegeId(),VIEWREPORTWHRTLFRAOPS)){
+			}elseif(in_array(CRUDBooster::myPrivilegeId(),self::VIEWREPORTWHRTLFRAOPS)){
 				$query->whereIn('store_pullouts.channels_id',[1,2]);
 			}elseif(in_array(CRUDBooster::myPrivilegeId(),self::VIEWREPORTWHFRAVIEWER)){
 				$query->whereIn('store_pullouts.stores_id',Helper::myStore());
 			}
 			
 			else{
-				$query->whereIn('store_store_pulloutss.stores_id',Helper::myStore());
+				$query->where('store_pullouts.stores_id',Helper::myStore());
 			}
 		}
+	
 	}
 
 	
