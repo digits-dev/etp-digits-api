@@ -133,11 +133,56 @@ class CmsModuleSeeder extends Seeder
                 'is_active'    => 0
             ],
             [
-                'name'         => 'STW and STR History',
+                'name'         => 'STW/STR History',
                 'icon'         => 'fa fa-circle-o',
                 'path'         => 'pullout_history',
                 'table_name'   => 'store_pullouts',
                 'controller'   => 'AdminPulloutHistoryController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
+            [
+                'name'         => 'Approval Matrix Settings',
+                'icon'         => 'fa fa-circle-o',
+                'path'         => 'approval_matrix',
+                'table_name'   => 'approval_matrix',
+                'controller'   => 'AdminApprovalMatrixController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
+            [
+                'name'         => 'STS Approval',
+                'icon'         => 'fa fa-thumbs-o-up',
+                'path'         => 'sts_approval',
+                'table_name'   => 'store_transfers',
+                'controller'   => 'AdminStsApprovalController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
+            [
+                'name'         => 'STW Approval',
+                'icon'         => 'fa fa-thumbs-o-up',
+                'path'         => 'stw_approval',
+                'table_name'   => 'store_pullouts',
+                'controller'   => 'AdminStwApprovalController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
+            [
+                'name'         => 'STR Approval',
+                'icon'         => 'fa fa-thumbs-o-up',
+                'path'         => 'str_approval',
+                'table_name'   => 'store_pullouts',
+                'controller'   => 'AdminStrApprovalController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
+            [
+                'name'         => 'STS Confirmation',
+                'icon'         => 'fa fa-file-text',
+                'path'         => 'sts_confirmation',
+                'table_name'   => 'store_transfers',
+                'controller'   => 'AdminStsConfirmationController',
                 'is_protected' => 0,
                 'is_active'    => 0
             ],
