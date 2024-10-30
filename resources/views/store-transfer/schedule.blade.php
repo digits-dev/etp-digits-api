@@ -223,7 +223,9 @@ table.table.table-bordered th {
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script type="text/javascript">
     $(document).ready(function() {
-
+        $(function(){
+            $('body').addClass("sidebar-collapse");
+        });
         $("#schedule_date").datepicker({ 
             startDate: "today",
             format: "yyyy-mm-dd",

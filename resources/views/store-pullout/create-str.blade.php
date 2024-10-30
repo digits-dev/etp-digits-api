@@ -6,12 +6,21 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         
         <style type="text/css">
+            .select2-selection__choice{
+                    font-size:14px !important;
+                    color:black !important;
+            }
+            .select2-selection__rendered {
+                line-height: 31px !important;
+            }
+            .select2-container .select2-selection--single {
+                height: 35px !important;
+            }
+            .select2-selection__arrow {
+                height: 34px !important;
+            }
             .select2-container--default .select2-selection--single {
                 border-radius: 0px !important
-            }
-
-            .select2-container .select2-selection--single {
-                height: 35px
             }
 
             .select2-container--default .select2-selection--multiple .select2-selection__choice {
@@ -22,6 +31,17 @@
 
             .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
                 color: #fff !important;
+            }
+            table.table.table-bordered td {
+                border: 1px solid black;
+            }
+
+            table.table.table-bordered tr {
+                border: 1px solid black;
+            }
+
+            table.table.table-bordered th {
+                border: 1px solid black;
             }
         </style>
     @endpush
@@ -238,6 +258,9 @@
 
     <script>
         $(document).ready(function() {
+            $(function(){
+                $('body').addClass("sidebar-collapse");
+            });
             $('#pullout_to').select2();
             $('#pullout_from').select2();
             $('#reason').select2();

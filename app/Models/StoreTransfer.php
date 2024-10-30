@@ -98,7 +98,7 @@ class StoreTransfer extends Model
             'stores_to.store_name AS destination',
             'store_transfers.transfer_date',
             'store_transfers.transfer_schedule_date',
-            DB::raw('1 AS qty'),
+            'store_transfer_lines.qty',
             'store_transfers.created_at',
             'store_transfers.scheduled_at',
             'order_statuses.order_status',

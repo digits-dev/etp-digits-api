@@ -16,7 +16,16 @@
 .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
     color: #fff !important;
 }
-
+.select2-selection__choice{
+        font-size:14px !important;
+        color:black !important;
+}
+.select2-selection__rendered {
+    line-height: 31px !important;
+}
+.select2-container .select2-selection--single {
+    height: 35px !important;
+}
 table.table.table-bordered td {
   border: 1px solid black;
 }
@@ -236,6 +245,9 @@ input[type=number]::-webkit-outer-spin-button {
 
 <script>
     $(document).ready(function(){
+        $(function(){
+            $('body').addClass("sidebar-collapse");
+        });
         $('#pullout_to').select2();
         $('#pullout_from').select2();
         $('#reason').select2();
