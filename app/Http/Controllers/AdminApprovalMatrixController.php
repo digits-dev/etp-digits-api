@@ -1,10 +1,15 @@
 <?php namespace App\Http\Controllers;
 
 	use Session;
-	use Request;
+	use Illuminate\Http\Request;
 	use DB;
 	use CRUDBooster;
-
+	use App\Models\CmsPrivilege;
+	use App\Models\Channel;
+	use App\Models\CmsUser;
+	use App\Models\StoreMaster;
+	use App\Models\ApprovalMatrix;
+	use Illuminate\Support\Facades\Cache;
 	class AdminApprovalMatrixController extends \crocodicstudio\crudbooster\controllers\CBController {
 
 	    public function cbInit() {
@@ -17,7 +22,7 @@
 			$this->button_table_action = true;
 			$this->button_bulk_action = true;
 			$this->button_action_style = "button_icon";
-			$this->button_add = true;
+			$this->button_add = false;
 			$this->button_edit = true;
 			$this->button_delete = true;
 			$this->button_detail = true;
@@ -45,7 +50,7 @@
 			$this->form = [];
 			$this->form[] = ['label'=>'Privilege Name','name'=>'id_cms_privileges','type'=>'select','validation'=>'required|integer|min:0','width'=>'col-sm-5','datatable'=>'cms_privileges,name','datatable_where'=>"id in (5,28)"];
 			$this->form[] = ['label'=>'Approver Name','name'=>'cms_users_id','type'=>'select','validation'=>'required|integer|min:0','width'=>'col-sm-5','datatable'=>'cms_users,name','parent_select'=>'id_cms_privileges'];
-			$this->form[] = ['label'=>'Channel','name'=>'channels_id','type'=>'select','validation'=>'required|integer|min:0','width'=>'col-sm-5','datatable'=>'channels,channel_description'];
+			$this->form[] = ['label'=>'Channel','name'=>'channel_id','type'=>'select','validation'=>'required|integer|min:0','width'=>'col-sm-5','datatable'=>'channels,channel_description'];
 			
 			if(CRUDBooster::getCurrentMethod() == 'getEdit' || CRUDBooster::getCurrentMethod() == 'postEditSave' || CRUDBooster::getCurrentMethod() == 'getDetail'){
 				$this->form[] = ['label'=>'Status','name'=>'status','type'=>'select','validation'=>'required','width'=>'col-sm-5','dataenum'=>'ACTIVE;INACTIVE'];
@@ -58,19 +63,14 @@
 	        $this->addaction = array();
 
 	        $this->index_button = array();
-			$this->index_button[] = [
-				"title"=>"Add Data",
-				"label"=>"Add Data",
-				"icon"=>"fa fa-plus-circle",
-				"url"=>CRUDBooster::mainpath('add'),
-				"color"=>"success"];
-
-				$this->script_js = "
-					$(document).ready(function() {
-						$('#store_list').select2();
-					});
-					
-				";
+			if(CRUDBooster::getCurrentMethod() == 'getIndex'){
+				$this->index_button[] = [
+					"title"=>"Add Data",
+					"label"=>"Add Data",
+					"icon"=>"fa fa-plus-circle",
+					"url"=>CRUDBooster::mainpath('add'),
+					"color"=>"success"];
+			}
 	    }
 
 
@@ -86,8 +86,16 @@
 	    | ---------------------------------------------------------------------- 
 	    |
 	    */    
-	    public function hook_row_index($column_index,&$column_value) {	        
-	    	//Your code here
+		public function hook_row_index($column_index,&$column_value) {	        
+			//Your code here
+			if($column_index == 4){
+				$storeLists = $this->storeListing($column_value);
+				
+				foreach ($storeLists as $value) {
+					$col_values .= '<span stye="display: block; padding:10px !important;" class="label label-info">'.$value.'</span><br>';
+				}
+				$column_value = $col_values;
+			}
 	    }
 
 	    /*
@@ -139,32 +147,77 @@
 
 	    }
 
-	    /* 
-	    | ---------------------------------------------------------------------- 
-	    | Hook for execute command before delete public static function called
-	    | ----------------------------------------------------------------------     
-	    | @id       = current id 
-	    | 
-	    */
-	    public function hook_before_delete($id) {
-	        //Your code here
+		public function getAdd(){
+			if (!CRUDBooster::isRead() && $this->global_privilege == FALSE || $this->button_detail == FALSE) {
+				CRUDBooster::redirect(CRUDBooster::adminPath(), trans("crudbooster.denied_access"));
+			}
+			$data['privileges'] = CmsPrivilege::whereIn('id',[CmsPrivilege::APPROVER])->get();
+			$data['channels'] = Channel::whereIn('channel_name', ['RETAIL', 'FRANCHISE'])->active()->get();
+			return view('approval-matrix.create-approval-matrix', $data);
+		}
 
-	    }
+		public function getApprovers(Request $request){
+			$privilege = $request['privilege_id'];
+			// Set a cache key based on the privilege ID
+			$cacheKey = 'approvers_for_privilege_' . $privilege;
 
-	    /* 
-	    | ---------------------------------------------------------------------- 
-	    | Hook for execute command after delete public static function called
-	    | ----------------------------------------------------------------------     
-	    | @id       = current id 
-	    | 
-	    */
-	    public function hook_after_delete($id) {
-	        //Your code here
+			// Try to get approvers from cache, if not found, fetch from DB and cache it
+			$approvers = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($privilege) {
+				return CmsUser::where('id_cms_privileges', $privilege)->pluck('name', 'id');
+			});
+			return response()->json($approvers);
+		}
 
-	    }
+		public function getStores(Request $request){
+			$channel = $request['channel_id'];
+			// Set a cache key based on the channel ID
+			$cacheKey = 'channel_' . $channel;
 
-		// public function getAdd(){
-		// 	dd('test');
-		// }
+			// Try to get approvers from cache, if not found, fetch from DB and cache it
+			$storelist = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($channel) {
+				return StoreMaster::where('channels_id', $channel)->pluck('bea_so_store_name', 'id');
+			});
+			return response()->json($storelist);
+		}
+
+		public function saveApprovalMatrix(Request $request){
+			$stores = $request['store_ids'];
+			$channel = $request['channels_id'];
+			$approver = $request['approver_id'];
+			$storeData = [];
+			if (isset($stores) && $stores == ["all"]) {
+				$allStores = StoreMaster::where('channels_id',$channel)->where('status','ACTIVE')->get();
+				foreach ($allStores as $key => $value) {
+					$storeArray = explode(",", $value->id);
+					$storeData[$key] = preg_replace("/[^0-9]/","",$value->id);
+				}
+				
+			} else {
+				$storeList = json_encode($stores, true);
+				$storeArray = explode(",", $storeList);
+				
+				foreach ($storeArray as $key => $value) {
+					$storeData[$key] = preg_replace("/[^0-9]/","",$value);
+				}
+			}
+			$isExist = ApprovalMatrix::where('cms_users_id',$approver)->where('channel_id',$channel)->exists();
+			if(!$isExist){
+				ApprovalMatrix::create([
+					'cms_privileges_id' => $request['privilege'],
+					'cms_users_id' => $approver,
+					'channel_id' => $channel,
+					'store_list' => implode(",", $storeData),
+					'created_at' => date('Y-m-d h:i:s')
+				]);
+			}else{
+				CRUDBooster::redirect(CRUDBooster::mainpath(), 'Approver already created!', 'danger')->send();
+			}
+			CRUDBooster::redirect(CRUDBooster::mainpath(), 'Created successfully!', 'success')->send();
+		}
+
+		public function storeListing($ids) {
+			$stores = explode(",", $ids);
+			return StoreMaster::whereIn('id', $stores)->pluck('bea_so_store_name');
+		}
 
 	}
