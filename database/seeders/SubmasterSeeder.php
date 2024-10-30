@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\TransactionType;
 use App\Models\TransportType;
+use App\Models\Problem;
 use Illuminate\Database\Seeder;
 
 class SubmasterSeeder extends Seeder
@@ -61,21 +62,21 @@ class SubmasterSeeder extends Seeder
         ];
 
         foreach ($transportTypes as $value) {
-            $newValue['transport_type'] = $value;
+            $newTransportValue['transport_type'] = $value;
             TransportType::updateOrInsert(['transport_type' => $value],
-                array_merge($createdBy,$newValue));
+                array_merge($createdBy,$newTransportValue));
         }
 
         foreach ($transactionTypes as $value) {
-            $newValue['transaction_type'] = $value;
+            $newTransactionValue['transaction_type'] = $value;
             TransactionType::updateOrInsert(['transaction_type' => $value],
-                array_merge($createdBy,$newValue));
+                array_merge($createdBy,$newTransactionValue));
         }
 
         foreach ($problems as $value) {
-            $newValue['problem_details'] = $value;
-            TransactionType::updateOrInsert(['problem_details' => $value],
-                array_merge($createdBy,$newValue));
+            $newProblemValue['problem_details'] = $value;
+            Problem::updateOrInsert(['problem_details' => $value],
+                array_merge($createdBy,$newProblemValue));
         }
     }
 }

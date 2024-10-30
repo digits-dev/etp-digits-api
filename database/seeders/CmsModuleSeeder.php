@@ -123,6 +123,24 @@ class CmsModuleSeeder extends Seeder
                 'is_protected' => 0,
                 'is_active'    => 0
             ],
+            [
+                'name'         => 'STS History',
+                'icon'         => 'fa fa-circle-o',
+                'path'         => 'sts_history',
+                'table_name'   => 'sts_history',
+                'controller'   => 'AdminStsHistoryController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
+            [
+                'name'         => 'STW and STR History',
+                'icon'         => 'fa fa-circle-o',
+                'path'         => 'pullout_history',
+                'table_name'   => 'store_pullouts',
+                'controller'   => 'AdminPulloutHistoryController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
 
         ];
 

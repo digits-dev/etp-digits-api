@@ -187,6 +187,42 @@ class CmsMenuSeeder extends Seeder
                 'id_cms_privileges' => 1,
                 'sorting'           => 3
             ],
+            [
+                'name'              => 'History',
+                'type'              => 'URL',
+                'path'              => '#',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-history',
+                'parent_id'         => 0,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 7
+            ],
+            [
+                'name'              => 'STS History',
+                'type'              => 'Route',
+                'path'              => 'AdminStsHistoryControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-circle-o',
+                'parent_id'         => 23,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 1
+            ],
+            [
+                'name'              => 'STW and STR History',
+                'type'              => 'Route',
+                'path'              => 'AdminPulloutHistoryControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-circle-o',
+                'parent_id'         => 23,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 2
+            ],
         ];
 
         foreach ($menus as $menu) {
