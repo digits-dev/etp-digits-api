@@ -49,20 +49,21 @@ table.table.table-bordered th {
                 <div class="table-responsive">
                     <table class="table table-bordered" id="st-header-1">
                         <tbody>
+                            
                             <tr>
                                 <td style="width: 30%">
-                                    <b>ST:</b>
+                                    <b>Reference #:</b>
                                 </td>
                                 <td>
-                                    {{ $store_transfer->document_number }}
+                                    {{ $store_transfer->ref_number }}
                                 </td>
                             </tr>
                             <tr>
                                 <td style="width: 30%">
-                                    <b>Received ST:</b>
+                                    <b>ST #:</b>
                                 </td>
                                 <td>
-                                    {{ $store_transfer->received_document_number }}
+                                    {{ $store_transfer->document_number }}
                                 </td>
                             </tr>
                             <tr>
@@ -98,14 +99,6 @@ table.table.table-bordered th {
                 <div class="table-responsive">
                     <table class="table table-bordered" id="st-header-2">
                         <tbody>
-                            <tr>
-                                <td style="width: 30%">
-                                    <b>Transfer Date:</b>
-                                </td>
-                                <td>
-                                    @if(!empty($store_transfer->scheduled_at)) {{ $store_transfer->scheduled_at }} @else {{ $store_transfer->transfer_date }} @endif  
-                                </td>
-                            </tr>
                             <tr>
                                 <td style="width: 30%">
                                     <b>Transport By:</b>
@@ -187,10 +180,22 @@ table.table.table-bordered th {
                 </div>
             </div>
             
-            <div class="col-md-12">
-                <h4><b>Note:</b></h4>
-                <p>{{ $store_transfer->memo }}</p>
-            </div>
+            @if(!empty($store_transfer->memo))
+                <div class="col-md-12">
+                    <table class="table table-bordered" id="st-header">
+                        <tbody>
+                            <tr>
+                                <td style="width: 10%">
+                                    <b>Note:</b>
+                                </td>
+                                <td>
+                                    <p style="padding:10px 15; align-items:center">{{ $store_transfer->memo }}</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            @endif
 
         </div>
 

@@ -57,15 +57,13 @@ table.table.table-bordered th {
                     <table class="table table-bordered" id="st-header">
                         <tbody>
                             <tr>
-                                <td>
-                                    <b>ST:</b>
+                                <td style="width: 30%">
+                                    <b>Reference #:</b>
                                 </td>
                                 <td>
-                                    {{ $store_transfer->document_number }}
-                                    <input type="hidden" name="st_number" id="st_number" value="{{ $store_transfer->document_number }}" >
+                                    {{ $store_transfer->ref_number }}
                                 </td>
                             </tr>
-
                             <tr>
                                 <td>
                                     <b>Transport By:</b>
@@ -74,7 +72,6 @@ table.table.table-bordered th {
                                     {{ $store_transfer->transportTypes->transport_type }} @if(!empty($store_transfer->hand_carrier)) : {{ $store_transfer->hand_carrier }} @endif
                                 </td>
                             </tr>
-                            
                             <tr>
                                 <td>
                                     <b>Reason:</b>
@@ -83,9 +80,6 @@ table.table.table-bordered th {
                                     {{ $store_transfer->reasons->pullout_reason }} 
                                 </td>
                             </tr>
-                            
-                            
-
                         </tbody>
                     </table>
                 </div>
@@ -95,7 +89,15 @@ table.table.table-bordered th {
                 <div class="table-responsive">
                     <table class="table table-bordered" id="st-store">
                         <tbody>
-                            
+                            <tr>
+                                <td>
+                                    <b>ST:</b>
+                                </td>
+                                <td>
+                                    {{ $store_transfer->document_number }}
+                                    <input type="hidden" name="st_number" id="st_number" value="{{ $store_transfer->document_number }}" >
+                                </td>
+                            </tr>
                             <tr>
                                 <td>
                                     <b>From:</b>
@@ -104,7 +106,6 @@ table.table.table-bordered th {
                                     {{ $store_transfer->storesfrom->store_name }} 
                                 </td>
                             </tr>
-
                             <tr>
                                 <td>
                                     <b>To:</b>
@@ -113,7 +114,6 @@ table.table.table-bordered th {
                                     {{ $store_transfer->storesto->store_name }} 
                                 </td>
                             </tr>
-
                         </tbody>
                     </table>
                 </div>
@@ -173,10 +173,22 @@ table.table.table-bordered th {
                 </div>
             </div>
             
-            <div class="col-md-12">
-                <h4><b>Note:</b></h4>
-                <p>{{ $store_transfer->memo }}</p>
-            </div>
+            @if(!empty($store_transfer->memo))
+                <div class="col-md-12">
+                    <table class="table table-bordered" id="st-header">
+                        <tbody>
+                            <tr>
+                                <td style="width: 10%">
+                                    <b>Note:</b>
+                                </td>
+                                <td>
+                                    <p style="padding:10px 15; align-items:center">{{ $store_transfer->memo }}</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            @endif
 
         </div>
 

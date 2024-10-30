@@ -33,7 +33,7 @@ table.table.table-bordered th {
 
     <div class='panel panel-default'>
         <div class='panel-heading'>  
-        <h3 class="box-title text-center"><b>Create Do Stock Transfer</b></h3>
+        <h3 class="box-title text-center"><b>Stock Transfer - Create DO</b></h3>
         </div>
 
         <div class='panel-body'>
@@ -41,7 +41,7 @@ table.table.table-bordered th {
             <input type="hidden" name="_token" id="token" value="{{csrf_token()}}" >
             <input type="hidden" name="transport_type" id="transport_type" value="{{$store_transfer->transport_types_id}}" >
                 <input type="hidden" name="header_id" id="header_id" value="{{$store_transfer->id}}" >
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="table-responsive">
                     <table class="table table-bordered" id="st-header">
                         <tbody>
@@ -54,7 +54,40 @@ table.table.table-bordered th {
                                     <input type="hidden" name="st_number" id="st_number" value="{{$stock_transfer->document_number}}" >
                                 </td>
                             </tr>
-                            
+                            <tr>
+                                <td width="30%"><b>Approved By:</b></td>
+                                <td>{{ $store_transfer->approvedBy->name }} / {{ $store_transfer->approved_at != null ? date('Y-m-d',strtotime($store_transfer->approved_at)) : "" }}</td>
+                                
+                            </tr>    
+                            <tr>
+                                <td>
+                                    <b>Reason:</b>
+                                </td>
+                                <td>
+                                    {{ $store_transfer->reasons->pullout_reason }} 
+                                </td>
+                            </tr>
+                           
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+            </div>
+
+            <div class="col-md-4">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="st-header">
+                        <tbody>
+                            <tr>
+                                <td style="width: 30%">
+                                    <b>Transport By:</b>
+                                </td>
+                                <td>
+                                    {{ $store_transfer->transportTypes->transport_type }} @if(!empty($store_transfer->hand_carrier)) : {{ $store_transfer->hand_carrier }} @endif
+                                </td>
+                            </tr>
                             <tr>
                                 <td style="width: 30%">
                                     <b>From:</b>
@@ -71,27 +104,7 @@ table.table.table-bordered th {
                                 <td>
                                     {{ $store_transfer->storesTo->store_name }} 
                                 </td>
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <b>Reason:</b>
-                                </td>
-                                <td>
-                                    {{ $store_transfer->reasons->pullout_reason }} 
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td style="width: 30%">
-                                    <b>Input DO#:</b>
-                                </td>
-                                <td>
-                                    <input type='input' name='do_number' id="do_number" autocomplete="off" class='form-control' placeholder="Input DO#"/>
-                                    
-                                </td>
-                            </tr>
-
+                            </tr>         
                         </tbody>
                     </table>
                 </div>
@@ -100,7 +113,24 @@ table.table.table-bordered th {
             <br>
 
             <div class="col-md-12">
-                <strong style="color: red">Note: </strong><strong>Please create a Dispatch Order in your ETP Store Operations Module in the POS.</strong>
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="st-header">
+                        <tbody>
+                            <p><strong style="color: red">Note: </strong><strong>Please create a Dispatch Order in your ETP Store Operations Module in the POS.</strong></p>
+                            <tr>
+                                <td style="width: 10%">
+                                    <b>Input DO#:</b>
+                                </td>
+                                <td>
+                                    <input type='input' name='do_number' id="do_number" autocomplete="off" class='form-control' placeholder="Input DO#"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-md-12">
                 <div class="box-header text-center">
                     <h3 class="box-title"><b>Stock Transfer Items</b></h3>
                 </div>
@@ -152,10 +182,22 @@ table.table.table-bordered th {
                 </div>
             </div>
             
-             <div class="col-md-12">
-                <h4><b>Note:</b></h4>
-                <p>{{ $stock_transfer->memo }}</p>
-            </div>
+            @if(!empty($store_transfer->memo))
+                <div class="col-md-12">
+                    <table class="table table-bordered" id="st-header">
+                        <tbody>
+                            <tr>
+                                <td style="width: 10%">
+                                    <b>Note:</b>
+                                </td>
+                                <td>
+                                    <p style="padding:10px 15; align-items:center">{{ $store_transfer->memo }}</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            @endif
 
             </div>
 

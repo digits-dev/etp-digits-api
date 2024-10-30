@@ -88,7 +88,13 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 			];
 		}
 
-		$this->addaction[] = ['title' => 'Print', 'url' => CRUDBooster::mainpath('print') . '/[id]', 'icon' => 'fa fa-print', 'color' => 'info'];
+		$this->addaction[] = [
+			'title' => 'Print', 
+			'url' => CRUDBooster::mainpath('print') . '/[id]',
+			'icon' => 'fa fa-print',
+			'color' => 'info',
+			'showIf' => "[status] != " . OrderStatus::REJECTED . " && [status] != " . OrderStatus::VOID
+		];
 
 		if (in_array(CRUDBooster::myPrivilegeId(), self::SCHEDULER)) {
 			$this->addaction[] = [
@@ -336,7 +342,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		}
 
 		$data = [];
-		$data['page_title'] = "Stock Transfer Create Do";
+		$data['page_title'] = "Stock Transfer -  Create DO";
 		$data['store_transfer'] = StoreTransfer::with(['transportTypes', 'reasons', 'lines', 'statuses', 'storesfrom', 'storesto', 'lines.serials', 'lines.item'])->find($id);
 		$data['action_url'] = route('saveCreateDoNo');
 		return view('store-transfer.create-do-no', $data);

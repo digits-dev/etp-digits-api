@@ -34,7 +34,6 @@ use App\Models\StoreTransfer;
 			$this->col = [];
 			$this->col[] = ["label" => "Reference #", "name" => "ref_number"];
 			$this->col[] = ["label"=>"ST #","name"=>"document_number"];
-			$this->col[] = ["label" => "Received ST#", "name" => "received_document_number"];
 			$this->col[] = ["label"=>"From WH","name"=>"wh_from","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
 			$this->col[] = ["label"=>"To WH","name"=>"wh_to","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
 			$this->col[] = ["label"=>"Status","name"=>"status","join"=>"order_statuses,style"];
@@ -86,7 +85,7 @@ use App\Models\StoreTransfer;
             }
 			
             $data = [];
-            $data['page_title'] = "Stock Transfer Approval";
+            $data['page_title'] = "Store Transfer Approval";
 			$data['store_transfer'] = StoreTransfer::with(['transportTypes','reasons','lines', 'storesFrom', 'storesTo' ,'lines.serials', 'lines.item'])->find($id);
 
 			return view('store-transfer.approval', $data);
@@ -95,6 +94,7 @@ use App\Models\StoreTransfer;
 		public function saveReviewST(Request $request) {
 			$date = date('Y-m-d H:i:s');
 			$user = CRUDBooster::myId();
+
 			if($request->approval_action  == 1){
 				StoreTransfer::where('id',$request->header_id)->update([
 					'status' =>  OrderStatus::CREATEINPOS,

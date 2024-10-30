@@ -76,13 +76,13 @@ table.table.table-bordered th {
                             @if(!is_null($store_transfer->approved_by) || !empty($store_transfer->approved_by))
                                 <tr>
                                     <td width="30%"><b>Approved By:</b></td>
-                                    <td>{{ $store_transfer->approvedBy->name }} / {{ $store_transfer->approved_at != null ? date('M d, Y',strtotime($store_transfer->approved_at)) : "" }}</td>
+                                    <td>{{ $store_transfer->approvedBy->name }} / {{ $store_transfer->approved_at != null ? date('Y-m-d',strtotime($store_transfer->approved_at)) : "" }}</td>
                                     
                                 </tr>
                             @elseif(!is_null($store_transfer->rejected_by) || !empty($store_transfer->rejected_by))
                                 <tr>
                                     <td width="30%"><b>Rejected By:</b></td>
-                                    <td>{{ $store_transfer->rejectedBy->name }} / {{ $store_transfer->rejected_at != null ? date('M d, Y',strtotime($store_transfer->rejected_at)) : "" }}</td>
+                                    <td>{{ $store_transfer->rejectedBy->name }} / {{ $store_transfer->rejected_at != null ? date('Y-m-d',strtotime($store_transfer->rejected_at)) : "" }}</td>
                                         
                                 </tr>
                             @endif
@@ -184,11 +184,22 @@ table.table.table-bordered th {
                 </div>
             </div>
             
-            <div class="col-md-12">
-                <h4><b>Note:</b></h4>
-                <p>{{ $store_transfer->memo }}</p>
-            </div>
-
+            @if(!empty($store_transfer->memo))
+                <div class="col-md-12">
+                    <table class="table table-bordered" id="st-header">
+                        <tbody>
+                            <tr>
+                                <td style="width: 10%">
+                                    <b>Note:</b>
+                                </td>
+                                <td>
+                                    <p style="padding:10px 15; align-items:center">{{ $store_transfer->memo }}</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            @endif
         </div>
 
         <div class='panel-footer'>
