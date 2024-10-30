@@ -2,14 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\ExportStsWithoutSerial;
 use App\Exports\ExportStsWithSerial;
-use Session;
-use DB;
-use CRUDBooster;
 use App\Models\StoreTransfer;
-use App\Models\StoreTransferLine;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
 class AdminStsHistoryController extends \crocodicstudio\crudbooster\controllers\CBController
 {
@@ -18,9 +16,9 @@ class AdminStsHistoryController extends \crocodicstudio\crudbooster\controllers\
 	{
 
 		# START CONFIGURATION DO NOT REMOVE THIS LINE
-		$this->title_field = "id";
+		$this->title_field = "ref_number";
 		$this->limit = "20";
-		$this->orderby = "id,desc";
+		$this->orderby = "ref_number,desc";
 		$this->global_privilege = false;
 		$this->button_table_action = true;
 		$this->button_bulk_action = true;
@@ -60,18 +58,23 @@ class AdminStsHistoryController extends \crocodicstudio\crudbooster\controllers\
 	public function hook_query_index(&$query)
 	{
 		if (!CRUDBooster::isSuperadmin()) {
+			$query->where('store_transfers.created_by', CRUDBooster::myId());
 		}
 	}
 
 	public function getDetail($id)
 	{
-		if (!CRUDBooster::isRead() && $this->global_privilege == FALSE || $this->button_detail == FALSE) {
+		if (!CRUDBooster::isRead() && !$this->global_privilege || !$this->button_detail) {
 			CRUDBooster::redirect(CRUDBooster::adminPath(), trans("crudbooster.denied_access"));
 		}
 
 		$data = [];
-		$data['page_title'] = "Stock Transfer Details ";
-		$data['store_transfer'] = StoreTransfer::with(['transportTypes', 'approvedBy', 'rejectedBy', 'reasons', 'lines', 'statuses', 'scheduledBy', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
+		$data['page_title'] = "Stock Transfer Details";
+		$data['store_transfer'] = StoreTransfer::with([
+			'transportTypes', 'approvedBy', 
+			'rejectedBy', 'reasons', 'lines', 
+			'statuses', 'scheduledBy', 'storesFrom', 
+			'storesTo', 'lines.serials', 'lines.item'])->find($id);
 
 		return view('store-transfer.detail', $data);
 	}
@@ -79,13 +82,12 @@ class AdminStsHistoryController extends \crocodicstudio\crudbooster\controllers\
 	public function exportWithSerial(Request $request)
 	{
 		$filter_column = $request->get('filter_column');
-		return Excel::download(new ExportStsWithSerial($filter_column), 'Export STS with Serial- ' . now()->format('Ymd h_i_sa') . '.xlsx');
+		return Excel::download(new ExportStsWithSerial($filter_column), 'Export STS with Serial- ' . now()->format('Ymdhis') . '.xlsx');
 	}
 
 	public function exportSts(Request $request)
 	{
 		$filter_column = $request->get('filter_column');
-
-		dd($filter_column);
+		return Excel::download(new ExportStsWithoutSerial($filter_column), 'Export STS without Serial- ' . now()->format('Ymdhis') . '.xlsx');
 	}
 }

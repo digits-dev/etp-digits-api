@@ -8,9 +8,8 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Illuminate\Support\Facades\DB;
-use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
-class ExportStsWithSerial implements FromCollection, WithHeadings, WithStyles
+class ExportStsWithoutSerial implements FromCollection, WithHeadings, WithStyles
 {
     protected $filterColumn;
 
@@ -30,7 +29,6 @@ class ExportStsWithSerial implements FromCollection, WithHeadings, WithStyles
             'SOURCE',
             'DESTINATION',
             'QTY',
-            'SERIAL #',
             'TRANSPORT BY',
             'SCHEDULED DATE/BY',
             'CREATED DATE',
@@ -40,8 +38,8 @@ class ExportStsWithSerial implements FromCollection, WithHeadings, WithStyles
 
     public function collection()
     {
-        $query = StoreTransfer::exportWithSerial();
-        $query->where('created_by', CRUDBooster::myId());
+        $query = StoreTransfer::export();
+
         // Apply filters
         if ($this->filterColumn) {
             foreach ((array) $this->filterColumn as $key => $fc) {
@@ -84,7 +82,6 @@ class ExportStsWithSerial implements FromCollection, WithHeadings, WithStyles
                 'SOURCE' => $storeTransfer->source ?? '',
                 'DESTINATION' => $storeTransfer->destination ?? '',
                 'QTY' => $storeTransfer->qty ?? '',
-                'SERIAL #' => $storeTransfer->serial_number ?: '',
                 'TRANSPORT BY' => $storeTransfer->transport_type ?? '',
                 'SCHEDULED DATE/BY' => !empty($storeTransfer->transfer_schedule_date) ? $storeTransfer->transfer_schedule_date .' / '. $storeTransfer->scheduler : $storeTransfer->transfer_date,
                 'CREATED DATE' => $storeTransfer->created_at,

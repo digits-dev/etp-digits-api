@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminCmsUsersController;
+use App\Http\Controllers\AdminPulloutHistoryController;
 use App\Http\Controllers\AdminReasonsController;
 use App\Http\Controllers\AdminStorePulloutsController;
 use App\Http\Controllers\AdminStwApprovalController;
@@ -118,6 +119,11 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
     Route::group(['prefix' => 'sts_history'], function(){
         Route::get('export-sts-with-serial',[AdminStsHistoryController::class,'exportWithSerial'])->name('export-sts-with-serial');
         Route::get('export-sts',[AdminStsHistoryController::class,'exportSts'])->name('export-sts');
+    });
+
+    Route::group(['prefix' => 'stw_str_history'], function(){
+        Route::get('export-stw-str-with-serial',[AdminPulloutHistoryController::class,'exportStwrWithSerial'])->name('export-stw-str-with-serial');
+        Route::get('export-stw-str',[AdminPulloutHistoryController::class,'exportStwr'])->name('export-stw-str');
     });
 });
 
