@@ -3,6 +3,8 @@
 
     @push('head')
         <link rel='stylesheet' href='<?php echo asset('vendor/crudbooster/assets/select2/dist/css/select2.min.css'); ?>' />
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        
         <style type="text/css">
             .select2-container--default .select2-selection--single {
                 border-radius: 0px !important
@@ -233,7 +235,6 @@
 @push('bottom')
     <script src='<?php echo asset('vendor/crudbooster/assets/select2/dist/js/select2.full.min.js'); ?>'></script>
     <script src='https://cdn.jsdelivr.net/gh/admsev/jquery-play-sound@master/jquery.playSound.js'></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         $(document).ready(function() {

@@ -3,6 +3,8 @@
 
     @push('head')
         <link rel='stylesheet' href='<?php echo asset('vendor/crudbooster/assets/select2/dist/css/select2.min.css'); ?>' />
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
         <style type="text/css">
             .select2-container--default .select2-selection--single {
                 border-radius: 0px !important
@@ -331,7 +333,6 @@
 @push('bottom')
     <script src='<?php echo asset('vendor/crudbooster/assets/select2/dist/js/select2.full.min.js'); ?>'></script>
     <script src='https://cdn.jsdelivr.net/gh/admsev/jquery-play-sound@master/jquery.playSound.js'></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         $(document).ready(function() {
@@ -418,11 +419,29 @@
 
                             if (existingRow.length) {
                                 const currentQty = parseInt(existingRow.find('input[name="qty[]"]').val()) || 0;
-                                existingRow.find('input[name="qty[]"]').val(currentQty + 1);
+                                const totalQty = $('#totalQuantity').val();
 
-                                if (row.has_serial == 1) {
-                                    currentSerialRow = existingRow;
-                                    $('#SerialModal').modal('show');
+                                if (totalQty < 100) {
+                                    playScanSound();
+                                    existingRow.find('input[name="qty[]"]').val(currentQty + 1);
+                                    
+                                    if (row.has_serial == 1) {
+                                        currentSerialRow = existingRow;
+                                        $('#SerialModal').modal('show');
+                                    }
+
+                                } else {
+                                    erroScanSound();
+                                    Swal.fire({
+                                        icon: "warning",
+                                        title: "Maximum Lines Exceeded",
+                                        text: "The total skus has reached the maximum limit of 100.",
+                                        confirmButtonText: "OK",
+                                        allowEscapeKey: false, 
+                                        allowOutsideClick: false, 
+                                        allowEnterKey: false
+
+                                    })
                                 }
                             } else {
                                 scannedDigitsCodes[digitsCode] = qty;
@@ -491,11 +510,29 @@
                 totalQty += qty;
             });
 
+            if (totalQty > 100) {
+                erroScanSound();
+                CancelSerial();
+
+                    Swal.fire({
+                        icon: "warning",
+                        title: "Maximum Lines Exceeded",
+                        text: "The total skus has reached the maximum limit of 100.",
+                        confirmButtonText: "OK",
+                        allowEscapeKey: false, 
+                        allowOutsideClick: false, 
+                        allowEnterKey: false
+                    });
+                
+                return; 
+            }
+
             if (updatedQtyInput) {
                 $(updatedQtyInput).css('background-color', 'yellow');
             }
 
             $('#totalQuantity').val(totalQty);
+            $('#sku_count').text(totalQty);
         }
 
         $('#createSerial').keypress(function(event) {
