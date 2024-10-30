@@ -243,12 +243,13 @@ input[type=number]::-webkit-outer-spin-button {
 
         $('#transport_type').change(function(){
             let transport_type = $('#transport_type').val();
-            if (transport_type == 2){
-                $('#hand_carriers').show();
-            }
-            else{
-                $('#hand_carriers').hide();
-            }
+            if (transport_type == 2) {
+                    $('#hand_carriers').show();
+                    $('#hand_carrier').prop('required',true);
+                } else {
+                    $('#hand_carriers').hide();
+                    $('#hand_carrier').prop('required',false);
+                }
  
         });
     })
@@ -512,7 +513,8 @@ input[type=number]::-webkit-outer-spin-button {
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, create it!'
+                    confirmButtonText: 'Yes, create it!',
+                    reverseButtons: true,
                 }).then((result) => {
                     if (result.isConfirmed) {
                         Swal.fire({
