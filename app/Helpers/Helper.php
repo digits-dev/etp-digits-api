@@ -20,6 +20,10 @@ class Helper
         return Session::get('approval_stores');
     }
 
+    public static function myPosWarehouse(){
+        return Session::get('pos_warehouse');
+    }
+
     public static function getTotalPendingList(){
         return self::getPendingSTR() + self::getPendingSTW() + self::getPendingSTS();
     }

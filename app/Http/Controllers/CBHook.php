@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CmsUser;
 use App\Models\ApprovalMatrix;
+use App\Models\StoreMaster;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -24,9 +25,11 @@ class CBHook extends Controller {
                 Session::flush();
                 return redirect()->route('getLogin')->with('message', 'The user does not exist!');
             }
+            $store = StoreMaster::where("id", $users->stores_id)->first();
 
             Session::put('store_id', $users->store_masters_id);
             Session::put('channel_id', $users->channels_id);
+            Session::put('pos_warehouse',$store->warehouse_code);
             $approvalMatrix = ApprovalMatrix::where('approval_matrix.cms_users_id', CRUDBooster::myId())->get();
 				
             $approval_array = array();
