@@ -208,7 +208,7 @@ input[type=number]::-webkit-outer-spin-button {
 </div>
 
 <!-- The Modal -->
-<div class="modal fade" id="SerialModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+<div class="modal fade" id="SerialModal" tabindex="-1" role="dialog" data-keyboard="false" data-backdrop="static">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header bg-primary">

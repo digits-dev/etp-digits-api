@@ -264,7 +264,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		}
 
 		$counter->increment('reference_number');
-		CRUDBooster::redirect(CRUDBooster::mainpath(), trans("STS created successfully!"), 'success');
+		CRUDBooster::redirect(CRUDBooster::mainpath(), "STW created successfully!", 'success');
 	}
 
 	public function createSTR()
@@ -412,7 +412,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			}
 		}
 		$counter->increment('reference_number');
-		CRUDBooster::redirect(CRUDBooster::mainpath(), trans("STR created successfully!"), 'success');
+		CRUDBooster::redirect(CRUDBooster::mainpath(),"STR created successfully!", 'success');
 	}
 
 

@@ -260,6 +260,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		$storeTransfer = StoreTransfer::firstOrCreate([
 			'ref_number' => $combined_ref,
 			'memo' => $validatedData['memo'],
+			'transfer_date' => now(),
 			'transaction_type' => 3, // STS
 			'wh_from' => $validatedData['transfer_from'],
 			'wh_to' => $validatedData['transfer_to'],
@@ -296,7 +297,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		}
 
 		$counter->increment('reference_number');
-		CRUDBooster::redirect(CRUDBooster::mainpath(), trans("STS created successfully!"), 'success');
+		CRUDBooster::redirect(CRUDBooster::mainpath(), "STS created successfully!", 'success');
 	}
 
 	public function voidSTS($id)
