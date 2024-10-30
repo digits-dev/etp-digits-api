@@ -40,7 +40,7 @@
 
     <div class='panel panel-default noselect' id='sts_form'>
         <div class='panel-heading'>
-            <h3 class="box-title text-center"><b>Stock Transfer Form</b></h3>
+            <h3 class="box-title text-center"><b>STOCK TRANSFER FORM</b></h3>
         </div>
 
         <div class='panel-body'>
