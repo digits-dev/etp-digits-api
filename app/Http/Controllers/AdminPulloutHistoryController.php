@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Exports\ExportStwStrWithoutSerial;
 use App\Exports\ExportStwStrWithSerial;
 use App\Models\StorePullout;
-use Session;
-use DB;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -47,10 +45,7 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 		$this->col[] = ["label" => "Transport Type", "name" => "transport_types_id", "join" => "transport_types,style"];
 		$this->col[] = ["label" => "Created Date", "name" => "created_at"];
 
-		# START FORM DO NOT REMOVE THIS LINE
 		$this->form = [];
-
-		# END FORM DO NOT REMOVE THIS LINE
 
 		$this->addaction = array();
 
@@ -65,18 +60,18 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 		//Your code here
 	}
 
-	
+
 	public function getDetail($id)
 	{
 
-		if (!CRUDBooster::isRead() && $this->global_privilege == FALSE || $this->button_detail == FALSE) {
+		if (!CRUDBooster::isRead() && !$this->global_privilege || !$this->button_detail) {
 			CRUDBooster::redirect(CRUDBooster::adminPath(), trans("crudbooster.denied_access"));
 		}
 
 		$data = [];
 		$data['page_title'] = "Pullout Details";
 		$data['store_pullout'] = StorePullout::with(['transportTypes', 'approvedBy', 'rejectedBy', 'scheduledBy', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
-		
+
 		return view('store-pullout.detail', $data);
 	}
 
