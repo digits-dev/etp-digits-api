@@ -8,6 +8,7 @@ use App\Http\Controllers\AdminStoreTransfersController;
 use App\Http\Controllers\AdminStrApprovalController;
 use App\Http\Controllers\AdminStsConfirmationController;
 use App\Http\Controllers\AdminStsApprovalController;
+use App\Http\Controllers\AdminStsHistoryController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\EtpController;
 use App\Http\Controllers\ItemMasterController;
@@ -89,7 +90,6 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
     Route::group(['prefix' => 'str_approval'], function(){
         Route::get('review/{id}',[AdminStrApprovalController::class,'getApproval'])->name('pullout-approval.review');
         Route::post('save-stw-review',[AdminStrApprovalController::class,'saveReviewPullout'])->name('saveReviewStw');        Route::post('post-strma-pullout', [AdminStorePulloutsController::class,'postStRmaPullout'])->name('post-strma-pullout');
-
     });
 
     Route::group(['prefix' => 'sts_confirmation'], function(){
@@ -113,6 +113,11 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::get('print/{id}', [AdminStoreTransfersController::class, 'printSTS'])->name('printSTS');
         Route::get('create-do-no/{id}', [AdminStoreTransfersController::class, 'getCreateDoNo'])->name('showCreateDoNo');  
         Route::post('save-create-do-no',[AdminStoreTransfersController::class, 'saveCreateDoNo'])->name('saveCreateDoNo');
+    });
+
+    Route::group(['prefix' => 'sts_history'], function(){
+        Route::get('export-sts-with-serial',[AdminStsHistoryController::class,'exportWithSerial'])->name('export-sts-with-serial');
+        Route::get('export-sts',[AdminStsHistoryController::class,'exportSts'])->name('export-sts');
     });
 });
 
