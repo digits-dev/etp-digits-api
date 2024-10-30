@@ -59,7 +59,6 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		$this->col = [];
 		$this->col[] = ["label" => "Reference #", "name" => "ref_number"];
 		$this->col[] = ["label" => "ST#", "name" => "document_number"];
-		$this->col[] = ["label" => "Received ST#", "name" => "received_document_number"];
 		$this->col[] = ["label" => "From WH", "name" => "wh_from", "join" => "store_masters,store_name", "join_id" => "warehouse_code"];
 		$this->col[] = ["label" => "To WH", "name" => "wh_to", "join" => "store_masters,store_name", "join_id" => "warehouse_code"];
 		$this->col[] = ["label" => "Status", "name" => "status", "join" => "order_statuses,style"];

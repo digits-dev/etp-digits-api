@@ -94,10 +94,25 @@ tfoot { display:table-footer-group }
                         <tbody>
                             <tr>
                                 <td width="15%">
-                                    <b>ST:</b>
+                                    <b>ST #:</b>
                                 </td>
                                 <td width="35%">
                                     {{ $store_transfer->document_number }}
+                                </td>
+                                <td width="15%">
+                                    <b>Reference #:</b>
+                                </td>
+                                <td width="35%">
+                                    {{ $store_transfer->ref_number }}
+                                </td>
+                                
+                            </tr>
+                            <tr>
+                                <td width="15%">
+                                    <b>Scheduled:</b>
+                                </td>
+                                <td>
+                                    @if(!empty($store_transfer->transfer_schedule_date)) {{ $store_transfer->transfer_schedule_date }} / {{ $store_transfer->scheduledBy->name }} @else {{ $store_transfer->transfer_date }} @endif 
                                 </td>
                                 <td>
                                     <b>From:</b>
@@ -105,14 +120,14 @@ tfoot { display:table-footer-group }
                                 <td>
                                     {{ $store_transfer->storesFrom->store_name }} 
                                 </td>
+                                
                             </tr>
                             <tr>
                                 <td width="15%">
-                                    <b>Scheduled:</b>
+                                    <b>Transport By:</b>
                                 </td>
-                                <td width="35%">
-                                    @if(!empty($store_transfer->transfer_schedule_date)) {{ $store_transfer->transfer_schedule_date }} / {{ $store_transfer->scheduledBy->name }} @else {{ $store_transfer->transfer_date }} @endif 
-
+                                <td>
+                                    {{ $store_transfer->transportTypes->transport_type }} @if(!empty($store_transfer->hand_carrier)) : {{ $store_transfer->hand_carrier }} @endif
                                 </td>
                                 <td>
                                     <b>To:</b>
@@ -120,13 +135,15 @@ tfoot { display:table-footer-group }
                                 <td>
                                     {{ $store_transfer->storesTo->store_name }} 
                                 </td>
+                                
                             </tr>
+                            
                             <tr>
                                 <td width="15%">
-                                    <b>Transport By:</b>
+                                    <b>Notes:</b>
                                 </td>
-                                <td width="35%">
-                                    {{ $store_transfer->transportTypes->transport_type }} @if(!empty($store_transfer->hand_carrier)) : {{ $store_transfer->hand_carrier }} @endif
+                                <td>
+                                    {{ $store_transfer->memo }}
                                 </td>
                                 <td>
                                     <b>Reason:</b>
@@ -134,16 +151,6 @@ tfoot { display:table-footer-group }
                                 <td>
                                     {{ $store_transfer->reasons->pullout_reason }} 
                                 </td>
-                            </tr>
-                            
-                            <tr>
-                                <td width="15%">
-                                    <b>Notes:</b>
-                                </td>
-                                <td colspan="3">
-                                    {{ $store_transfer->memo }}
-                                </td>
-                                
                             </tr>
                         </tbody>
                     </table>

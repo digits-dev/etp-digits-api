@@ -51,18 +51,18 @@ table.table.table-bordered th {
                         <tbody>
                             <tr>
                                 <td style="width: 30%">
-                                    <b>ST:</b>
+                                    <b>Reference #:</b>
                                 </td>
                                 <td>
-                                    {{ $store_transfer->document_number }}
+                                    {{ $store_transfer->ref_number }}
                                 </td>
                             </tr>
                             <tr>
                                 <td style="width: 30%">
-                                    <b>Received ST:</b>
+                                    <b>ST #:</b>
                                 </td>
                                 <td>
-                                    {{ $store_transfer->received_document_number }}
+                                    {{ $store_transfer->document_number }}
                                 </td>
                             </tr>
                             <tr>
