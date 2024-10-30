@@ -84,24 +84,7 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
         ->leftJoin('store_pullout_lines', 'store_pullouts.id', '=', 'store_pullout_lines.store_pullouts_id')
         ->leftJoin('items', 'store_pullout_lines.item_code', '=', 'items.digits_code')
         ->leftJoin('cms_users', 'store_pullouts.scheduled_by', '=', 'cms_users.id')
-        ->groupBy(
-            'store_pullouts.id',
-            'store_pullouts.document_number',
-            'store_pullouts.sor_mor_number',
-            'reasons.pullout_reason',
-            'transport_types.transport_type',
-            'stores_from.store_name',
-            'stores_to.store_name',
-            'order_statuses.order_status',
-            'items.digits_code',
-            'items.upc_code',
-            'items.item_description',
-            'cms_users.name',
-            'store_pullouts.pullout_date',
-            'store_pullouts.pullout_schedule_date',
-            'store_pullout_lines.qty',
-            'store_pullout_lines.problem_details' 
-        );    
+        ;    
 
         // Apply filters
         if ($this->filterColumn) {

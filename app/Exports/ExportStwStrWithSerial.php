@@ -63,8 +63,8 @@ class ExportStwStrWithSerial implements FromCollection, WithHeadings, WithStyles
             'transport_types.transport_type',
             'stores_from.store_name AS source',
             'stores_to.store_name AS destination',
-            'store_pullout_lines.qty',
-            DB::raw('GROUP_CONCAT(serial_numbers.serial_number) AS serial_numbers'),
+              DB::raw('1 AS qty'),
+            'serial_numbers.serial_number',
             'order_statuses.order_status',
             'items.digits_code',
             'items.upc_code',
@@ -87,25 +87,7 @@ class ExportStwStrWithSerial implements FromCollection, WithHeadings, WithStyles
         ->leftJoin('store_pullout_lines', 'store_pullouts.id', '=', 'store_pullout_lines.store_pullouts_id')
         ->leftJoin('items', 'store_pullout_lines.item_code', '=', 'items.digits_code')
         ->leftJoin('serial_numbers', 'store_pullout_lines.id', '=', 'serial_numbers.store_pullout_lines_id')
-        ->leftJoin('cms_users', 'store_pullouts.scheduled_by', '=', 'cms_users.id')
-        ->groupBy(
-            'store_pullouts.id',
-            'store_pullouts.document_number',
-            'store_pullouts.sor_mor_number',
-            'reasons.pullout_reason',
-            'transport_types.transport_type',
-            'stores_from.store_name',
-            'stores_to.store_name',
-            'order_statuses.order_status',
-            'items.digits_code',
-            'items.upc_code',
-            'items.item_description',
-            'cms_users.name',
-            'store_pullouts.pullout_date',
-            'store_pullouts.pullout_schedule_date',
-            'store_pullout_lines.qty',
-            'store_pullout_lines.problem_details' 
-        );    
+        ->leftJoin('cms_users', 'store_pullouts.scheduled_by', '=', 'cms_users.id');    
 
         // Apply filters
         if ($this->filterColumn) {
