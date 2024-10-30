@@ -161,7 +161,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 		if (CRUDBooster::isSuperadmin()) {
 		 
-			$data['transfer_from'] = Cache::remember('transfer_from_if' . CRUDBooster::myStore(), 36000, function () {
+			$data['transfer_from'] = Cache::remember('transfer_from_if' . Helper::myStore(), 36000, function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
@@ -171,9 +171,9 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		
 		} else {
 
-			$data['transfer_from'] = Cache::remember('transfer_from_else' . CRUDBooster::myStore(), 36000, function () {
+			$data['transfer_from'] = Cache::remember('transfer_from_else' . Helper::myStore(), 36000, function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
-				->whereIn('id', [CRUDBooster::myStore()])
+				->whereIn('id', [Helper::myStore()])
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
@@ -181,16 +181,16 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 			});
 		}
 
-		$data['transfer_to'] = Cache::remember('sts_transfer_to' . CRUDBooster::myStore(), 36000, function () {
+		$data['transfer_to'] = Cache::remember('sts_transfer_to' . Helper::myStore(), 36000, function () {
 			return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
-				->whereNotIn('id', [CRUDBooster::myStore()])
+				->whereNotIn('id', [Helper::myStore()])
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 		});
 	
-		$data['reasons'] = Cache::remember('sts_reason' . CRUDBooster::myStore(), 36000, function () {
+		$data['reasons'] = Cache::remember('sts_reason' . Helper::myStore(), 36000, function () {
 			return Reason::select('id', 'pullout_reason')
 				->where('transaction_types_id', 4) // STS
 				->where('status', 'ACTIVE')

@@ -47,4 +47,12 @@ class Helper
             return StoreTransfer::confirmed()->whereIn('stores_id',self::myApprovalStore())->count();
         }
     }
+
+    public static function getConfimationSTS(){
+        if(CRUDBooster::isSuperAdmin()){
+            return StoreTransfer::ForConfirmation()->count();
+        }else{
+            return StoreTransfer::ForConfirmation()->where('stores_id_destination', self::myStore())->count();
+        }
+    }
 }
