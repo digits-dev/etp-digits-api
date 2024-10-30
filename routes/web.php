@@ -120,6 +120,7 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::post('get-approver', [AdminApprovalMatrixController::class, 'getApprovers'])->name('getApprovers');
         Route::post('get-stores', [AdminApprovalMatrixController::class, 'getStores'])->name('getStores');
         Route::post('add-approval-matrix', [AdminApprovalMatrixController::class, 'saveApprovalMatrix'])->name('add-approval-matrix');
+        Route::post('update-approval-matrix', [AdminApprovalMatrixController::class, 'updateApprovalMatrix'])->name('update-approval-matrix');
     });
 
     Route::group(['prefix' => 'sts_history'], function(){

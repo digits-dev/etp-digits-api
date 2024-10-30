@@ -23,8 +23,8 @@
 			$this->button_bulk_action = true;
 			$this->button_action_style = "button_icon";
 			$this->button_add = false;
-			$this->button_edit = true;
-			$this->button_delete = true;
+			$this->button_edit = false;
+			$this->button_delete = false;
 			$this->button_detail = true;
 			$this->button_show = true;
 			$this->button_filter = true;
@@ -48,20 +48,22 @@
 
 			# START FORM DO NOT REMOVE THIS LINE
 			$this->form = [];
-			$this->form[] = ['label'=>'Privilege Name','name'=>'id_cms_privileges','type'=>'select','validation'=>'required|integer|min:0','width'=>'col-sm-5','datatable'=>'cms_privileges,name','datatable_where'=>"id in (5,28)"];
+			$this->form[] = ['label'=>'Privilege Name','name'=>'id_cms_privileges','type'=>'select','validation'=>'required|integer|min:0','width'=>'col-sm-5','datatable'=>'cms_privileges,name','datatable_where'=>"id in (6)"];
 			$this->form[] = ['label'=>'Approver Name','name'=>'cms_users_id','type'=>'select','validation'=>'required|integer|min:0','width'=>'col-sm-5','datatable'=>'cms_users,name','parent_select'=>'id_cms_privileges'];
 			$this->form[] = ['label'=>'Channel','name'=>'channel_id','type'=>'select','validation'=>'required|integer|min:0','width'=>'col-sm-5','datatable'=>'channels,channel_description'];
 			
 			if(CRUDBooster::getCurrentMethod() == 'getEdit' || CRUDBooster::getCurrentMethod() == 'postEditSave' || CRUDBooster::getCurrentMethod() == 'getDetail'){
 				$this->form[] = ['label'=>'Status','name'=>'status','type'=>'select','validation'=>'required','width'=>'col-sm-5','dataenum'=>'ACTIVE;INACTIVE'];
 			}	
-			$this->form[] = ['label'=>'Store List','name'=>'store_list','type'=>'select2-multi','validation'=>'required','width'=>'col-sm-5','datatable'=>'store_masters,bea_so_store_name','datatable_where'=>"status='ACTIVE'",'parent_select'=>'channels_id'];
+			$this->form[] = ['label'=>'Store List','name'=>'store_list','type'=>'check-box','validation'=>'required','width'=>'col-sm-5','datatable'=>'store_masters,bea_so_store_name','datatable_where'=>"status=%27ACTIVE%27",'parent_select'=>'channels_id'];
 			$this->form[] = ['label'=>'Viewable Channel Orders','name'=>'channels_visibility','type'=>'checkbox','width'=>'col-sm-5','dataenum'=>'1|RETAIL;2|FRANCHISE;3|DISTRIBUTION;4|ONLINE'];
 			# END FORM DO NOT REMOVE THIS LINE
 
 			
 	        $this->addaction = array();
-
+			if(CRUDBooster::isUpdate()) {
+				$this->addaction[] = ['title'=>'Edit','url'=>CRUDBooster::mainpath('edit/[id]'),'icon'=>'fa fa-edit', 'color'=>'success'];
+			}
 	        $this->index_button = array();
 			if(CRUDBooster::getCurrentMethod() == 'getIndex'){
 				$this->index_button[] = [
@@ -73,8 +75,6 @@
 			}
 	    }
 
-
-	   
 	    public function hook_query_index(&$query) {
 	        //Your code here
 	            
@@ -156,6 +156,16 @@
 			return view('approval-matrix.create-approval-matrix', $data);
 		}
 
+		public function getEdit($id){
+			if (!CRUDBooster::isRead() && $this->global_privilege == FALSE || $this->button_detail == FALSE) {
+				CRUDBooster::redirect(CRUDBooster::adminPath(), trans("crudbooster.denied_access"));
+			}
+			$data['approval_matrix'] = ApprovalMatrix::find($id);
+			$data['privileges'] = CmsPrivilege::whereIn('id',[CmsPrivilege::APPROVER])->get();
+			$data['channels'] = Channel::whereIn('channel_name', ['RETAIL', 'FRANCHISE'])->active()->get();
+			return view('approval-matrix.edit-approval-matrix', $data);
+		}
+
 		public function getApprovers(Request $request){
 			$privilege = $request['privilege_id'];
 			// Set a cache key based on the privilege ID
@@ -213,6 +223,28 @@
 				CRUDBooster::redirect(CRUDBooster::mainpath(), 'Approver already created!', 'danger')->send();
 			}
 			CRUDBooster::redirect(CRUDBooster::mainpath(), 'Created successfully!', 'success')->send();
+		}
+
+		public function updateApprovalMatrix(Request $request){
+			$stores = $request['store_ids'];
+			$channel = $request['channels_id'];
+			$approver = $request['approver_id'];
+			$storeData = [];
+			$storeList = json_encode($stores, true);
+			$storeArray = explode(",", $storeList);
+			
+			foreach ($storeArray as $key => $value) {
+				$storeData[$key] = preg_replace("/[^0-9]/","",$value);
+			}
+			ApprovalMatrix::where('id',$request['approval_matrix_id'])
+			->update([
+				'cms_privileges_id' => $request['privilege'],
+				'cms_users_id' => $approver,
+				'channel_id' => $channel,
+				'store_list' => implode(",", $storeData),
+				'updated_at' => date('Y-m-d h:i:s')
+			]);
+			CRUDBooster::redirect(CRUDBooster::mainpath(), 'Updated successfully!', 'success')->send();
 		}
 
 		public function storeListing($ids) {
