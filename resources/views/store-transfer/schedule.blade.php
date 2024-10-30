@@ -33,14 +33,15 @@ table.table.table-bordered th {
 
     <div class='panel panel-default'>
         <div class='panel-heading'>  
-        <h3 class="box-title text-center"><b>SCHEDULE STOCK TRANSFER</b></h3>
+        <h3 class="box-title text-center"><b>STOCK TRANSFER - SCHEDULE</b></h3>
         </div>
 
         <div class='panel-body'>
             <form action="{{ route('saveScheduleTransfer') }}" method="POST" id="schedule_st" autocomplete="off" role="form" enctype="multipart/form-data">
                 <input type="hidden" name="_token" id="token" value="{{csrf_token()}}" >
                 <input type="hidden" name="transport_type" id="transport_type" value="{{$store_transfer->transport_types_id}}" >
-                    <input type="hidden" name="header_id" id="header_id" value="{{$store_transfer->id}}" >
+                <input type="hidden" name="header_id" id="header_id" value="{{$store_transfer->id}}" >
+
                     <div class="col-md-4">
                         <div class="table-responsive">
                             <table class="table table-bordered" id="st-header">

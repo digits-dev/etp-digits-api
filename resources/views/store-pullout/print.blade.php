@@ -94,10 +94,10 @@ tfoot { display:table-footer-group }
                         <tbody>
                             <tr>
                                 <td width="15%">
-                                    <b>ST:</b>
+                                    <b>Reference #:</b>
                                 </td>
                                 <td width="35%">
-                                    {{$store_pullout->document_number}}
+                                    {{$store_pullout->ref_number}}
                                 </td>
                                 <td>
                                     <b>From:</b>
@@ -108,10 +108,10 @@ tfoot { display:table-footer-group }
                             </tr>
                             <tr>
                                 <td width="15%">
-                                    <b>Scheduled:</b>
+                                    <b>ST #:</b>
                                 </td>
                                 <td width="35%">
-                                    @if(!empty($store_pullout->pullout_schedule_date)) {{ $store_pullout->pullout_schedule_date }} / {{ $store_pullout->scheduledBy->name }} @else {{ $store_pullout->pullout_date }} @endif
+                                    {{$store_pullout->document_number}}
                                 </td>
                                 <td>
                                     <b>To:</b>
@@ -122,7 +122,7 @@ tfoot { display:table-footer-group }
                             </tr>
                             <tr>
                                 <td width="15%">
-                                    <b>SOR/MOR:</b>
+                                    <b>SOR/MOR #:</b>
                                 </td>
                                 <td width="35%">
                                     {{$store_pullout->sor_mor_number}} 
@@ -134,22 +134,39 @@ tfoot { display:table-footer-group }
                                     {{ $store_pullout->reasons->pullout_reason }} 
                                 </td>
                             </tr>
-
                             <tr>
                                 <td width="15%">
+                                    <b>Scheduled:</b>
+                                </td>
+                                <td width="35%">
+                                    @if(!empty($store_pullout->pullout_schedule_date)) {{ $store_pullout->pullout_schedule_date }} / {{ $store_pullout->scheduledBy->name }} @else {{ $store_pullout->pullout_date }} @endif
+                                </td>
+                            
+                                <td>
                                     <b>Transport By:</b>
                                 </td>
                                 <td>
                                     {{ $store_pullout->transportTypes->transport_type }} @if(!empty($store_pullout->hand_carrier)) : {{ $store_pullout->hand_carrier }} @endif
                                 </td>
+                                
+                            </tr>
                             
-                                <td>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="table-responsive print-data">
+                    <table class="table-bordered" id="st-header" style="width: 100%">
+                        <tbody>
+                            <tr>
+                                <td width="15%">
                                     <b>Notes:</b>
                                 </td>
                                 <td>
                                     {{ $store_pullout->memo }}
                                 </td>
-                                
                             </tr>
                         </tbody>
                     </table>
@@ -190,7 +207,19 @@ tfoot { display:table-footer-group }
                                         <td class="text-center">{{$lines->item->item_description}}</td>
                                         <td class="text-center">{{$lines->qty}}</td>
                                         @if($store_pullout->transaction_type == 2)
-                                        <td>{{$lines->problems}} - {{$lines->problem_details}} </td>
+                                            @php
+                                                $problems = explode(',', $lines->problems);
+                                                $problem_details = explode(',', $lines->problem_details);
+                                                $problem_pairs = array_map(null, $problems, $problem_details);
+                                            @endphp
+                                            <td>
+                                                @foreach ($problem_pairs as $pair)
+                                                    {{ trim($pair[0]) }} - {{ trim($pair[1]) }}
+                                                    @if (!$loop->last)
+                                                        <br>
+                                                    @endif
+                                                @endforeach
+                                            </td>
                                         @endif
                                         <td>
                                             @foreach ($lines->serials as $serial)

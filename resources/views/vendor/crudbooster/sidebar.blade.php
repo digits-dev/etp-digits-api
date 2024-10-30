@@ -40,7 +40,9 @@
                            class='{{($menu->color)?"text-".$menu->color:""}}'>
                             <i class='{{$menu->icon}} {{($menu->color)?"text-".$menu->color:""}}'></i> <span>{{$menu->name}}</span>
                             @if($menu->name == 'Approvals')
-                                <span class="badge badge-danger"> {{ App\Helpers\Helper::getTotalPendingList() }} </span>
+                                @if ( App\Helpers\Helper::getTotalPendingList() != 0)
+                                    <span class="badge badge-danger"> {{ App\Helpers\Helper::getTotalPendingList() }} </span>
+                                @endif
                             @endif
                             @if(!empty($menu->children))<i class="fa fa-angle-{{ cbLang("right") }} pull-{{ cbLang("right") }}"></i>@endif
                         </a>
@@ -48,16 +50,21 @@
                             <ul class="treeview-menu">
                                 @foreach($menu->children as $child)
                                     <li data-id='{{$child->id}}' class='{{(Request::is($child->url_path .= !Str::endsWith(Request::decodedPath(), $child->url_path) ? "/*" : ""))?"active":""}}'>
-                                        <a href='{{ ($child->is_broken)?"javascript:alert('".cbLang('controller_route_404')."')":$child->url}}'
+                                        <a  href='{{ ($child->is_broken)?"javascript:alert('".cbLang('controller_route_404')."')":$child->url}}'
                                            class='{{($child->color)?"text-".$child->color:""}}'>
                                             <i class='{{$child->icon}}'></i> <span>{{$child->name}}</span>
-
                                             @if ($child->name == 'STS Approval')
-                                                <span class="badge badge-danger"> {{ App\Helpers\Helper::getPendingSTS() }}</span>
+                                                @if ( App\Helpers\Helper::getPendingSTS() != 0)
+                                                    <span class="badge badge-danger"> {{ App\Helpers\Helper::getPendingSTS() }}</span>
+                                                @endif
                                             @elseif ($child->name == 'STW Approval')
-                                                <span class="badge badge-danger"> {{ App\Helpers\Helper::getPendingSTW() }}</span>
+                                                @if ( App\Helpers\Helper::getPendingSTW() != 0)
+                                                    <span class="badge badge-danger"> {{ App\Helpers\Helper::getPendingSTW() }}</span>
+                                                @endif 
                                             @elseif ($child->name == 'STR Approval')
-                                                <span class="badge badge-danger"> {{ App\Helpers\Helper::getPendingSTR() }}</span>
+                                                @if ( App\Helpers\Helper::getPendingSTR() != 0)
+                                                    <span class="badge badge-danger"> {{ App\Helpers\Helper::getPendingSTR() }}</span>
+                                                @endif 
                                             @endif
                                         </a>
                                     </li>

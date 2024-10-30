@@ -33,46 +33,40 @@ table.table.table-bordered th {
 
     <div class='panel panel-default'>
         <div class='panel-heading'>  
-        <h3 class="box-title text-center"><b>Schedule Stock Transfer</b></h3>
+        <h3 class="box-title text-center"><b>STOCK TRANSFER - SCHEDULE</b></h3>
         </div>
 
         <div class='panel-body'>
             <form action="{{ route('saveSchedulePullout') }}" method="POST" id="schedule_stw" autocomplete="off" role="form" enctype="multipart/form-data">
             <input type="hidden" name="_token" id="token" value="{{csrf_token()}}" >
             <input type="hidden" name="transport_type" id="transport_type" value="{{$store_pullout->transport_types_id}}" >
-                <input type="hidden" name="header_id" id="header_id" value="{{$store_pullout->id}}" >
+            <input type="hidden" name="header_id" id="header_id" value="{{$store_pullout->id}}" >
+
             <div class="col-md-4">
                 <div class="table-responsive">
                     <table class="table table-bordered" id="st-header">
                         <tbody>
                             <tr>
+                                <td style="width: 30%">
+                                    <b>Reference #:</b>
+                                </td>
                                 <td>
-                                    <b>ST:</b>
+                                    {{ $store_pullout->ref_number }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 30%">
+                                    <b>ST #:</b>
                                 </td>
                                 <td>
                                     {{ $store_pullout->document_number }}
-                                    <input type="hidden" name="st_number" id="st_number" value="{{$store_pullout->document_number}}" >
                                 </td>
                             </tr>
-                            
                             <tr>
-                                <td>
-                                    <b>From:</b>
-                                </td>
-                                <td>
-                                    {{ $store_pullout->storesFrom->store_name }} 
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td>
-                                    <b>To:</b>
-                                </td>
-                                <td>
-                                    {{ $store_pullout->storesTo->store_name }} 
-                                </td>
-                            </tr>
-                            
+                                <td width="30%"><b>Approved By:</b></td>
+                                <td>{{ $store_pullout->approvedBy->name }} / {{ $store_pullout->approved_at != null ? date('Y-m-d',strtotime($store_pullout->approved_at)) : "" }}</td>
+                                
+                            </tr>    
                             <tr>
                                 <td>
                                     <b>Reason:</b>
@@ -81,9 +75,58 @@ table.table.table-bordered th {
                                     {{ $store_pullout->reasons->pullout_reason }} 
                                 </td>
                             </tr>
+                        
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+            </div>
+
+            <div class="col-md-4">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="st-header">
+                        <tbody>
+                            <tr>
+                                <td style="width: 30%">
+                                    <b>Transport By:</b>
+                                </td>
+                                <td>
+                                    {{ $store_pullout->transportTypes->transport_type }} @if(!empty($store_pullout->hand_carrier)) : {{ $store_pullout->hand_carrier }} @endif
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 30%">
+                                    <b>From:</b>
+                                </td>
+                                <td>
+                                    {{ $store_pullout->storesFrom->store_name }} 
+                                </td>
+                            </tr>
 
                             <tr>
+                                <td style="width: 30%">
+                                    <b>To:</b>
+                                </td>
                                 <td>
+                                    {{ $store_pullout->storesTo->store_name }} 
+                                </td>
+                            </tr>         
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <br>
+
+            <div class="col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="st-header">
+                        <tbody>
+                            <p><strong style="color: red">Note: </strong><strong>Please add Schedule Date.</strong></p>
+                            <tr>
+                                <td style="width: 13%">
                                     <b>Schedule Date:</b>
                                 </td>
                                 <td>
@@ -91,13 +134,10 @@ table.table.table-bordered th {
                                     
                                 </td>
                             </tr>
-
                         </tbody>
                     </table>
                 </div>
             </div>
-
-            <br>
 
             <div class="col-md-12">
                 <div class="box-header text-center">
@@ -151,10 +191,22 @@ table.table.table-bordered th {
                 </div>
             </div>
             
-             <div class="col-md-12">
-                <h4><b>Note:</b></h4>
-                <p>{{ $store_pullout->memo }}</p>
-            </div>
+            @if(!empty($store_pullout->memo))
+                <div class="col-md-12">
+                    <table class="table table-bordered" id="st-header">
+                        <tbody>
+                            <tr>
+                                <td style="width: 10%">
+                                    <b>Note:</b>
+                                </td>
+                                <td>
+                                    <p style="padding:10px 15; align-items:center">{{ $store_pullout->memo }}</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            @endif
 
             </div>
 

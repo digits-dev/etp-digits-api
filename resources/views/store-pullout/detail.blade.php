@@ -40,7 +40,7 @@ table.table.table-bordered th {
 
     <div class='panel panel-default'>
         <div class='panel-heading'>  
-        <h3 class="box-title text-center"><b>Pullout Details</b></h3>
+        <h3 class="box-title text-center"><b>PULLOUT DETAILS</b></h3>
         </div>
 
         <div class='panel-body' id="pullout-details">
@@ -49,6 +49,14 @@ table.table.table-bordered th {
                 <div class="table-responsive">
                     <table class="table table-bordered" id="st-header-1">
                         <tbody>
+                            <tr>
+                                <td style="width: 30%">
+                                    <b>Reference #:</b>
+                                </td>
+                                <td>
+                                    {{ $store_pullout->ref_number }}
+                                </td>
+                            </tr>
                             <tr>
                                 <td style="width: 30%">
                                     <b>ST#:</b>
@@ -65,14 +73,25 @@ table.table.table-bordered th {
                                     {{ $store_pullout->sor_mor_number }}
                                 </td>
                             </tr>
-                            <tr>
-                                <td style="width: 30%">
-                                    <b>Received Date:</b>
-                                </td>
-                                <td>
-                                    {{ $store_pullout->received_st_date }}
-                                </td>
-                            </tr>
+                            @if(!empty($store_pullout->approved_at) || !empty($store_pullout->rejected_at))
+                                <tr>
+                                    <td style="width: 30%">
+                                        @if(!empty($store_pullout->approved_at))
+                                        <b>Approved Date:</b>
+                                        @elseif(!empty($store_pullout->rejected_at)) 
+                                        <b>Rejected Date:</b>
+                                        @endif
+                                        
+                                    </td>
+                                    <td>
+                                        @if(!empty($store_pullout->approved_at))
+                                            {{ $store_pullout->approved_at }} / {{ $store_pullout->approvedBy->name }} 
+                                        @elseif(!empty($store_pullout->rejected_at)) 
+                                            {{ $store_pullout->rejected_at }} / {{ $store_pullout->rejectedBy->name }} 
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endif
                             <tr>
                                 <td style="width: 30%">
                                     <b>Reason:</b>
@@ -102,25 +121,6 @@ table.table.table-bordered th {
                                     @if(!empty($store_pullout->pullout_schedule_date)) {{ $store_pullout->pullout_schedule_date }} / {{ $store_pullout->scheduledBy->name }} @else {{ $store_pullout->pullout_date }} @endif 
                                 </td>
                             </tr>
-                            @if(!empty($store_pullout->approved_at) || !empty($store_pullout->rejected_at))
-                            <tr>
-                                <td style="width: 30%">
-                                    @if(!empty($store_pullout->approved_at))
-                                    <b>Approved Date:</b>
-                                    @elseif(!empty($store_pullout->rejected_at)) 
-                                    <b>Rejected Date:</b>
-                                    @endif
-                                    
-                                </td>
-                                <td>
-                                    @if(!empty($store_pullout->approved_at))
-                                        {{ $store_pullout->approved_at }} / {{ $store_pullout->approvedBy->name }} 
-                                    @elseif(!empty($store_pullout->rejected_at)) 
-                                        {{ $store_pullout->rejected_at }} / {{ $store_pullout->rejectedBy->name }} 
-                                    @endif
-                                </td>
-                            </tr>
-                            @endif
                             <tr>
                                 <td style="width: 30%">
                                     <b>Transport By:</b>
@@ -220,7 +220,19 @@ table.table.table-bordered th {
                                                 <td class="text-center">{{$lines->item->upc_code}} </td>
                                                 <td class="text-center">{{$lines->item->brand}} </td>
                                                 <td>{{$lines->item->item_description}}</td>
-                                                <td class="text-center">{{$lines->problems}} - {{$lines->problem_details}}</td>
+                                                @php
+                                                    $problems = explode(',', $lines->problems);
+                                                    $problem_details = explode(',', $lines->problem_details);
+                                                    $problem_pairs = array_map(null, $problems, $problem_details);
+                                                @endphp
+                                                <td>
+                                                    @foreach ($problem_pairs as $pair)
+                                                        {{ trim($pair[0]) }} - {{ trim($pair[1]) }}
+                                                        @if (!$loop->last)
+                                                            <br>
+                                                        @endif
+                                                    @endforeach
+                                                </td>
                                                 <td class="text-center">{{$lines->qty}}</td>
                                                 <td>
                                                     @foreach ($lines->serials as $serial)
@@ -247,10 +259,22 @@ table.table.table-bordered th {
                 
             </div>
             
-            <div class="col-md-12">
-                <h4><b>Note:</b></h4>
-                <p>{{ $store_pullout->memo }}</p>
-            </div>
+            @if(!empty($store_pullout->memo))
+                <div class="col-md-12">
+                    <table class="table table-bordered" id="st-header">
+                        <tbody>
+                            <tr>
+                                <td style="width: 10%">
+                                    <b>Note:</b>
+                                </td>
+                                <td>
+                                    <p style="padding:10px 15; align-items:center">{{ $store_pullout->memo }}</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            @endif
 
         </div>
 

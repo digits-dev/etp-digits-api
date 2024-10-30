@@ -42,7 +42,7 @@ table.table.table-bordered th {
 
     <div class='panel panel-default'>
         <div class='panel-heading'>  
-        <h3 class="box-title text-center"><b>Review Pullout</b></h3>
+        <h3 class="box-title text-center"><b>REVIEW PULLOUT</b></h3>
         </div>
 
         <div class='panel-body'>
@@ -55,22 +55,38 @@ table.table.table-bordered th {
             <input type="hidden" name="reason_so" id="reason_so" value="{{$store_pullout->reason_so}}" >
             <input type="hidden" name="reason_mo" id="reason_mo" value="{{$store_pullout->reason_mo}}" >
             <input type="hidden" name="header_id" id="header_id" value="{{$store_pullout->id}}" >
+            <input type="hidden" name="ref_number" id="ref_number" value="{{$store_pullout->ref_number}}" >
 
             <div class="col-md-4">
                 <div class="table-responsive">
-                    <table class="table table-bordered" id="st-header">
+                    <table class="table table-bordered" id="st-header-1">
                         <tbody>
                             <tr>
-                                <td>
+                                <td style="width: 30%">
                                     <b>Reference #:</b>
                                 </td>
                                 <td>
                                     {{ $store_pullout->ref_number }}
                                 </td>
                             </tr>
-
                             <tr>
+                                <td style="width: 30%">
+                                    <b>ST#:</b>
+                                </td>
                                 <td>
+                                    {{ $store_pullout->document_number }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 30%">
+                                    <b>MOR/SOR #:</b>
+                                </td>
+                                <td>
+                                    {{ $store_pullout->sor_mor_number }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 30%">
                                     <b>Reason:</b>
                                 </td>
                                 <td>
@@ -78,34 +94,50 @@ table.table.table-bordered th {
                                 </td>
                             </tr>
 
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+            </div>
+
+            <div class="col-md-4">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="st-header-2">
+                        <tbody>
                             <tr>
+                                <td style="width: 30%">
+                                    <b>Pullout Date:</b>
+                                </td>
                                 <td>
+                                    @if(!empty($store_pullout->pullout_schedule_date)) {{ $store_pullout->pullout_schedule_date }} / {{ $store_pullout->scheduledBy->name }} @else {{ $store_pullout->pullout_date }} @endif 
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 30%">
                                     <b>Transport By:</b>
                                 </td>
                                 <td>
                                     {{ $store_pullout->transportTypes->transport_type }} @if(!empty($store_pullout->hand_carrier)) : {{ $store_pullout->hand_carrier }} @endif
                                 </td>
                             </tr>
-                            
                             <tr>
-                                <td>
+                                <td style="width: 30%">
                                     <b>From:</b>
                                 </td>
                                 <td>
                                     {{ $store_pullout->storesfrom->store_name }} 
-                                    <input type="hidden" name="transfer_from" id="transfer_from" value="{{$transfer_from->pos_warehouse}}" >
                                 </td>
                             </tr>
-
                             <tr>
-                                <td>
+                                <td style="width: 30%">
                                     <b>To:</b>
                                 </td>
                                 <td>
                                     {{ $store_pullout->storesto->store_name }} 
                                 </td>
                             </tr>
-                            
                         </tbody>
                     </table>
                 </div>
@@ -181,7 +213,19 @@ table.table.table-bordered th {
                                                 <td class="text-center">{{$lines->item->upc_code}} </td>
                                                 <td class="text-center">{{$lines->item->brand}} </td>
                                                 <td>{{$lines->item->item_description}}</td>
-                                                <td class="text-center">{{$lines->problems}} - {{$lines->problem_details}}</td>
+                                                @php
+                                                    $problems = explode(',', $lines->problems);
+                                                    $problem_details = explode(',', $lines->problem_details);
+                                                    $problem_pairs = array_map(null, $problems, $problem_details);
+                                                @endphp
+                                                <td>
+                                                    @foreach ($problem_pairs as $pair)
+                                                        {{ trim($pair[0]) }} - {{ trim($pair[1]) }}
+                                                        @if (!$loop->last)
+                                                            <br>
+                                                        @endif
+                                                    @endforeach
+                                                </td>
                                                 <td class="text-center">{{$lines->qty}}</td>
                                                 <td>
                                                     @foreach ($lines->serials as $serial)
@@ -208,10 +252,22 @@ table.table.table-bordered th {
                 
             </div>
 
-            <div class="col-md-12">
-                <h4><b>Note:</b></h4>
-                <p>{{ $store_pullout->memo }}</p>
-            </div>
+            @if(!empty($store_pullout->memo))
+                <div class="col-md-12">
+                    <table class="table table-bordered" id="st-header">
+                        <tbody>
+                            <tr>
+                                <td style="width: 10%">
+                                    <b>Note:</b>
+                                </td>
+                                <td>
+                                    <p style="padding:10px 15; align-items:center">{{ $store_pullout->memo }}</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            @endif
 
             </div>
 

@@ -40,7 +40,7 @@
 
     <div class="panel panel-default" id="pullout_form">
         <div class="panel-heading">
-            <h3 class="box-title text-center"><b>Pullout Form</b></h3>
+            <h3 class="box-title text-center"><b>PULLOUT FORM</b></h3>
         </div>
 
         <div class="panel-body">

@@ -77,8 +77,11 @@
         }
 
         .badge-danger {
-            background-color: #d9534f; /* Danger color */
+            background-color: #d9534f; 
             color: white;
+            position:absolute;
+            right: 35px;
+            
         }
 
         #box-header-module {

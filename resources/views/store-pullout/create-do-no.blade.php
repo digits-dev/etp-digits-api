@@ -33,15 +33,16 @@ table.table.table-bordered th {
 
     <div class='panel panel-default'>
         <div class='panel-heading'>  
-        <h3 class="box-title text-center"><b>Create Do Pullout</b></h3>
+        <h3 class="box-title text-center"><b>PULLOUT - CREATE DO</b></h3>
         </div>
 
         <div class='panel-body'>
             <form action="{{ $action_url }}" method="POST" id="create_do" autocomplete="off" role="form" enctype="multipart/form-data">
             <input type="hidden" name="_token" id="token" value="{{csrf_token()}}" >
             <input type="hidden" name="transport_type" id="transport_type" value="{{$store_pullout->transport_types_id}}" >
-                <input type="hidden" name="header_id" id="header_id" value="{{$store_pullout->id}}" >
-            <div class="col-md-6">
+            <input type="hidden" name="header_id" id="header_id" value="{{$store_pullout->id}}" >
+            
+            <div class="col-md-4">
                 <div class="table-responsive">
                     <table class="table table-bordered" id="st-header">
                         <tbody>
@@ -51,10 +52,42 @@ table.table.table-bordered th {
                                 </td>
                                 <td>
                                     {{ $store_pullout->ref_number }}
-                                    <input type="hidden" name="st_number" id="st_number" value="{{$stock_transfer->document_number}}" >
                                 </td>
                             </tr>
-                            
+                            <tr>
+                                <td width="30%"><b>Approved By:</b></td>
+                                <td>{{ $store_pullout->approvedBy->name }} / {{ $store_pullout->approved_at != null ? date('Y-m-d',strtotime($store_pullout->approved_at)) : "" }}</td>
+                                
+                            </tr>    
+                            <tr>
+                                <td>
+                                    <b>Reason:</b>
+                                </td>
+                                <td>
+                                    {{ $store_pullout->reasons->pullout_reason }} 
+                                </td>
+                            </tr>
+                        
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+            </div>
+
+            <div class="col-md-4">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="st-header">
+                        <tbody>
+                            <tr>
+                                <td style="width: 30%">
+                                    <b>Transport By:</b>
+                                </td>
+                                <td>
+                                    {{ $store_pullout->transportTypes->transport_type }} @if(!empty($store_pullout->hand_carrier)) : {{ $store_pullout->hand_carrier }} @endif
+                                </td>
+                            </tr>
                             <tr>
                                 <td style="width: 30%">
                                     <b>From:</b>
@@ -71,38 +104,33 @@ table.table.table-bordered th {
                                 <td>
                                     {{ $store_pullout->storesTo->store_name }} 
                                 </td>
-                            </tr>
-                            
-                            <tr>
-                                <td>
-                                    <b>Reason:</b>
-                                </td>
-                                <td>
-                                    {{ $store_pullout->reasons->pullout_reason }} 
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td style="width: 30%">
-                                    <b>Input DO#:</b>
-                                </td>
-                                <td>
-                                    <input type='input' name='do_number' id="do_number" autocomplete="off" class='form-control' placeholder="Input DO#"/>
-                                    
-                                </td>
-                            </tr>
-
+                            </tr>         
                         </tbody>
                     </table>
                 </div>
             </div>
-
         
             <br>
 
+            <div class="col-md-12">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="st-header">
+                        <tbody>
+                            <p><strong style="color: red">Note: </strong><strong>Please create a Dispatch Order in your ETP Store Operations Module in the POS.</strong></p>
+                            <tr>
+                                <td style="width: 10%">
+                                    <b>Input DO#:</b>
+                                </td>
+                                <td>
+                                    <input type='input' name='do_number' id="do_number" autocomplete="off" class='form-control' placeholder="Input DO#"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
            
             <div class="col-md-12">
-                <strong style="color: red">Note: </strong><strong>Please create a Dispatch Order in your ETP Store Operations Module in the POS.</strong>
                 <div class="box-header text-center">
                     <h3 class="box-title"><b>Stock Transfer Items</b></h3>
                 </div>
@@ -116,6 +144,9 @@ table.table.table-bordered th {
                                     <th width="15%" class="text-center">UPC Code</th>
                                     <th width="25%" class="text-center">Item Description</th>
                                     <th width="5%" class="text-center">Qty</th>
+                                    @if($store_pullout->transaction_type == 2)
+                                        <th width="15%" class="text-center">Problem</th>
+                                    @endif
                                     <th width="20%" class="text-center">Serial #</th>
                                 </tr>
                             </thead>
@@ -124,21 +155,29 @@ table.table.table-bordered th {
                                 @foreach ($store_pullout->lines as $lines)
                                     <tr>
                                         <td class="text-center">{{$lines->item_code }} <input type="hidden" name="digits_code[]" value="{{$lines->item_code}}"></td>
-                                        @if(is_null($store_pullout->location_id_from) || empty($store_pullout->location_id_from))
-                                            <td class="text-center">{{$lines->item->upc_code}} </td>
-                                        @endif
-                                        <td>{{$lines->item->item_description}}<input type="hidden" name="price[]" value="{{ $item['price'] }}"/>
-                                        </td>
-                                        <td class="text-center">{{$lines->qty}}<input type="hidden" name="st_quantity[]" id="stqty_{{ $item['digits_code'] }}" value="{{ $item['st_quantity'] }}"/>
-                                        </td>
-                                        @if(is_null($store_pullout->location_id_from) || empty($store_pullout->location_id_from))
+                                        <td class="text-center">{{$lines->item->upc_code}} </td>
+                                        <td>{{$lines->item->item_description}}</td>
+                                        <td class="text-center">{{$lines->qty}}</td>
+                                        @if($store_pullout->transaction_type == 2)
+                                            @php
+                                                $problems = explode(',', $lines->problems);
+                                                $problem_details = explode(',', $lines->problem_details);
+                                                $problem_pairs = array_map(null, $problems, $problem_details);
+                                            @endphp
                                             <td>
-                                                @foreach ($lines->serials as $serial)
-                                                    <input type="text" class="form-control serial-input mb-1" name="serial[]" style="text-align:center; margin-top: 5px;" readonly value=" {{$serial->serial_number}}">
+                                                @foreach ($problem_pairs as $pair)
+                                                    {{ trim($pair[0]) }} - {{ trim($pair[1]) }}
+                                                    @if (!$loop->last)
+                                                        <br>
+                                                    @endif
                                                 @endforeach
                                             </td>
                                         @endif
-                                        
+                                        <td>
+                                            @foreach ($lines->serials as $serial)
+                                                <input type="text" class="form-control serial-input mb-1" name="serial[]" style="text-align:center; margin-top: 5px;" readonly value=" {{$serial->serial_number}}">
+                                            @endforeach
+                                        </td>
                                     </tr>    
                                 @endforeach
                                 <tr class="tableInfo">
@@ -154,12 +193,24 @@ table.table.table-bordered th {
                 </div>
             </div>
             
-             <div class="col-md-12">
-                <h4><b>Note:</b></h4>
-                <p>{{ $stock_transfer->memo }}</p>
-            </div>
+            @if(!empty($store_pullout->memo))
+                <div class="col-md-12">
+                    <table class="table table-bordered" id="st-header">
+                        <tbody>
+                            <tr>
+                                <td style="width: 10%">
+                                    <b>Note:</b>
+                                </td>
+                                <td>
+                                    <p style="padding:10px 15; align-items:center">{{ $store_pullout->memo }}</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            @endif
 
-            </div>
+        </div>
 
         <div class='panel-footer'>
             <a href="{{ CRUDBooster::mainpath() }}" class="btn btn-default">Back</a>
