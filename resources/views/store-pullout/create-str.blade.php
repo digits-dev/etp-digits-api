@@ -568,5 +568,9 @@
                 e.preventDefault();
             });
         });
+
+        const dateInput = document.getElementById('pullout_date');
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.setAttribute('min', today);
     </script>
 @endpush
