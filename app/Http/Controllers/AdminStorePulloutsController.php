@@ -104,14 +104,14 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 	public function hook_query_index(&$query) {
 		if(!CRUDBooster::isSuperadmin()){
-		
+
 			if (in_array(CRUDBooster::myPrivilegeId() ,self::SCHEDULER)) {
 				$query->where('store_pullouts.status', OrderStatus::FORSCHEDULE)->where('transport_types_id', 1);
 			}
 			else{
 				$query->where('store_pullouts.created_by', CRUDBooster::myId());
 			}
-			
+
 		}
 
 	}
@@ -126,7 +126,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		$data = [];
 		$data['page_title'] = "Pullout Details";
 		$data['store_pullout'] = StorePullout::with(['transportTypes', 'approvedBy', 'rejectedBy', 'scheduledBy', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
-		
+
 		return view('store-pullout.detail', $data);
 	}
 
@@ -136,51 +136,51 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		$data['page_title'] = 'Create STW';
 
 		if (CRUDBooster::isSuperadmin()) {
-		 
-			$data['transfer_from'] = Cache::remember('transfer_from_if'. CRUDBooster::myStore(), 36000, function () {
+
+			$data['transfer_from'] = Cache::remember('transfer_from_if'. Helper::myStore(), 36000, function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 			});
-		
+
 		} else {
-			
-			$data['transfer_from'] = Cache::remember('transfer_from_else' . CRUDBooster::myStore(), 36000, function () {
+
+			$data['transfer_from'] = Cache::remember('transfer_from_else' . Helper::myStore(), 36000, function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
-				->whereIn('id', [CRUDBooster::myStore()])
+				->whereIn('id', [Helper::myStore()])
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 			});
 		}
-		
-		$data['transfer_to'] = Cache::remember('stw_transfer_to' . CRUDBooster::myStore(), 36000, function () {
+
+		$data['transfer_to'] = Cache::remember('stw_transfer_to' . Helper::myStore(), 36000, function () {
 			return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->where('store_name', 'DIGITS WAREHOUSE')
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 		});
-		
 
-		if (CRUDBooster::myChannel() == 1) { //RETAIL
-			$data['reasons'] = Cache::remember('stw_reason_mo' . CRUDBooster::myStore(), 36000, function () {
+
+		if (Helper::myChannel() == 1) { //RETAIL
+			$data['reasons'] = Cache::remember('stw_reason_mo' . Helper::myStore(), 36000, function () {
 				return Reason::select('bea_mo_reason as bea_reason', 'pullout_reason')
-					->where('transaction_types_id', TransactionType::STW) 
+					->where('transaction_types_id', TransactionType::STW)
 					->where('status', 'ACTIVE')
 					->get();
 			});
 
 		} else {
-			$data['reasons'] = Cache::remember('stw_reason_so' . CRUDBooster::myStore(), 36000, function () {
+			$data['reasons'] = Cache::remember('stw_reason_so' . Helper::myStore(), 36000, function () {
 				return Reason::select('bea_so_reason as bea_reason', 'pullout_reason')
-					->where('transaction_types_id', TransactionType::STW) 
+					->where('transaction_types_id', TransactionType::STW)
 					->where('status', 'ACTIVE')
 					->get();
-			});	
+			});
 
 		}
 
@@ -273,20 +273,20 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		$data['page_title'] = 'Create ST RMA';
 
 		if (CRUDBooster::isSuperadmin()) {
-		 
-			$data['transfer_from'] = Cache::remember('transfer_from_if' . CRUDBooster::myStore(), 36000, function () {
+
+			$data['transfer_from'] = Cache::remember('transfer_from_if' . Helper::myStore(), 36000, function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 			});
-		
+
 		} else {
-			
-			$data['transfer_from'] = Cache::remember('transfer_from_else' . CRUDBooster::myStore(), 36000, function () {
+
+			$data['transfer_from'] = Cache::remember('transfer_from_else' . Helper::myStore(), 36000, function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
-				->whereIn('id', [CRUDBooster::myStore()])
+				->whereIn('id', [Helper::myStore()])
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
 				->orderBy('bea_so_store_name', 'ASC')
@@ -294,7 +294,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			});
 		}
 
-		$data['transfer_to'] = Cache::remember('str_transfer_to' . CRUDBooster::myStore(), 36000, function () {
+		$data['transfer_to'] = Cache::remember('str_transfer_to' . Helper::myStore(), 36000, function () {
 			return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->where('store_name', 'RMA WAREHOUSE')
@@ -302,15 +302,15 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 				->get();
 		});
 
-		if (CRUDBooster::myChannel() == 1) { //RETAIL
-			$data['reasons'] = Cache::remember('rma_reasons_mo' . CRUDBooster::myStore(), 36000, function () {
+		if (Helper::myChannel() == 1) { //RETAIL
+			$data['reasons'] = Cache::remember('rma_reasons_mo' . Helper::myStore(), 36000, function () {
 				return Reason::select('bea_mo_reason as bea_reason', 'pullout_reason', 'allow_multi_items')
 					->where('transaction_types_id', TransactionType::RMA)
 					->where('status', 'ACTIVE')
 					->get();
 			});
 		} else {
-			$data['reasons'] = Cache::remember('rma_reasons_so' . CRUDBooster::myStore(), 36000, function () {
+			$data['reasons'] = Cache::remember('rma_reasons_so' . Helper::myStore(), 36000, function () {
 				return Reason::select('bea_so_reason as bea_reason', 'pullout_reason', 'allow_multi_items')
 					->where('transaction_types_id', TransactionType::RMA)
 					->where('status', 'ACTIVE')
