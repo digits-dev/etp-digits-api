@@ -17,6 +17,8 @@ class CmsMenuSeeder extends Seeder
     {
         $submaster = CmsMenu::where('name','Submaster')->value('id');
         $pulloutMenu = CmsMenu::where('name','Create Pullout')->value('id');
+        $historyMenu = CmsMenu::where('name','History')->value('id');
+        $approvalMenu = CmsMenu::where('name','Approvals')->value('id');
 
         $menus = [
             [
@@ -204,25 +206,99 @@ class CmsMenuSeeder extends Seeder
                 'type'              => 'Route',
                 'path'              => 'AdminStsHistoryControllerGetIndex',
                 'color'             => 'normal',
-                'icon'              => 'fa fa-circle-o',
-                'parent_id'         => 23,
+                'icon'              => 'fa fa-file-text-o',
+                'parent_id'         => $historyMenu ?? 0,
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
                 'sorting'           => 1
             ],
             [
-                'name'              => 'STW and STR History',
+                'name'              => 'STW/STR History',
                 'type'              => 'Route',
                 'path'              => 'AdminPulloutHistoryControllerGetIndex',
                 'color'             => 'normal',
-                'icon'              => 'fa fa-circle-o',
-                'parent_id'         => 23,
+                'icon'              => 'fa fa-file-text-o',
+                'parent_id'         => $historyMenu ?? 0,
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
                 'sorting'           => 2
             ],
+            [
+                'name'              => 'Approvals',
+                'type'              => 'URL',
+                'path'              => '#',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-thumbs-up',
+                'parent_id'         => 0,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 4
+            ],
+            [
+                'name'              => 'STW Approval',
+                'type'              => 'Route',
+                'path'              => 'AdminStwApprovalControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-thumbs-up',
+                'parent_id'         => $approvalMenu ?? 0,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 3
+            ],
+            [
+                'name'              => 'STR Approval',
+                'type'              => 'Route',
+                'path'              => 'AdminStrApprovalControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-thumbs-up',
+                'parent_id'         => $approvalMenu ?? 0,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 2
+            ],
+            [
+                'name'              => 'STS Approval',
+                'type'              => 'Route',
+                'path'              => 'AdminStsApprovalControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-thumbs-up',
+                'parent_id'         => $approvalMenu ?? 0,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 1
+            ],
+            [
+                'name'              => 'STS Confirmation',
+                'type'              => 'Route',
+                'path'              => 'AdminStsConfirmationControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-file-text',
+                'parent_id'         => $pulloutMenu ?? 0,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 3
+            ],
+
+            [
+                'name'              => 'Approval Matrix Settings',
+                'type'              => 'Route',
+                'path'              => 'AdminApprovalMatrixControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-circle-o',
+                'parent_id'         => $submaster,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 9
+            ],
+
         ];
 
         foreach ($menus as $menu) {

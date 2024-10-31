@@ -104,14 +104,14 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 	public function hook_query_index(&$query) {
 		if(!CRUDBooster::isSuperadmin()){
-		
+
 			if (in_array(CRUDBooster::myPrivilegeId() ,self::SCHEDULER)) {
 				$query->where('store_pullouts.status', OrderStatus::FORSCHEDULE)->where('transport_types_id', 1);
 			}
 			else{
 				$query->where('store_pullouts.created_by', CRUDBooster::myId());
 			}
-			
+
 		}
 
 	}
@@ -126,7 +126,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		$data = [];
 		$data['page_title'] = "Pullout Details";
 		$data['store_pullout'] = StorePullout::with(['transportTypes', 'approvedBy', 'rejectedBy', 'scheduledBy', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
-		
+
 		return view('store-pullout.detail', $data);
 	}
 
@@ -136,7 +136,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		$data['page_title'] = 'Create STW';
 
 		if (CRUDBooster::isSuperadmin()) {
-		 
+
 			$data['transfer_from'] = Cache::remember('transfer_from_if'. Helper::myStore(), 36000, function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
@@ -144,9 +144,9 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 			});
-		
+
 		} else {
-			
+
 			$data['transfer_from'] = Cache::remember('transfer_from_else' . Helper::myStore(), 36000, function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->whereIn('id', [Helper::myStore()])
@@ -156,7 +156,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 				->get();
 			});
 		}
-		
+
 		$data['transfer_to'] = Cache::remember('stw_transfer_to' . Helper::myStore(), 36000, function () {
 			return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
@@ -164,12 +164,12 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 		});
-		
+
 
 		if (Helper::myChannel() == 1) { //RETAIL
 			$data['reasons'] = Cache::remember('stw_reason_mo' . Helper::myStore(), 36000, function () {
 				return Reason::select('bea_mo_reason as bea_reason', 'pullout_reason')
-					->where('transaction_types_id', TransactionType::STW) 
+					->where('transaction_types_id', TransactionType::STW)
 					->where('status', 'ACTIVE')
 					->get();
 			});
@@ -177,10 +177,10 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		} else {
 			$data['reasons'] = Cache::remember('stw_reason_so' . Helper::myStore(), 36000, function () {
 				return Reason::select('bea_so_reason as bea_reason', 'pullout_reason')
-					->where('transaction_types_id', TransactionType::STW) 
+					->where('transaction_types_id', TransactionType::STW)
 					->where('status', 'ACTIVE')
 					->get();
-			});	
+			});
 
 		}
 
@@ -273,7 +273,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		$data['page_title'] = 'Create ST RMA';
 
 		if (CRUDBooster::isSuperadmin()) {
-		 
+
 			$data['transfer_from'] = Cache::remember('transfer_from_if' . Helper::myStore(), 36000, function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
@@ -281,9 +281,9 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 				->orderBy('bea_so_store_name', 'ASC')
 				->get();
 			});
-		
+
 		} else {
-			
+
 			$data['transfer_from'] = Cache::remember('transfer_from_else' . Helper::myStore(), 36000, function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->whereIn('id', [Helper::myStore()])

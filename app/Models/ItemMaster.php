@@ -25,6 +25,7 @@ class ItemMaster extends Model
             ->leftjoin('item_models','item_masters.model','item_models.model_description')
             ->whereNotNull('item_masters.digits_code')
             ->whereNotNull('item_masters.approved_at')
+            ->where('sku_statuses.sku_status_description ','!=','INVALID')
             ->select(
                 'item_masters.digits_code',
                 DB::raw('SUBSTRING(item_masters.item_description, 1, 30) as item_short_name'),
