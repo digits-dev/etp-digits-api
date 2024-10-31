@@ -94,7 +94,8 @@ class AdminStsHistoryController extends \crocodicstudio\crudbooster\controllers\
 			}
 			
 			else{
-				$query->where('store_pullouts.stores_id',Helper::myStore());
+				$query->where('store_transfers.stores_id',Helper::myStore())
+				->orWhere('store_transfers.stores_id_destination', Helper::myStore());
 			}
 		}
 	}
