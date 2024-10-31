@@ -109,7 +109,8 @@ class ExportStsWithSerial implements FromCollection, WithHeadings, WithStyles
 			}
 			
 			else{
-				$query->where('store_pullouts.stores_id',Helper::myStore());
+				$query->where('store_transfers.stores_id',Helper::myStore())
+				->orWhere('store_transfers.stores_id_destination', Helper::myStore());
 			}
 		}
 

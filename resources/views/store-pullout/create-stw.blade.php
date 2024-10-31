@@ -221,7 +221,7 @@ input[type=number]::-webkit-outer-spin-button {
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header bg-primary">
-          <h4 class="modal-title" id="exampleModalCenterTitle"> <i class="fa fa-barcode"></i> Serial Number</h4>
+          <h4 class="modal-title" id="exampleModalCenterTitle"> <i class="fa fa-barcode"></i> Serial Number <b><span id="scanned_code" style="color: yellow"></span></b></h4>
         </div>
         <div class="modal-body">
           <div class="form-group">
@@ -363,7 +363,7 @@ input[type=number]::-webkit-outer-spin-button {
                                 const tr = `
                                     <tr>
                                         <td class="text-center">
-                                            <input type="text" class="form-control" name="scanned_digits_code[]" style="text-align:center" readonly value="${digitsCode || ''}">
+                                            <input type="text" class="form-control" name="scanned_digits_code[]" id="scanned_digits_code" style="text-align:center" readonly value="${digitsCode || ''}">
                                             <input type="hidden" class="form-control" name="current_srp[]" style="text-align:center" readonly value="${row.current_srp || ''}">
                                         </td>
                                         <td class="text-center"><input type="text" class="form-control" name="upc_code[]" style="text-align:center" readonly value="${row.upc_code || ''}"></td>
@@ -553,6 +553,13 @@ input[type=number]::-webkit-outer-spin-button {
         const dateInput = document.getElementById('pullout_date');
         const today = new Date().toISOString().split('T')[0];
         dateInput.setAttribute('min', today);
+
+        $('#SerialModal').on('shown.bs.modal', function () {
+            $('#createSerial').trigger('focus');
+
+            const scanDigitsCode = $('#scanned_digits_code').val();
+            $('#scanned_code').text(scanDigitsCode);
+        });
 
 </script>
 

@@ -86,7 +86,7 @@ class ExportStwStrWithSerial implements FromCollection, WithHeadings, WithStyles
         ->leftJoin('order_statuses', 'store_pullouts.status', '=', 'order_statuses.id')
         ->leftJoin('store_pullout_lines', 'store_pullouts.id', '=', 'store_pullout_lines.store_pullouts_id')
         ->leftJoin('items', 'store_pullout_lines.item_code', '=', 'items.digits_code')
-        ->leftJoin('serial_numbers', 'store_pullout_lines.store_pullouts_id', '=', 'serial_numbers.store_pullout_lines_id')
+        ->leftJoin('serial_numbers', 'store_pullout_lines.id', '=', 'serial_numbers.store_pullout_lines_id')
         ->leftJoin('cms_users', 'store_pullouts.scheduled_by', '=', 'cms_users.id');    
 
         // Apply filters

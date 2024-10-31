@@ -233,6 +233,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-primary">
                     <h4 class="modal-title" id="exampleModalCenterTitle"> <i class="fa fa-barcode"></i> Serial Number
+                        <b><span id="scanned_code" style="color: yellow"></span></b>
                     </h4>
                 </div>
                 <div class="modal-body">
@@ -368,7 +369,7 @@
                                 const tr = `
                                     <tr>
                                         <td class="text-center">
-                                            <input type="text" class="form-control" name="scanned_digits_code[]" style="text-align:center" readonly value="${digitsCode || ''}">
+                                            <input type="text" class="form-control" name="scanned_digits_code[]" id="scanned_digits_code" style="text-align:center" readonly value="${digitsCode || ''}">
                                             <input type="hidden" class="form-control" name="current_srp[]" style="text-align:center" readonly value="${row.current_srp || ''}">
                                         </td>
                                         <td class="text-center"><input type="text" class="form-control" name="item_description[]" style="text-align:center" readonly value="${row.item_description || ''}"></td>
@@ -595,5 +596,12 @@
         const dateInput = document.getElementById('pullout_date');
         const today = new Date().toISOString().split('T')[0];
         dateInput.setAttribute('min', today);
+
+        $('#SerialModal').on('shown.bs.modal', function () {
+            $('#createSerial').trigger('focus');
+
+            const scanDigitsCode = $('#scanned_digits_code').val();
+            $('#scanned_code').text(scanDigitsCode);
+        });
     </script>
 @endpush

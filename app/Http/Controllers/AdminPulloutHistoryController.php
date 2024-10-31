@@ -60,8 +60,8 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 		$this->addaction = array();
 
 		if (CRUDBooster::getCurrentMethod() == 'getIndex') {
-			$this->index_button[] = ["title" => "Export STS with Serial", "label" => "Export STS with Serial", 'color' => 'info', "icon" => "fa fa-download", "url" => route('export-stw-str-with-serial') . '?' . urldecode(http_build_query(@$_GET))];
-			$this->index_button[] = ["title" => "Export STS", "label" => "Export STS", 'color' => 'success', "icon" => "fa fa-download", "url" => route('export-stw-str') . '?' . urldecode(http_build_query(@$_GET))];
+			$this->index_button[] = ["title" => "Export STW/STR with Serial", "label" => "Export STW/STR with Serial", 'color' => 'info', "icon" => "fa fa-download", "url" => route('export-stw-str-with-serial') . '?' . urldecode(http_build_query(@$_GET))];
+			$this->index_button[] = ["title" => "Export STW/STR", "label" => "Export STW/STR", 'color' => 'success', "icon" => "fa fa-download", "url" => route('export-stw-str') . '?' . urldecode(http_build_query(@$_GET))];
 		}
 	}
 
