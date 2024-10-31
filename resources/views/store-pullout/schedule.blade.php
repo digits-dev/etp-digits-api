@@ -153,6 +153,9 @@ table.table.table-bordered th {
                                     <th width="15%" class="text-center">UPC Code</th>
                                     <th width="25%" class="text-center">Item Description</th>
                                     <th width="5%" class="text-center">Qty</th>
+                                    @if($store_pullout->transaction_type == 2)
+                                        <th width="15%" class="text-center">Problem</th>
+                                    @endif
                                     <th width="20%" class="text-center">Serial #</th>
                                 </tr>
                             </thead>
@@ -160,14 +163,25 @@ table.table.table-bordered th {
                             
                                 @foreach ($store_pullout->lines as $lines)
                                     <tr>
-                                        <td class="text-center">{{$lines->item_code }} <input type="hidden" name="digits_code[]" value="{{$lines->item_code}}"></td>
-                                        @if(is_null($store_pullout->location_id_from) || empty($store_pullout->location_id_from))
-                                            <td class="text-center">{{$lines->item->upc_code}} </td>
+                                        <td class="text-center">{{$lines->item_code }}</td>       
+                                        <td class="text-center">{{$lines->item->upc_code}} </td>                                   
+                                        <td>{{$lines->item->item_description}}</td>
+                                        <td class="text-center">{{$lines->qty}}</td>
+                                        @if($store_pullout->transaction_type == 2)
+                                            @php
+                                                $problems = explode(',', $lines->problems);
+                                                $problem_details = explode(',', $lines->problem_details);
+                                                $problem_pairs = array_map(null, $problems, $problem_details);
+                                            @endphp
+                                            <td>
+                                                @foreach ($problem_pairs as $pair)
+                                                    {{ trim($pair[0]) }} - {{ trim($pair[1]) }}
+                                                    @if (!$loop->last)
+                                                        <br>
+                                                    @endif
+                                                @endforeach
+                                            </td>
                                         @endif
-                                        <td>{{$lines->item->item_description}}<input type="hidden" name="price[]" value="{{ $item['price'] }}"/>
-                                        </td>
-                                        <td class="text-center">{{$lines->qty}}<input type="hidden" name="st_quantity[]" id="stqty_{{ $item['digits_code'] }}" value="{{ $item['st_quantity'] }}"/>
-                                        </td>
                                         @if(is_null($store_pullout->location_id_from) || empty($store_pullout->location_id_from))
                                             <td>
                                                 @foreach ($lines->serials as $serial)
@@ -183,7 +197,7 @@ table.table.table-bordered th {
                                     <td align="left" colspan="1">
                                         <input type='text' name="total_quantity" class="form-control text-center" id="totalQuantity" value="{{$store_pullout->calculateTotals()}}" readonly>
                                     </td>
-                                    <td colspan="1"></td>
+                                    <td colspan="2"></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -223,7 +237,9 @@ table.table.table-bordered th {
 <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script type="text/javascript">
     $(document).ready(function() {
-
+        $(function(){
+            $('body').addClass("sidebar-collapse");
+        });
         $("#schedule_date").datepicker({ 
             startDate: "today",
             format: "yyyy-mm-dd",

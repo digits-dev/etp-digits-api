@@ -6,6 +6,16 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <style type="text/css">
+            .select2-selection__choice{
+                    font-size:14px !important;
+                    color:black !important;
+            }
+            .select2-selection__rendered {
+                line-height: 31px !important;
+            }
+            .select2-container .select2-selection--single {
+                height: 35px !important;
+            }
             .select2-container--default .select2-selection--single {
                 border-radius: 0px !important
             }
@@ -336,6 +346,9 @@
 
     <script>
         $(document).ready(function() {
+            $(function(){
+                $('body').addClass("sidebar-collapse");
+            });
             $('#transfer_to').select2();
             $('#transfer_from').select2();
             $('#reason').select2();

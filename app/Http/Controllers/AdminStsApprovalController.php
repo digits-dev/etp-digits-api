@@ -28,7 +28,7 @@ use App\Models\CmsPrivilege;
 			$this->button_show = true;
 			$this->button_filter = true;
 			$this->button_import = false;
-			$this->button_export = true;
+			$this->button_export = false;
 			$this->table = "store_transfers";
 			# END CONFIGURATION DO NOT REMOVE THIS LINE
 

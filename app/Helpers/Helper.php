@@ -20,6 +20,10 @@ class Helper
         return Session::get('approval_stores');
     }
 
+    public static function myPosWarehouse(){
+        return Session::get('pos_warehouse');
+    }
+
     public static function getTotalPendingList(){
         return self::getPendingSTR() + self::getPendingSTW() + self::getPendingSTS();
     }
@@ -45,6 +49,14 @@ class Helper
             return StoreTransfer::confirmed()->count();
         }else{
             return StoreTransfer::confirmed()->whereIn('stores_id',self::myApprovalStore())->count();
+        }
+    }
+
+    public static function getConfimationSTS(){
+        if(CRUDBooster::isSuperAdmin()){
+            return StoreTransfer::ForConfirmation()->count();
+        }else{
+            return StoreTransfer::ForConfirmation()->where('stores_id_destination', self::myStore())->count();
         }
     }
 }

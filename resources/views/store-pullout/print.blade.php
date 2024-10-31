@@ -235,7 +235,7 @@ tfoot { display:table-footer-group }
                                     <td align="center" colspan="1">
                                         {{$store_pullout->calculateTotals()}}
                                     </td>
-                                    <td colspan="1"></td>
+                                    <td colspan="2"></td>
                                 </tr>
 
                             </tbody>

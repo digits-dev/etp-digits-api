@@ -8,9 +8,19 @@ use App\Models\StoreTransfer;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use App\Models\CmsPrivilege;
+use App\Helpers\Helper;
 
 class AdminStsHistoryController extends \crocodicstudio\crudbooster\controllers\CBController
 {
+	private const VIEWREPORT = [CmsPrivilege::SUPERADMIN, CmsPrivilege::AUDIT, CmsPrivilege::IC, CmsPrivilege::MERCH];
+	private const VIEWREPORTLOGISTIC = [CmsPrivilege::LOGISTICS, CmsPrivilege::LOGISTICSTM];
+	private const VIEWREPORTAPPROVER = [CmsPrivilege::APPROVER];
+	private const VIEWREPORTWHRMA = [CmsPrivilege::RMA, CmsPrivilege::WH];
+	private const VIEWREPORTWHDISTRI = [CmsPrivilege::DISTRIOPS];
+	private const VIEWREPORTWHRTLFRAONL = [CmsPrivilege::RTLOPS, CmsPrivilege::FRAOPS];
+	private const VIEWREPORTWHRTLFRAOPS = [CmsPrivilege::RTLFRAOPS];
+	private const VIEWREPORTWHFRAVIEWER = [CmsPrivilege::FRAVIEWER];
 
 	public function cbInit()
 	{
@@ -57,8 +67,35 @@ class AdminStsHistoryController extends \crocodicstudio\crudbooster\controllers\
 
 	public function hook_query_index(&$query)
 	{
-		if (!CRUDBooster::isSuperadmin()) {
-			$query->where('store_transfers.created_by', CRUDBooster::myId());
+		if(!CRUDBooster::isSuperadmin() && !in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORT)){
+			if (in_array(CRUDBooster::myPrivilegeId(),self::VIEWREPORTLOGISTIC)) {
+				$query->where('store_transfers.transport_types_id',1);
+			}elseif(in_array(CRUDBooster::myPrivilegeId(),self::VIEWREPORTAPPROVER)){
+				$query->whereIn('store_transfers.stores_id', Helper::myApprovalStore());
+			}elseif(in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHRMA)){
+				$query->where('store_transfers.wh_to',Helper::myPosWarehouse());
+			}elseif(in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHDISTRI)){
+				$query->where(function($subquery) {
+					$subquery->whereIn('store_transfers.channels_id',[6,7,10,11])
+					->orWhereIn('store_transfers.reasons_id',['173','R-12']);
+				});
+			}elseif(in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHRTLFRAONL)) {
+				if(empty($store)){
+					$query->where('store_transfers.channels_id',Helper::myChannel());
+				}
+				else{
+					$query->where('store_transfers.channels_id',Helper::myChannel())
+					->whereIn('store_transfers.stores_id',Helper::myStore());
+				}
+			}elseif(in_array(CRUDBooster::myPrivilegeId(),self::VIEWREPORTWHRTLFRAOPS)){
+				$query->whereIn('store_transfers.channels_id',[1,2]);
+			}elseif(in_array(CRUDBooster::myPrivilegeId(),self::VIEWREPORTWHFRAVIEWER)){
+				$query->whereIn('store_transfers.stores_id',Helper::myStore());
+			}
+			
+			else{
+				$query->where('store_pullouts.stores_id',Helper::myStore());
+			}
 		}
 	}
 

@@ -8,11 +8,21 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Illuminate\Support\Facades\DB;
+use App\Models\CmsPrivilege;
+use App\Helpers\Helper;
+use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
 class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithStyles
 {
     protected $filterColumn;
-
+	private const VIEWREPORT = [CmsPrivilege::SUPERADMIN, CmsPrivilege::AUDIT, CmsPrivilege::IC, CmsPrivilege::MERCH];
+	private const VIEWREPORTLOGISTIC = [CmsPrivilege::LOGISTICS, CmsPrivilege::LOGISTICSTM];
+	private const VIEWREPORTAPPROVER = [CmsPrivilege::APPROVER];
+	private const VIEWREPORTWHRMA = [CmsPrivilege::RMA, CmsPrivilege::WH];
+	private const VIEWREPORTWHDISTRI = [CmsPrivilege::DISTRIOPS];
+	private const VIEWREPORTWHRTLFRAONL = [CmsPrivilege::RTLOPS, CmsPrivilege::FRAOPS];
+	private const VIEWREPORTWHRTLFRAOPS = [CmsPrivilege::RTLFRAOPS];
+	private const VIEWREPORTWHFRAVIEWER = [CmsPrivilege::FRAVIEWER];
     public function __construct($filterColumn = null)
     {
         $this->filterColumn = $filterColumn;
@@ -74,24 +84,7 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
         ->leftJoin('store_pullout_lines', 'store_pullouts.id', '=', 'store_pullout_lines.store_pullouts_id')
         ->leftJoin('items', 'store_pullout_lines.item_code', '=', 'items.digits_code')
         ->leftJoin('cms_users', 'store_pullouts.scheduled_by', '=', 'cms_users.id')
-        ->groupBy(
-            'store_pullouts.id',
-            'store_pullouts.document_number',
-            'store_pullouts.sor_mor_number',
-            'reasons.pullout_reason',
-            'transport_types.transport_type',
-            'stores_from.store_name',
-            'stores_to.store_name',
-            'order_statuses.order_status',
-            'items.digits_code',
-            'items.upc_code',
-            'items.item_description',
-            'cms_users.name',
-            'store_pullouts.pullout_date',
-            'store_pullouts.pullout_schedule_date',
-            'store_pullout_lines.qty',
-            'store_pullout_lines.problem_details' 
-        );    
+        ;    
 
         // Apply filters
         if ($this->filterColumn) {
@@ -127,6 +120,37 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
                 }
             }
         }
+
+        if(!CRUDBooster::isSuperadmin()){
+			if (in_array(CRUDBooster::myPrivilegeId(),self::VIEWREPORTLOGISTIC)) {
+				$query->where('store_pullouts.transport_types_id',1);
+			}elseif(in_array(CRUDBooster::myPrivilegeId(),self::VIEWREPORTAPPROVER)){
+				$query->whereIn('store_pullouts.stores_id', Helper::myApprovalStore());
+			}elseif(in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHRMA)){
+				$query->where('store_pullouts.wh_to',Helper::myPosWarehouse());
+			}elseif(in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHDISTRI)){
+				$query->where(function($subquery) {
+					$subquery->whereIn('store_pullouts.channels_id',[6,7,10,11])
+					->orWhereIn('store_pullouts.reasons_id',['173','R-12']);
+				});
+			}elseif(in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHRTLFRAONL)) {
+				if(empty($store)){
+					$query->where('store_pullouts.channels_id',Helper::myChannel());
+				}
+				else{
+					$query->where('store_pullouts.channels_id',Helper::myChannel())
+					->whereIn('store_pullouts.stores_id',Helper::myStore());
+				}
+			}elseif(in_array(CRUDBooster::myPrivilegeId(),self::VIEWREPORTWHRTLFRAOPS)){
+				$query->whereIn('store_pullouts.channels_id',[1,2]);
+			}elseif(in_array(CRUDBooster::myPrivilegeId(),self::VIEWREPORTWHFRAVIEWER)){
+				$query->whereIn('store_pullouts.stores_id',Helper::myStore());
+			}
+			
+			else{
+				$query->where('store_pullouts.stores_id',Helper::myStore());
+			}
+		}
 
         // Execute the query and map results for export
         return $query->get()->map(function ($storeTransfer) {

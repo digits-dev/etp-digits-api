@@ -45,6 +45,9 @@ class StoreTransfer extends Model
     public function scopeConfirmed(){
         return $this->where('status', OrderStatus::CONFIRMED);
     }
+    public function scopeForConfirmation(){
+        return $this->where('status', OrderStatus::FORCONFIRMATION); 
+    }
   
     public function lines() : HasMany {
         return $this->hasMany(StoreTransferLine::class, 'store_transfers_id');
@@ -95,7 +98,7 @@ class StoreTransfer extends Model
             'stores_to.store_name AS destination',
             'store_transfers.transfer_date',
             'store_transfers.transfer_schedule_date',
-            DB::raw('1 AS qty'),
+            'store_transfer_lines.qty',
             'store_transfers.created_at',
             'store_transfers.scheduled_at',
             'order_statuses.order_status',
