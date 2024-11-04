@@ -125,7 +125,7 @@ class CmsModuleSeeder extends Seeder
             ],
             [
                 'name'         => 'STS History',
-                'icon'         => 'fa fa-circle-o',
+                'icon'         => 'fa fa-file-text-o',
                 'path'         => 'sts_history',
                 'table_name'   => 'sts_history',
                 'controller'   => 'AdminStsHistoryController',
@@ -134,7 +134,7 @@ class CmsModuleSeeder extends Seeder
             ],
             [
                 'name'         => 'STW/STR History',
-                'icon'         => 'fa fa-circle-o',
+                'icon'         => 'fa fa-file-text-o',
                 'path'         => 'pullout_history',
                 'table_name'   => 'store_pullouts',
                 'controller'   => 'AdminPulloutHistoryController',
@@ -183,6 +183,15 @@ class CmsModuleSeeder extends Seeder
                 'path'         => 'sts_confirmation',
                 'table_name'   => 'store_transfers',
                 'controller'   => 'AdminStsConfirmationController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
+            [
+                'name'         => 'Transfer Groupings',
+                'icon'         => 'fa fa-circle-o',
+                'path'         => 'transfer_groups',
+                'table_name'   => 'transfer_groups',
+                'controller'   => 'AdminTransferGroupsController',
                 'is_protected' => 0,
                 'is_active'    => 0
             ],
