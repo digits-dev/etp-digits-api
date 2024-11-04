@@ -1,15 +1,17 @@
 <?php namespace App\Http\Controllers;
 
 use App\Models\StoreMaster;
-use App\Services\ChannelService;
+use App\Services\SubmasterService;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
 	class AdminStoreMastersController extends \crocodicstudio\crudbooster\controllers\CBController {
 
         protected $activeChannel;
+        protected $activeTransferGroup;
 
-        public function __construct(ChannelService $channelService) {
-            $this->activeChannel = $channelService->getChannels();
+        public function __construct(SubmasterService $masterService) {
+            $this->activeChannel = $masterService->getChannels();
+            $this->activeTransferGroup = $masterService->getTransferGroups();
         }
 
 	    public function cbInit() {
@@ -44,6 +46,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			$this->col[] = ["label"=>"DOO Subinventory","name"=>"doo_subinventory"];
 			$this->col[] = ["label"=>"SIT Subinventory","name"=>"sit_subinventory"];
             $this->col[] = ["label"=>"ORG Subinventory","name"=>"org_subinventory"];
+            $this->col[] = ["label"=>"Transfer Groups","name"=>"transfer_groups_id","join"=>"transfer_groups,group"];
 			$this->col[] = ["label"=>"Status","name"=>"status"];
             $this->col[] = ["label"=>"Created By","name"=>"created_by","join"=>"cms_users,name"];
 			$this->col[] = ["label"=>"Created Date","name"=>"created_at"];
@@ -61,12 +64,13 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			$this->form[] = ['label'=>'DOO Subinventory','name'=>'doo_subinventory','type'=>'text','validation'=>'max:50','width'=>'col-sm-5'];
 			$this->form[] = ['label'=>'SIT Subinventory','name'=>'sit_subinventory','type'=>'text','validation'=>'max:50','width'=>'col-sm-5'];
 			$this->form[] = ['label'=>'ORG Subinventory','name'=>'org_subinventory','type'=>'text','validation'=>'max:50','width'=>'col-sm-5'];
-			if(in_array(CRUDBooster::getCurrentMethod(),['getEdit','postEditSave','getDetail'])) {
+			$this->form[] = ['label'=>'Transfer Groups','name'=>'transfer_groups_id','type'=>'select','validation'=>'required','width'=>'col-sm-5','datatable'=>'transfer_groups,group'];
+            if(in_array(CRUDBooster::getCurrentMethod(),['getEdit','postEditSave','getDetail'])) {
 				$this->form[] = ['label'=>'Status','name'=>'status','type'=>'select','validation'=>'required','width'=>'col-sm-5','dataenum'=>'ACTIVE;INACTIVE'];
 			}
 
             $this->index_button = array();
-            if(CRUDBooster::isSuperAdmin()){
+            if(CRUDBooster::isSuperAdmin() && CRUDBooster::getCurrentMethod() == 'getIndex'){
                 $this->index_button[] = ["label"=>"Pull New Stores","url"=>"javascript:pullNewStores()","icon"=>"fa fa-download","color"=>"warning"];
                 $this->index_button[] = ["label"=>"Pull Updated Stores","url"=>"javascript:pullUpdatedStores()","icon"=>"fa fa-refresh","color"=>"info"];
             }
@@ -77,6 +81,9 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 				$this->button_selected[] = ['label'=>'Set Status INACTIVE','icon'=>'fa fa-times-circle','name'=>'set_status_inactive'];
                 foreach ($this->activeChannel as $keyChannel => $valueChannel) {
                     $this->button_selected[] = ["label"=>"Set Channel as {$valueChannel->channel_code}","icon"=>"fa fa-check-circle","name"=>"set_channel_{$valueChannel->channel_code}"];
+                }
+                foreach ($this->activeTransferGroup as $keyTransferGroup => $valueTransferGroup) {
+                    $this->button_selected[] = ["label"=>"Set Transfer Group as {$valueTransferGroup->group}","icon"=>"fa fa-check-circle","name"=>"set_group_{$valueTransferGroup->group}"];
                 }
             }
 
@@ -197,6 +204,11 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
                         foreach ($this->activeChannel as $keyChannel => $valueChannel) {
                             if($button_name == "set_channel_{$valueChannel->channel_code}"){
                                 $value['channels_id'] = $valueChannel->id;
+                            }
+                        }
+                        foreach ($this->activeTransferGroup as $keyTransferGroup => $valueTransferGroup) {
+                            if($button_name == "set_group_{$valueTransferGroup->group}"){
+                                $value['transfer_groups_id'] = $valueTransferGroup->id;
                             }
                         }
                     }
