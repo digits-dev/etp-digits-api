@@ -147,6 +147,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		return view('store-transfer.detail', $data);
 	}
 
+
 	public function createSTS()
 	{
 		$data = array();
@@ -176,6 +177,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 		$data['transfer_to'] = Cache::remember('sts_transfer_to' . Helper::myStore(), 36000, function () {
 			return StoreMaster::select('id', 'store_name', 'warehouse_code')
+				->where('transfer_groups_id', Helper::myTransferGroup())
 				->where('status', 'ACTIVE')
 				->whereNotIn('id', [Helper::myStore()])
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])

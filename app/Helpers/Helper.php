@@ -26,6 +26,10 @@ class Helper
         return Session::get('store_id');
     }
 
+    public static function myTransferGroup(){
+        return Session::get('transfer_group');
+    }
+
     public static function myApprovalStore(){
         return Session::get('approval_stores');
     }
