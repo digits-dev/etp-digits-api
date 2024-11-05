@@ -68,9 +68,9 @@ class Helper
 
     public static function getConfimationSTS(){
         if(CRUDBooster::isSuperAdmin()){
-            return StoreTransfer::ForConfirmation()->count();
+            return StoreTransfer::forconfirmation()->count();
         }else{
-            return StoreTransfer::ForConfirmation()->where('stores_id_destination', self::myStore())->count();
+            return StoreTransfer::forconfirmation()->where('stores_id_destination', self::myStore())->count();
         }
     }
 

@@ -83,6 +83,13 @@
             right: 35px;
             
         }
+        .badge-danger-stsconfirm {
+            background-color: #d9534f; 
+            color: white;
+            position:absolute;
+            right: 25px;
+            
+        }
 
         #box-header-module {
             box-shadow: 10px 10px 10px #dddddd;

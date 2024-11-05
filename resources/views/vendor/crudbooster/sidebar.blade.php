@@ -44,11 +44,6 @@
                                     <span class="badge badge-danger"> {{ App\Helpers\Helper::getTotalPendingList() }} </span>
                                 @endif
                             @endif
-                            @if($menu->name == 'STS Confirmation')
-                                @if ( App\Helpers\Helper::getConfimationSTS() != 0)
-                                    <span class="badge badge-danger"> {{ App\Helpers\Helper::getConfimationSTS() }}</span>
-                                @endif
-                            @endif
                             @if(!empty($menu->children))<i class="fa fa-angle-{{ cbLang("right") }} pull-{{ cbLang("right") }}"></i>@endif
                         </a>
                         @if(!empty($menu->children))
@@ -69,6 +64,10 @@
                                             @elseif ($child->name == 'STR Approval')
                                                 @if ( App\Helpers\Helper::getPendingSTR() != 0)
                                                     <span class="badge badge-danger"> {{ App\Helpers\Helper::getPendingSTR() }}</span>
+                                                @endif  
+                                            @elseif ($child->name == 'STS Confirmation')
+                                                @if ( App\Helpers\Helper::getConfimationSTS() != 0)
+                                                    <span class="badge badge-danger-stsconfirm"> {{ App\Helpers\Helper::getConfimationSTS() }}</span>
                                                 @endif  
                                             @endif
                                         </a>
