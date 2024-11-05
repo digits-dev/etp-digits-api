@@ -25,11 +25,13 @@ class CBHook extends Controller {
                 Session::flush();
                 return redirect()->route('getLogin')->with('message', 'The user does not exist!');
             }
-            $store = StoreMaster::where("id", $users->stores_id)->first();
+            $store = StoreMaster::where("id", $users->store_masters_id)->first();
 
             Session::put('store_id', $users->store_masters_id);
+            Session::put('transfer_group', $store->transfer_groups_id);
             Session::put('channel_id', $users->channels_id);
             Session::put('pos_warehouse',$store->warehouse_code);
+
             $approvalMatrix = ApprovalMatrix::where('approval_matrix.cms_users_id', CRUDBooster::myId())->get();
 				
             $approval_array = array();
@@ -40,6 +42,7 @@ class CBHook extends Controller {
             $storeList = array_map('intval',explode(",",$approval_string));
             Session::put('approval_stores', $storeList);
         }
+
 
         $today = Carbon::now()->format('Y-m-d H:i:s');
         $lastChangePass = Carbon::parse($users->last_password_updated_at);

@@ -15,13 +15,6 @@ use App\Helpers\Helper;
 class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controllers\CBController
 {
 	private const VIEWREPORT = [CmsPrivilege::SUPERADMIN, CmsPrivilege::AUDIT, CmsPrivilege::IC, CmsPrivilege::MERCH];
-	private const VIEWREPORTLOGISTIC = [CmsPrivilege::LOGISTICS, CmsPrivilege::LOGISTICSTM];
-	private const VIEWREPORTAPPROVER = [CmsPrivilege::APPROVER];
-	private const VIEWREPORTWHRMA = [CmsPrivilege::RMA, CmsPrivilege::WH];
-	private const VIEWREPORTWHDISTRI = [CmsPrivilege::DISTRIOPS];
-	private const VIEWREPORTWHRTLFRAONL = [CmsPrivilege::RTLOPS, CmsPrivilege::FRAOPS];
-	private const VIEWREPORTWHRTLFRAOPS = [CmsPrivilege::RTLFRAOPS];
-	private const VIEWREPORTWHFRAVIEWER = [CmsPrivilege::FRAVIEWER];
 	public function cbInit()
 	{
 
@@ -66,34 +59,21 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 	}
 
 	public function hook_query_index(&$query){
+		$query_filter_params = helper::generatePulloutParams();
 		if(!CRUDBooster::isSuperadmin() && !in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORT)){
-			if (in_array(CRUDBooster::myPrivilegeId(),self::VIEWREPORTLOGISTIC)) {
-				$query->where('store_pullouts.transport_types_id',1);
-			}elseif(in_array(CRUDBooster::myPrivilegeId(),self::VIEWREPORTAPPROVER)){
-				$query->whereIn('store_pullouts.stores_id', Helper::myApprovalStore());
-			}elseif(in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHRMA)){
-				$query->where('store_pullouts.wh_to',Helper::myPosWarehouse());
-			}elseif(in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHDISTRI)){
-				$query->where(function($subquery) {
-					$subquery->whereIn('store_pullouts.channels_id',[6,7,10,11])
-					->orWhereIn('store_pullouts.reasons_id',['173','R-12']);
-				});
-			}elseif(in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHRTLFRAONL)) {
-				if(empty($store)){
-					$query->where('store_pullouts.channels_id',Helper::myChannel());
+			foreach ($query_filter_params as $filter) {
+				// Check if the filter is a nested condition
+				if ($filter['method'] === 'nested') {
+					$query->where(function ($subquery) use ($filter) {
+						// Loop through each condition within the nested group
+						foreach ($filter['params'] as $nestedFilter) {
+							$subquery->{$nestedFilter['method']}(...$nestedFilter['params']);
+						}
+					});
+				} else {
+					// Apply regular filter conditions
+					$query->{$filter['method']}(...$filter['params']);
 				}
-				else{
-					$query->where('store_pullouts.channels_id',Helper::myChannel())
-					->whereIn('store_pullouts.stores_id',Helper::myStore());
-				}
-			}elseif(in_array(CRUDBooster::myPrivilegeId(),self::VIEWREPORTWHRTLFRAOPS)){
-				$query->whereIn('store_pullouts.channels_id',[1,2]);
-			}elseif(in_array(CRUDBooster::myPrivilegeId(),self::VIEWREPORTWHFRAVIEWER)){
-				$query->whereIn('store_pullouts.stores_id',Helper::myStore());
-			}
-			
-			else{
-				$query->where('store_pullouts.stores_id',Helper::myStore());
 			}
 		}
 	
@@ -116,13 +96,21 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 
 	public function exportStwrWithSerial(Request $request)
 	{
-		$filter_column = $request->get('filter_column');
+		$query_filter_params = helper::generatePulloutParams();
+		$filter_column = [
+			'filter_column' => $request->get('filter_column'),
+			'filters' => $query_filter_params,
+		];
 		return Excel::download(new ExportStwStrWithSerial($filter_column), 'Export STW-STR with Serial- ' . now()->format('Ymd h_i_sa') . '.xlsx');
 	}
 
 	public function exportStwr(Request $request)
 	{
-		$filter_column = $request->get('filter_column');
+		$query_filter_params = helper::generatePulloutParams();
+		$filter_column = [
+			'filter_column' => $request->get('filter_column'),
+			'filters' => $query_filter_params,
+		];
 		return Excel::download(new ExportStwStrWithoutSerial($filter_column), 'Export STW-STR without Serial- ' . now()->format('Ymd h_i_sa') . '.xlsx');
 	}
 
