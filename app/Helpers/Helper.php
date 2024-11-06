@@ -74,9 +74,9 @@ class Helper
         }
     }
 
-    public function generateStsParams() {
+    public static function generateStsParams() {
 		$query_filter_params = [];
-	
+
 		if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTLOGISTIC)) {
 			$query_filter_params[] = [
 				'method' => 'where',
@@ -107,7 +107,7 @@ class Helper
 				]
 			];
 		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHRTLFRAONL)) {
-			if (!selff::myStore()) {
+			if (!self::myStore()) {
 				$query_filter_params[] = [
 					'method' => 'where',
 					'params' => ['store_transfers.channels_id', self::myChannel()]
@@ -137,14 +137,18 @@ class Helper
 				'method' => 'where',
 				'params' => ['store_transfers.stores_id', self::myStore()]
 			];
+            $query_filter_params[] = [
+				'method' => 'orWhere',
+				'params' => ['store_transfers.stores_id_destination', self::myStore()]
+			];
 		}
-		
+
 		return $query_filter_params;
 	}
 
     public function generatePulloutParams() {
 		$query_filter_params = [];
-	
+
 		if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTLOGISTIC)) {
 			$query_filter_params[] = [
 				'method' => 'where',
@@ -175,7 +179,7 @@ class Helper
 				]
 			];
 		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHRTLFRAONL)) {
-			if (!selff::myStore()) {
+			if (!self::myStore()) {
 				$query_filter_params[] = [
 					'method' => 'where',
 					'params' => ['store_pullouts.channels_id', self::myChannel()]
@@ -206,7 +210,7 @@ class Helper
 				'params' => ['store_pullouts.stores_id', self::myStore()]
 			];
 		}
-		
+
 		return $query_filter_params;
 	}
 }
