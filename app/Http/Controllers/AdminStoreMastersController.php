@@ -64,7 +64,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			$this->form[] = ['label'=>'DOO Subinventory','name'=>'doo_subinventory','type'=>'text','validation'=>'max:50','width'=>'col-sm-5'];
 			$this->form[] = ['label'=>'SIT Subinventory','name'=>'sit_subinventory','type'=>'text','validation'=>'max:50','width'=>'col-sm-5'];
 			$this->form[] = ['label'=>'ORG Subinventory','name'=>'org_subinventory','type'=>'text','validation'=>'max:50','width'=>'col-sm-5'];
-			$this->form[] = ['label'=>'Transfer Groups','name'=>'transfer_groups_id','type'=>'select','validation'=>'required','width'=>'col-sm-5','datatable'=>'transfer_groups,group'];
+			$this->form[] = ['label'=>'Transfer Groups','name'=>'transfer_groups_id','type'=>'select','validation'=>'min:0','width'=>'col-sm-5','datatable'=>'transfer_groups,group'];
             if(in_array(CRUDBooster::getCurrentMethod(),['getEdit','postEditSave','getDetail'])) {
 				$this->form[] = ['label'=>'Status','name'=>'status','type'=>'select','validation'=>'required','width'=>'col-sm-5','dataenum'=>'ACTIVE;INACTIVE'];
 			}

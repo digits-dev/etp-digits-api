@@ -10,11 +10,16 @@ use Maatwebsite\Excel\Facades\Excel;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use App\Models\CmsPrivilege;
 use App\Helpers\Helper;
-use App\Models\StoreMaster;
 
 class AdminStsHistoryController extends \crocodicstudio\crudbooster\controllers\CBController
 {
-	private const VIEWREPORT = [CmsPrivilege::SUPERADMIN, CmsPrivilege::AUDIT, CmsPrivilege::IC, CmsPrivilege::MERCH];
+	private const VIEWREPORT = [
+        CmsPrivilege::SUPERADMIN,
+        CmsPrivilege::AUDIT,
+        CmsPrivilege::IC,
+        CmsPrivilege::MERCH,
+        CmsPrivilege::CASHIER
+    ];
 
 	public function cbInit()
 	{
@@ -41,7 +46,7 @@ class AdminStsHistoryController extends \crocodicstudio\crudbooster\controllers\
 		# START COLUMNS DO NOT REMOVE THIS LINE
 		$this->col = [];
 		$this->col[] = ["label" => "Reference #", "name" => "ref_number"];
-		$this->col[] = ["label" => "ST#", "name" => "document_number"];
+		$this->col[] = ["label" => "ST #", "name" => "document_number"];
 		$this->col[] = ["label" => "From WH", "name" => "wh_from", "join" => "store_masters,store_name", "join_id" => "warehouse_code"];
 		$this->col[] = ["label" => "To WH", "name" => "wh_to", "join" => "store_masters,store_name", "join_id" => "warehouse_code"];
 		$this->col[] = ["label" => "Status", "name" => "status", "join" => "order_statuses,style"];
@@ -61,7 +66,7 @@ class AdminStsHistoryController extends \crocodicstudio\crudbooster\controllers\
 
 	public function hook_query_index(&$query)
 	{
-		$query_filter_params = helper::generateStsParams();
+		$query_filter_params = Helper::generateStsParams();
 		if(!CRUDBooster::isSuperadmin() && !in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORT)){
 			foreach ($query_filter_params as $filter) {
 				// Check if the filter is a nested condition
@@ -89,9 +94,9 @@ class AdminStsHistoryController extends \crocodicstudio\crudbooster\controllers\
 		$data = [];
 		$data['page_title'] = "Stock Transfer Details";
 		$data['store_transfer'] = StoreTransfer::with([
-			'transportTypes', 'approvedBy', 
-			'rejectedBy', 'reasons', 'lines', 
-			'statuses', 'scheduledBy', 'storesFrom', 
+			'transportTypes', 'approvedBy',
+			'rejectedBy', 'reasons', 'lines',
+			'statuses', 'scheduledBy', 'storesFrom',
 			'storesTo', 'lines.serials', 'lines.item'])->find($id);
 
 		return view('store-transfer.detail', $data);
@@ -99,7 +104,7 @@ class AdminStsHistoryController extends \crocodicstudio\crudbooster\controllers\
 
 	public function exportWithSerial(Request $request)
 	{
-		$query_filter_params = helper::generateStsParams();
+		$query_filter_params = Helper::generateStsParams();
 		$filter_column = [
 			'filter_column' => $request->get('filter_column'),
 			'filters' => $query_filter_params,
@@ -109,12 +114,12 @@ class AdminStsHistoryController extends \crocodicstudio\crudbooster\controllers\
 
 	public function exportSts(Request $request)
 	{
-		$query_filter_params = helper::generateStsParams();
+		$query_filter_params = Helper::generateStsParams();
 		$filter_column = [
 			'filter_column' => $request->get('filter_column'),
 			'filters' => $query_filter_params,
 		];
 		return Excel::download(new ExportStsWithoutSerial($filter_column), 'Export STS without Serial- ' . now()->format('Ymdhis') . '.xlsx');
 	}
-	
+
 }

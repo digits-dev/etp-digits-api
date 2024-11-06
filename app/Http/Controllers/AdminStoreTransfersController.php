@@ -15,13 +15,14 @@ use App\Models\OrderStatus;
 use App\Helpers\Helper;
 use App\Models\Reason;
 use App\Models\StoreMaster;
+use App\Models\TransactionType;
 use App\Models\TransportType;
 use Illuminate\Support\Facades\Cache;
 
 class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controllers\CBController
 {
 
-	private const SCHEDULER = [CmsPrivilege::SUPERADMIN, CmsPrivilege::LOGISTICS];
+	private const SCHEDULER = [CmsPrivilege::SUPERADMIN, CmsPrivilege::LOGISTICS, CmsPrivilege::LOGISTICSTM];
 	private const DOCREATOR = [CmsPrivilege::SUPERADMIN, CmsPrivilege::CASHIER];
 	private const CANVOID = [CmsPrivilege::SUPERADMIN, CmsPrivilege::CASHIER];
 
@@ -187,7 +188,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 		$data['reasons'] = Cache::remember('sts_reason' . Helper::myStore(), 36000, function () {
 			return Reason::select('id', 'pullout_reason')
-				->where('transaction_types_id', 4) // STS
+				->where('transaction_types_id', TransactionType::STS) // STS
 				->where('status', 'ACTIVE')
 				->get();
 		});
@@ -373,4 +374,16 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 		return view('store-transfer.print', $data);
 	}
+
+    public function updateTransferStatus(){
+        $transfers = new EtpController();
+        foreach ($transfers->getTransferTransactions() as $value){
+            $sts = StoreTransfer::where('document_number',$value['OrderNumber'])->first();
+            if($sts){
+                $sts->status = OrderStatus::RECEIVED;
+                $sts->save();
+            }
+        }
+
+    }
 }

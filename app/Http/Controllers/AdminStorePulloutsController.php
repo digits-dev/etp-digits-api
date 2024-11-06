@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Cache;
 
 class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controllers\CBController
 {
-	private const SCHEDULER = [CmsPrivilege::SUPERADMIN, CmsPrivilege::LOGISTICS];
+	private const SCHEDULER = [CmsPrivilege::SUPERADMIN, CmsPrivilege::LOGISTICS, CmsPrivilege::LOGISTICSTM];
 	private const DOCREATOR = [CmsPrivilege::SUPERADMIN, CmsPrivilege::CASHIER];
 	private const CANVOID = [CmsPrivilege::SUPERADMIN, CmsPrivilege::CASHIER];
 
@@ -55,8 +55,8 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		$this->col[] = ["label" => "Transaction Type", "name" => "transaction_type", "join" => "transaction_types,transaction_type", "join_id" => "id"];
 		$this->col[] = ["label" => "Status", "name" => "status", "join" => "order_statuses,style"];
 		$this->col[] = ["label" => "Transport Type", "name" => "transport_types_id", "join" => "transport_types,style"];
-		$this->col[] = ["label" => "Created Date", "name" => "created_at"];
-
+		$this->col[] = ["label"=>"Created By","name"=>"created_by","join"=>"cms_users,name"];
+        $this->col[] = ["label" => "Created Date", "name" => "created_at"];
 
 		$this->form = [];
 
@@ -356,7 +356,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		$allProblems = $request->input('all_problems');
 
 		// Generate ref_number
-		$counter = Counter::where('id', 3)->first();
+		$counter = Counter::find(3);
 		$ref_number = $counter->reference_number;
 		$combined_ref = $counter->reference_code . '-' . $ref_number;
 
