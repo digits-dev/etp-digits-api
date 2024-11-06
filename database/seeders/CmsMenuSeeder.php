@@ -31,7 +31,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 3
+                'sorting'           => 6
             ],
             [
                 'name'              => 'Channel',
@@ -199,7 +199,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 7
+                'sorting'           => 5
             ],
             [
                 'name'              => 'STS History',
@@ -309,6 +309,30 @@ class CmsMenuSeeder extends Seeder
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
                 'sorting'           => 10
+            ],
+            [
+                'name'              => 'Counter',
+                'type'              => 'Route',
+                'path'              => 'AdminCountersControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-circle-o',
+                'parent_id'         => $submaster,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 11
+            ],
+            [
+                'name'              => 'Delivery History',
+                'type'              => 'Route',
+                'path'              => 'AdminDeliveryHistoryControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-file-text-o',
+                'parent_id'         => $historyMenu ?? 0,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 3
             ],
 
         ];

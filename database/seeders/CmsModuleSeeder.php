@@ -195,6 +195,24 @@ class CmsModuleSeeder extends Seeder
                 'is_protected' => 0,
                 'is_active'    => 0
             ],
+            [
+                'name'         => 'Counter',
+                'icon'         => 'fa fa-circle-o',
+                'path'         => 'counters',
+                'table_name'   => 'counters',
+                'controller'   => 'AdminCountersController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
+            [
+                'name'         => 'Delivery History',
+                'icon'         => 'fa fa-file-text-o',
+                'path'         => 'delivery_history',
+                'table_name'   => 'deliveries',
+                'controller'   => 'AdminDeliveryHistoryController',
+                'is_protected' => 0,
+                'is_active'    => 0
+            ],
 
         ];
 

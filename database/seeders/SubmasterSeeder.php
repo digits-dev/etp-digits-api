@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\CmsPrivilege;
 use App\Models\OrderStatus;
 use App\Models\TransactionType;
 use App\Models\TransportType;
@@ -19,7 +20,7 @@ class SubmasterSeeder extends Seeder
     {
         $transportTypes = [
             'LOGISTICS'=>'<span class="label label-primary">LOGISTICS</span>',
-            'HAND CARRY'=>'<span class="label label-info">HAND</span>',
+            'HAND CARRY'=>'<span class="label label-info">HAND CARRY</span>',
         ];
 
         $transactionTypes = [
@@ -74,9 +75,35 @@ class SubmasterSeeder extends Seeder
             'PROCESSING-DOTR'=>'<span class="label label-info">PROCESSING-DOTR</span>'
         ];
 
+        $privileges = [
+            'Cashier',
+            'Approver',
+            'Customer Service Associate',
+            'Store Head',
+            'Logistics TL',
+            'Audit',
+            'Inventory Control',
+            'Brand Merch TM',
+            'Warehouse TM',
+            'RMA',
+            'Logistics TM',
+            'Distribution Ops',
+            'Retail Ops',
+            'Franchise Ops',
+            'Retail Franchise Ops',
+            'Franchise Viewer',
+            'Warehouse TL'
+        ];
+
         $createdBy = [
             'status' => 'ACTIVE',
             'created_by' => 1,
+            'created_at' => now()
+        ];
+
+        $privDefault = [
+            'is_superadmin' => 0,
+            'theme_color' => 'skin-blue',
             'created_at' => now()
         ];
 
@@ -104,6 +131,12 @@ class SubmasterSeeder extends Seeder
             $newOrderStatusValue['style'] = $value;
             OrderStatus::updateOrInsert(['order_status' => $key],
                 array_merge($createdBy,$newOrderStatusValue));
+        }
+
+        foreach ($privileges as $value) {
+            $newPrivilegeValue['name'] = $value;
+            CmsPrivilege::updateOrInsert(['name' => $value],
+                array_merge($privDefault,$newPrivilegeValue));
         }
     }
 }
