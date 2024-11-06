@@ -482,6 +482,7 @@
                                 if (row.has_serial == 1) {
                                     currentSerialRow = tbody.find(`input[name="scanned_digits_code[]"][value="${digitsCode}"]`).closest('tr');
                                     $('#SerialModal').modal('show');
+                                    $('#scanned_code').text(digitsCode);
                                 }
                                 updatedQtyInput = tbody.find(`input[name="scanned_digits_code[]"][value="${digitsCode}"]`).closest('tr').find('input[name="qty[]"]');
                             }
@@ -493,12 +494,16 @@
                                 icon: "error",
                                 title: "Oops...",
                                 html: "<h5><strong>Invalid digits code:</strong> <br> No matching data found, please try again!</h5>",
-                                confirmButtonText: '<i class="fa fa-thumbs-up"></i> Okay'
+                                confirmButtonText: '<i class="fa fa-thumbs-up"></i> Okay',
+                                preConfirm: () => {
+                                    $('#item_search').trigger('focus'); 
+                                }
                             });
                         }
                         $('#scanningSpinner').hide();
                         $('#item_search').val("");
                         $('#item_search').prop('disabled', false); 
+                        $('#item_search').trigger('focus'); 
                     },
                     error: function(xhr, status, error) {
                         alert('Error: ' + error);
@@ -513,6 +518,7 @@
             const row = $(button).closest('tr');
             row.remove();
             updateTotalQuantity(); 
+            $('#item_search').trigger('focus'); 
         }
 
         function updateTotalQuantity(updatedQtyInput) {
@@ -590,7 +596,8 @@
                         serialContainer.find('.all-serial-input').val(allSerials);
 
                         $('#createSerial').val('');  
-                        $('#SerialModal').modal('hide');  
+                        $('#SerialModal').modal('hide'); 
+                        $('#item_search').trigger('focus'); 
                     }
                 }
             }
@@ -609,9 +616,13 @@
 
                 updateTotalQuantity();
                 currentSerialRow = null;
+                
             }
-
+             
             $('#SerialModal').modal('hide');
+            $('#SerialModal').on('hidden.bs.modal', function() {
+                $('#item_search').trigger('focus'); 
+            });
         }
 
         $('#btnSubmit').on('click', function(e) {
@@ -654,9 +665,6 @@
 
         $('#SerialModal').on('shown.bs.modal', function () {
             $('#createSerial').trigger('focus');
-
-            const scanDigitsCode = $('#scanned_digits_code').val();
-            $('#scanned_code').text(scanDigitsCode);
         });
 
     </script>
