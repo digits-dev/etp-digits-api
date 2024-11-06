@@ -1,14 +1,29 @@
 @extends('crudbooster::admin_template')
 @section('content')
     @push('head')
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css">
         <style type="text/css">
-            .row{
+            .row {
                 padding: 14px !important;
             }
-            .control-label{
+
+            .control-label {
                 text-align: right !important;
                 margin-top: 10px !important
+            }
+
+            .select2-selection__choice{
+                    font-size:14px !important;
+                    color:black !important;
+            }
+            .select2-selection__rendered {
+                line-height: 31px !important;
+            }
+            .select2-container .select2-selection--single {
+                height: 35px !important;
+            }
+            .select2-selection__arrow {
+                height: 34px !important;
             }
 
             .select2-container--default .select2-selection--multiple {
@@ -32,7 +47,6 @@
                 color: #ffffff !important;
             }
 
-        
         </style>
     @endpush
 
@@ -50,31 +64,22 @@
         <div class='panel-heading'>
             <i class="fa fa-circle-o"></i> <b>Add Approval Matrix</b></h3>
         </div>
-        <form action="{{route('add-approval-matrix')}}" method="POST" id="userForm" enctype="multipart/form-data">
-            <input type="hidden" value="{{csrf_token()}}" name="_token" id="token">
+        <form action="{{ route('add-approval-matrix') }}" method="POST" id="approvalMatrix" enctype="multipart/form-data">
+            <input type="hidden" value="{{ csrf_token() }}" name="_token" id="token">
 
-            <div class='panel-body' id="pullout-details">
+            <div class='panel-body'>
                 <div class="container">
-                <div class="row">
-                    <div class="form-group">
-                        <label class="control-label col-sm-2" for="privilege">Privilege Name  <span class="text-red">*</span></label>
-                        <div class="col-sm-5">
-                            <select selected data-placeholder="** Please select a Privilege" class="form-control select2" id="privilege" name="privilege" required>
-                                <option></option>
-                                @foreach($privileges as $priv)
-                                    <option value="{{ $priv->id }}">{{ $priv->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    </div>
-
                     <div class="row">
                         <div class="form-group">
-                            <label class="control-label col-sm-2" for="approver_id">Approver Name  <span class="text-red">*</span></label>
+                            <label class="control-label col-sm-2" for="privilege">Privilege Name <span
+                                    class="text-red">*</span></label>
                             <div class="col-sm-5">
-                                <select selected data-placeholder="** Please select a Approver" class="form-control select2" id="approver_id" name="approver_id" required>
-                                
+                                <select selected data-placeholder="** Please select a Privilege"
+                                    class="form-control select2" id="privilege" name="privilege" required>
+                                    <option></option>
+                                    @foreach ($privileges as $priv)
+                                        <option value="{{ $priv->id }}">{{ $priv->name }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -82,11 +87,26 @@
 
                     <div class="row">
                         <div class="form-group">
-                            <label class="control-label col-sm-2" for="channel">Channel <span class="text-red">*</span></label>
+                            <label class="control-label col-sm-2" for="approver_id">Approver Name <span
+                                    class="text-red">*</span></label>
                             <div class="col-sm-5">
-                                <select selected data-placeholder="** Please select a Channel" class="form-control select2" id="channel" name="channels_id" required>
+                                <select selected data-placeholder="** Please select a Approver" class="form-control select2"
+                                    id="approver_id" name="approver_id" required>
+
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="form-group">
+                            <label class="control-label col-sm-2" for="channel">Channel <span
+                                    class="text-red">*</span></label>
+                            <div class="col-sm-5">
+                                <select selected data-placeholder="** Please select a Channel" class="form-control select2"
+                                    id="channel" name="channels_id" required>
                                     <option></option>
-                                    @foreach($channels as $chanel)
+                                    @foreach ($channels as $chanel)
                                         <option value="{{ $chanel->id }}">{{ $chanel->channel_description }}</option>
                                     @endforeach
                                 </select>
@@ -96,62 +116,68 @@
 
                     <div class="row">
                         <div class="form-group">
-                            <label class="control-label col-sm-2" for="store_ids">Store List  <span class="text-red">*</span></label>
+                            <label class="control-label col-sm-2" for="store_ids">Store List <span
+                                    class="text-red">*</span></label>
                             <div class="col-sm-5">
                                 <select class="form-control select2" id="store_ids" name="store_ids[]" required multiple>
-                                    
+
                                 </select>
                             </div>
                         </div>
                     </div>
-                
+
                 </div>
             </div>
 
             <div class='panel-footer'>
-                <a href="{{ CRUDBooster::mainpath() }}" class="btn btn-default"> <i class="fa fa-chevron-circle-left"></i> Back</a>
-                <button class="btn btn-success" type="submit" id="btnSubmit"> <i class="fa fa-save" ></i> Save</button>
+                <a href="{{ CRUDBooster::mainpath() }}" class="btn btn-default"> <i class="fa fa-chevron-circle-left"></i>
+                    Back</a>
+                <button class="btn btn-success pull-right" type="submit" id="btnSubmit"> <i class="fa fa-save"></i> Save</button>
             </div>
         </form>
     </div>
 @endsection
+
 @push('bottom')
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function() {
             $('.select2').select2();
+            let token = $("#token").val();
 
-            $('#privilege').change(function () {
+            $('#privilege').change(function() {
                 let privilege = $(this).val();
                 $.ajax({
                     url: "{{ route('getApprovers') }}",
                     type: "POST",
                     data: {
                         privilege_id: privilege,
-                        _token: "{{ csrf_token() }}"
+                        _token: token
                     },
-                    success: function (data) {
+                    success: function(data) {
                         $('#approver_id').empty();
-                        $.each(data, function (key, value) {
+                        $.each(data, function(key, value) {
                             $('#approver_id').append(`<option></option>`);
-                            $('#approver_id').append(`<option value="${key}">${value}</option>`);
+                            $('#approver_id').append(
+                                `<option value="${key}">${value}</option>`);
                         });
                     }
                 });
             });
 
-            $('#channel').change(function () {
+            $('#channel').change(function() {
                 let channel = $(this).val();
                 $.ajax({
                     url: "{{ route('getStores') }}",
                     type: "POST",
                     data: {
                         channel_id: channel,
-                        _token: "{{ csrf_token() }}"
+                        _token: token
                     },
-                    success: function (data) {
+                    success: function(data) {
                         $('#store_ids').empty();
                         $('#store_ids').append(`<option value="all"> All</option>`);
-                        $.each(data, function (key, value) {
+                        $.each(data, function(key, value) {
                             $('#store_ids').append(`<option value="${key}">${value}</option>`);
                         });
                     }
@@ -165,28 +191,30 @@
                 if (preventChangeEventLoop) return;
                 preventChangeEventLoop = true;
 
-                var $selects = $('#store_ids');
-                var selectedValues = $(this).val() || []; // Ensure it has an array
-                var selectAllOption = 'all';
-                var isAllSelected = selectedValues.includes(selectAllOption);
+                let selectedStore = $('#store_ids');
+                let selectedValues = $(this).val() || []; // Ensure it has an array
+                let selectAllOption = 'all';
+                let isAllSelected = selectedValues.includes(selectAllOption);
 
                 // Initialize Select2 with allowClear
-                $selects.select2({ allowClear: true });
+                selectedStore.select2({
+                    allowClear: true
+                });
 
                 if (isAllSelected) {
                     // If "Select All" is selected
-                    $selects.find('option').each(function() {
+                    selectedStore.find('option').each(function() {
                         if (this.value !== selectAllOption) {
                             $(this).prop('disabled', true); // Disable specific store options
                         }
                     });
-                    $selects.val([selectAllOption]).trigger('change.select2'); // Retain only "Select All" in the UI
+                    selectedStore.val([selectAllOption]).trigger('change.select2'); // Retain only "Select All" in the UI
                 } else {
                     // If "Select All" is removed or specific stores are selected
-                    $selects.find('option[value="' + selectAllOption + '"]').prop('disabled', false);
+                    selectedStore.find('option[value="' + selectAllOption + '"]').prop('disabled', false);
 
                     // Enable other specific options
-                    $selects.find('option').each(function() {
+                    selectedStore.find('option').each(function() {
                         if (this.value !== selectAllOption) {
                             $(this).prop('disabled', false);
                         }
@@ -195,10 +223,12 @@
 
                 // Reset the selected values if "All" is selected, for backend purposes
                 if (isAllSelected) {
-                    $selects.val([selectAllOption]); // Ensure only "All" is kept as the selected value
+                    selectedStore.val([selectAllOption]); // Ensure only "All" is kept as the selected value
                 }
 
-                $selects.select2({ allowClear: true }); // Refresh the select2 display with updated options
+                selectedStore.select2({
+                    allowClear: true
+                }); // Refresh the select2 display with updated options
                 preventChangeEventLoop = false;
             });
         });
