@@ -23,7 +23,8 @@ class ReasonImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValid
             return TransactionType::where('transaction_type', $row['transaction_type'])->value('id');
         });
 
-        return Reason::firstOrCreate(['pullout_reason' => $row['pullout_reason']],[
+        return Reason::firstOrCreate(['pullout_reason' => $row['pullout_reason'],
+            'transaction_types_id' => $type], [
             'pullout_reason' => $row['pullout_reason'],
             'transaction_types_id' => $type,
             'bea_so_reason' => $row['so_reason'],
@@ -36,8 +37,8 @@ class ReasonImport implements ToModel, WithHeadingRow, SkipsOnFailure, WithValid
         return [
             'pullout_reason' => 'required',
             'transaction_type' => 'required|exists:transaction_types,transaction_type',
-            'so_reason' => 'required',
-            'mo_reason' => 'required',
+            'so_reason' => 'nullable',
+            'mo_reason' => 'nullable',
             'status' => 'required|in:ACTIVE,INACTIVE'
         ];
     }
