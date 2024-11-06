@@ -1,5 +1,6 @@
 <?php namespace App\Http\Controllers;
 
+use App\Helpers\Helper;
 use App\Models\Delivery;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
@@ -36,6 +37,12 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			$this->form = [];
 
 	    }
+
+        public function hook_query_index(&$query){
+            if(!CRUDBooster::isSuperadmin()){
+                $query->where('stores_id',Helper::myStore());
+            }
+        }
 
         public function getDetail($id){
 

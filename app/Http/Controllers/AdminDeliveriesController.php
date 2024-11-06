@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\Helper;
 use App\Models\Delivery;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Exception;
@@ -199,15 +200,13 @@ use Illuminate\Support\Facades\Session;
 
         public function hook_query_index(&$query){
             if(!CRUDBooster::isSuperadmin()){
-                $storeAccess = Session::get('store_id');
-                $channelAccess = Session::get('channel_id');
-                $query->where('stores_id',$storeAccess);
+                $query->where('stores_id',Helper::myStore());
             }
         }
 
         public function getDetail($id){
 
-            if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
+            if(!CRUDBooster::isRead() && !$this->global_privilege || !$this->button_detail) {
                 CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
             }
 
