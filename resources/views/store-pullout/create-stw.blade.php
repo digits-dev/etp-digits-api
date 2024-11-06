@@ -381,6 +381,7 @@ input[type=number]::-webkit-outer-spin-button {
                                 if (row.has_serial == 1) {
                                     currentSerialRow = tbody.find(`input[name="scanned_digits_code[]"][value="${digitsCode}"]`).closest('tr');
                                     $('#SerialModal').modal('show');
+                                    $('#scanned_code').text(digitsCode);
                                 }
                                 updatedQtyInput = tbody.find(`input[name="scanned_digits_code[]"][value="${digitsCode}"]`).closest('tr').find('input[name="qty[]"]');
                             }
@@ -565,9 +566,6 @@ input[type=number]::-webkit-outer-spin-button {
 
         $('#SerialModal').on('shown.bs.modal', function () {
             $('#createSerial').trigger('focus');
-
-            const scanDigitsCode = $('#scanned_digits_code').val();
-            $('#scanned_code').text(scanDigitsCode);
         });
 
 </script>
