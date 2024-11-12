@@ -33,7 +33,7 @@ class AccountingItem extends Model
                 DB::raw("(select '') as brand"),
                 DB::raw("(select '0') as brands_id"),
                 DB::raw("(select '') as model"),
-                DB::raw("(select '0') as as models_id"),
+                DB::raw("(select '0') as models_id"),
                 DB::raw("(select '') as compatibility"),
                 DB::raw("(select '0') as compatibility_id"),
                 DB::raw("(select '') as subclass"),
