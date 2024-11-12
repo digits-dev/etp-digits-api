@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AccountingItem;
 use App\Models\AdminItem;
-use App\Models\GashaponItemMaster;
 use App\Models\ItemMaster;
 use App\Models\RmaItem;
 use Illuminate\Http\Request;
@@ -37,19 +37,21 @@ class ItemMasterController extends Controller
                 ->whereBetween('digits_imfs.is_approved_at', [$request->datefrom, $request->dateto])
                 ->orderBy('digits_imfs.digits_code','ASC')->paginate(50);
 
-            // $data = $items->toArray();
-            // unset($data['links']);
+            $acctgIitems = AccountingItem::getItems()
+                ->whereBetween('accounting_items.created_at', [$request->datefrom, $request->dateto])
+                ->orderBy('accounting_items.digits_code','ASC')->paginate(50);
 
             // Combine the data arrays, but handle the pagination metadata separately
             $combinedData = array_merge(
                 $items->items(),
                 $rmaItems->items(),
-                $adminItems->items()
+                $adminItems->items(),
+                $acctgIitems->items()
             );
 
             // Create a new paginator with the combined data
             $perPage = 50;
-            $total = $items->total() + $rmaItems->total() + $adminItems->total(); // Total items from both paginators
+            $total = $items->total() + $rmaItems->total() + $adminItems->total() + $acctgIitems->total(); // Total items from both paginators
 
             $data = new LengthAwarePaginator(
                 $combinedData,                    // Combined items array
@@ -58,9 +60,6 @@ class ItemMasterController extends Controller
                 $items->currentPage(),            // Use current page of the first paginator
                 ['path' => $request->url()]       // Set the base URL for pagination links
             );
-
-            // Optionally: If you need to unset or modify specific fields like 'links'
-            // $data->unset('links'); // Not necessary for the paginator
 
             return response()->json([
                 'api_status' => 1,
