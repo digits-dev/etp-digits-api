@@ -10,13 +10,16 @@ use App\Models\OracleOrderReceivingLineInterface;
 use App\Models\OracleShipmentHeader;
 use App\Models\OracleShipmentLine;
 use App\Models\OracleTransactionInterface;
+use App\Models\OrderStatus;
+use App\Models\Pullout;
+use App\Models\PulloutLine;
 use App\Services\DeliveryInterfaceService;
 use App\Services\OracleInterfaceService;
+use App\Services\PulloutInterfaceService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use PDO;
 
 class OraclePushController extends Controller
 {
@@ -65,7 +68,7 @@ class OraclePushController extends Controller
 
             $drInterfaced = Delivery::where('order_number', $value['order_number'])->first();
             $drInterfaced->update([
-                'status' => Delivery::PROCESSING_DOTR,
+                'status' => OrderStatus::PROCESSING_DOTR,
                 'shipment_header_id' => $headerId,
                 'interface_flag' => 1
             ]);
@@ -94,18 +97,34 @@ class OraclePushController extends Controller
         }
     }
 
+    public function pushMorInterface(PulloutInterfaceService $pulloutInterface){
+        foreach ($pulloutInterface->getPendingLines() ?? [] as $key => $value) {
+            if($value['to_wh'] == 'DIGITS'){
+                $value['transfer_org_id'] = 224;
+            }
+            if($value['to_wh'] == 'RMA'){
+                $value['transfer_org_id'] = 225;
+            }
+            if($value['from_subinventory'] == 'ECOM'){
+                $value['transfer_org_id'] = 263;
+            }
 
-    public function pushMorInterface(Request $request){
+            $this->processTransferInterface('MOR', $value);
+            //update interface flag
+            $pline = PulloutLine::find($value['line_id']);
+            $pline->interface_flag = 1;
+            $pline->save();
+        }
 
-        //validate request
-        $request->validate([
-            'dr_number' => ['required','integer'],
-            'org_id' => ['required','integer'],
-        ]);
-
-        $this->processPushtoOrderRcvInterface('MOR', $request->toArray());
-
+        //update interface flag to headers
+        foreach ($pulloutInterface->getPending() ?? [] as $key => $value) {
+            $phead = Pullout::where('document_number', $value['document_number'])->first();
+            $phead->status = Pullout::PROCESSING;
+            $phead->interface_flag = 1;
+            $phead->save();
+        }
     }
+
 
     public function pushMorLinesInterface(Request $request){
 
@@ -292,8 +311,8 @@ class OraclePushController extends Controller
                 $details['TRANSACTION_TYPE_ID'] = 21;
                 $details['TRANSACTION_QUANTITY'] = $data['quantity'];
                 $details['REASON_ID'] = $data['reason_id'];
-                $details['SHIPMENT_NUMBER'] = $data['dr_number'];
-                $ref['SHIPMENT_NUMBER'] = $data['dr_number'];
+                $details['SHIPMENT_NUMBER'] = $data['document_number'];
+                $ref['SHIPMENT_NUMBER'] = $data['document_number'];
             break;
             case 'SIT':
                 $details['SOURCE_CODE'] = 'INV';

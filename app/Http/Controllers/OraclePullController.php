@@ -12,9 +12,9 @@ use App\Models\OracleMaterialTransaction;
 use App\Models\OracleOrderHeader;
 use App\Models\OracleShipmentHeader;
 use App\Models\OracleTransactionHeader;
+use App\Models\OrderStatus;
 use App\Models\Pullout;
 use App\Models\StoreMaster;
-use App\Models\WarehouseMaster;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -45,7 +45,6 @@ class OraclePullController extends Controller
         foreach ($this->moveOrders as $key_org => $org) {
 
             $shipment_numbers = OracleMaterialTransaction::getShipments($date_from, $date_to, $org)->get();
-
             foreach ($shipment_numbers as $key_shipment => $shipment) {
                 $request_numbers[] = $shipment->shipment_number;
             }
@@ -132,7 +131,7 @@ class OraclePullController extends Controller
                     'to_org_id' => ($isFBD != 'FBD') ? $transactionAttr['to_org'] : 263,
                     'transaction_type' => $transactionAttr['type'],
                     'transaction_date' => $transactionDate,
-                    'status' => ($transactionAttr['type'] == 'MO' && $isFBD != 'FBD') ? Delivery::PROCESSING : Delivery::PENDING
+                    'status' => ($transactionAttr['type'] == 'MO' && $isFBD != 'FBD') ? OrderStatus::PROCESSING : OrderStatus::PENDING
                 ]);
 
                 // $orderedItem = $value->ordered_item;
@@ -203,7 +202,7 @@ class OraclePullController extends Controller
     }
 
     public function processOrgTransfers(){
-        $deliveries = Delivery::getProcessing()->get();
+        $deliveries = Delivery::doneProcessing()->get();
         foreach ($deliveries ?? [] as $key => $dr) {
             $orders = OracleShipmentHeader::query()->getShipmentByRef($dr->order_number);
             if($orders->getModel()->exists){
@@ -212,7 +211,7 @@ class OraclePullController extends Controller
                     $delivery = Delivery::where('order_number', $dr->order_number)->first();
                     if ($delivery) {
                         $delivery->update([
-                            'status' => Delivery::PENDING,
+                            'status' => OrderStatus::PENDING,
                             'interface_flag' => 0,
                         ]);
 
@@ -294,7 +293,7 @@ class OraclePullController extends Controller
                         $delivery = Delivery::where('order_number', $dr->order_number)->first();
                         if ($delivery) {
                             $delivery->update([
-                                'status' => Delivery::RECEIVED,
+                                'status' => OrderStatus::RECEIVED,
                                 'interface_flag' => 0,
                             ]);
 
