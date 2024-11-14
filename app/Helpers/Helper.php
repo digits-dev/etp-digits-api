@@ -7,12 +7,13 @@ use App\Models\StoreTransfer;
 use Illuminate\Support\Facades\Session;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use App\Models\CmsPrivilege;
+
 class Helper
 {
     private const VIEWREPORT = [CmsPrivilege::SUPERADMIN, CmsPrivilege::AUDIT, CmsPrivilege::IC, CmsPrivilege::MERCH];
 	private const VIEWREPORTLOGISTIC = [CmsPrivilege::LOGISTICS, CmsPrivilege::LOGISTICSTM];
 	private const VIEWREPORTAPPROVER = [CmsPrivilege::APPROVER];
-	private const VIEWREPORTWHRMA = [CmsPrivilege::RMA, CmsPrivilege::WH];
+	private const VIEWREPORTWHRMA = [CmsPrivilege::RMA, CmsPrivilege::WHTM, CmsPrivilege::WHTL];
 	private const VIEWREPORTWHDISTRI = [CmsPrivilege::DISTRIOPS];
 	private const VIEWREPORTWHRTLFRAONL = [CmsPrivilege::RTLOPS, CmsPrivilege::FRAOPS];
 	private const VIEWREPORTWHRTLFRAOPS = [CmsPrivilege::RTLFRAOPS];
