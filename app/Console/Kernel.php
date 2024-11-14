@@ -2,8 +2,8 @@
 
 namespace App\Console;
 
+use App\Http\Controllers\AdminStoreTransfersController;
 use App\Http\Controllers\OraclePullController;
-use App\Http\Controllers\OraclePushController;
 use App\Services\ItemSyncService;
 use App\Services\WarehouseSyncService;
 use Carbon\Carbon;
@@ -29,7 +29,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('task:orderpull')->hourly();
-        // $schedule->command('interface:push-dot-dotr')->everyFifteenMinutes();
+        $schedule->command('interface:push-dot-dotr')->everyMinute(); //->everyFifteenMinutes();
         // $schedule->command('interface:push-sit')->everyFifteenMinutes();
 
         $schedule->call(function(){
@@ -56,6 +56,9 @@ class Kernel extends ConsoleKernel
             $oracle->processSubInvTransfersReceiving();//for sitr
             $oracle->processReturnTransactions();
             $oracle->updateOracleItemId();
+
+            $sts = new AdminStoreTransfersController();
+            $sts->updateTransferStatus();
         })->everyMinute();
 
         $schedule->call(function(){
