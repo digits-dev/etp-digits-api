@@ -4,7 +4,7 @@
     @push('head')
         <link rel='stylesheet' href='<?php echo asset('vendor/crudbooster/assets/select2/dist/css/select2.min.css'); ?>' />
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-        
+
         <style type="text/css">
             .select2-selection__choice{
                     font-size:14px !important;
@@ -254,7 +254,7 @@
 
 
 @push('bottom')
-    <script src='<?php echo asset('vendor/crudbooster/assets/select2/dist/js/select2.full.min.js'); ?>'></script>
+    <script src="{{ asset('vendor/crudbooster/assets/select2/dist/js/select2.full.min.js') }}"></script>
     <script src='https://cdn.jsdelivr.net/gh/admsev/jquery-play-sound@master/jquery.playSound.js'></script>
 
     <script>
@@ -382,7 +382,7 @@
                                             <input class="form-control" type="hidden" name="all_problems[]" id="all_problems" placeholder="Problem" style="margin-top: 5px;" readonly />
                                         </td>
                                         <td class="text-center serial-container">
-                                            ${row.has_serial == 1 ? `<input type="text" class="form-control serial-input" name="serial[]" style="text-align:center" readonly>` : ''} 
+                                            ${row.has_serial == 1 ? `<input type="text" class="form-control serial-input" name="serial[]" style="text-align:center" readonly>` : ''}
                                             <input type="hidden" class="form-control all-serial-input" name="allSerial[]" style="text-align:center" readonly>
                                         </td>
                                         <td class="text-center"><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fa fa-trash"></i></button></td>
@@ -454,20 +454,20 @@
                                 html: "<h5><strong>Invalid digits code:</strong> <br> No matching data found, please try again!</h5>",
                                 confirmButtonText: '<i class="fa fa-thumbs-up"></i> Okay',
                                 preConfirm: () => {
-                                    $('#item_search').trigger('focus'); 
+                                    $('#item_search').trigger('focus');
                                 }
                             });
                         }
                         $('#scanningSpinner').hide();
                         $('#item_search').val("");
-                        $('#item_search').prop('disabled', false); 
-                        $('#item_search').trigger('focus'); 
+                        $('#item_search').prop('disabled', false);
+                        $('#item_search').trigger('focus');
 
                     },
                     error: function(xhr, status, error) {
                         alert('Error: ' + error);
                         $('#scanningSpinner').hide();
-                        $('#item_search').prop('disabled', false); 
+                        $('#item_search').prop('disabled', false);
                     }
                 });
             }
@@ -477,7 +477,7 @@
             const row = $(button).closest('tr');
             row.remove();
             updateTotalQuantity();
-            $('#item_search').trigger('focus'); 
+            $('#item_search').trigger('focus');
         }
 
         function updateTotalQuantity(updatedQtyInput) {
@@ -498,7 +498,7 @@
         }
 
         $('#createSerial').keypress(function(event) {
-            if (event.which === 13) {  
+            if (event.which === 13) {
                 event.preventDefault();
                 const serial = $('#createSerial').val().trim();
 
@@ -536,9 +536,9 @@
                         }).get().join(', ');
                         serialContainer.find('.all-serial-input').val(allSerials);
 
-                        $('#createSerial').val('');  
-                        $('#SerialModal').modal('hide'); 
-                        $('#item_search').trigger('focus'); 
+                        $('#createSerial').val('');
+                        $('#SerialModal').modal('hide');
+                        $('#item_search').trigger('focus');
                     }
                 }
             }
@@ -561,7 +561,7 @@
 
             $('#SerialModal').modal('hide');
             $('#SerialModal').on('hidden.bs.modal', function() {
-                $('#item_search').trigger('focus'); 
+                $('#item_search').trigger('focus');
             });
         }
 
@@ -588,7 +588,7 @@
                             title: "Please wait while saving...",
                             didOpen: () => Swal.showLoading()
                         });
-                        
+
                         form.submit();
                     }
                 });
