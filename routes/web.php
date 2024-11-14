@@ -80,7 +80,7 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::post('post-stw-pullout', [AdminStorePulloutsController::class,'postStwPullout'])->name('post-stw-pullout');
         Route::get('schedule/{id}', [AdminStorePulloutsController::class, 'getSchedule'])->name('stwSchedule');
         Route::post('save-schedule',[AdminStorePulloutsController::class, 'saveSchedule'])->name('saveSchedulePullout');
-        Route::get('create-do-no/{id}', [AdminStorePulloutsController::class, 'getCreateDoNo'])->name('showPulloutCreateDoNo');  
+        Route::get('create-do-no/{id}', [AdminStorePulloutsController::class, 'getCreateDoNo'])->name('showPulloutCreateDoNo');
         Route::post('save-create-do-no',[AdminStorePulloutsController::class, 'saveCreateDoNo'])->name('savePulloutCreateDoNo');
     });
 
@@ -103,7 +103,7 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::get('review/{id}', [AdminStsApprovalController::class, 'getApproval'])->name('stsApproval');
         Route::post('save-review',[AdminStsApprovalController::class, 'saveReviewST'])->name('saveReviewST');
     });
-       
+
     Route::group(['prefix' => 'store_transfers'], function(){
         Route::get('create-sts', [AdminStoreTransfersController::class,'createSTS'])->name('createSTS');
         Route::get('void_sts/{id}', [AdminStoreTransfersController::class, 'voidSTS'])->name('voidSTS');
@@ -113,7 +113,7 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::get('schedule/{id}', [AdminStoreTransfersController::class, 'getSchedule'])->name('stsSchedule');
         Route::post('save-schedule',[AdminStoreTransfersController::class, 'saveSchedule'])->name('saveScheduleTransfer');
         Route::get('print/{id}', [AdminStoreTransfersController::class, 'printSTS'])->name('printSTS');
-        Route::get('create-do-no/{id}', [AdminStoreTransfersController::class, 'getCreateDoNo'])->name('showCreateDoNo');  
+        Route::get('create-do-no/{id}', [AdminStoreTransfersController::class, 'getCreateDoNo'])->name('showCreateDoNo');
         Route::post('save-create-do-no',[AdminStoreTransfersController::class, 'saveCreateDoNo'])->name('saveCreateDoNo');
     });
 
