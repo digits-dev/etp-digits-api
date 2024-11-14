@@ -37,4 +37,18 @@ class Reason extends Model
             ->select('id', 'pullout_reason')
             ->orderBy('pullout_reason', 'ASC');
     }
+
+    public function scopeActiveMo($query, $transactionType) {
+        return $query->where('status', 'ACTIVE')
+            ->where('transaction_types_id', $transactionType)
+            ->select('bea_mo_reason as bea_reason', 'pullout_reason')
+            ->orderBy('pullout_reason', 'ASC');
+    }
+
+    public function scopeActiveSo($query, $transactionType) {
+        return $query->where('status', 'ACTIVE')
+            ->where('transaction_types_id', $transactionType)
+            ->select('bea_so_reason', 'pullout_reason')
+            ->orderBy('pullout_reason', 'ASC');
+    }
 }
