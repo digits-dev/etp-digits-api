@@ -23,7 +23,7 @@ class EtpDelivery extends Model
     }
 
     public function status() : BelongsTo {
-        return $this->belongsTo(OrderStatus::class, 'Status', 'id');
+        return $this->belongsTo(OrderStatus::class, 'TransactionStatus', 'id');
     }
 
     public function lines() : HasMany {
@@ -34,7 +34,25 @@ class EtpDelivery extends Model
         return $query->where('Company', 100)
             ->where('Division', 100)
             ->where('TransactionStatus', 1) //received
-            ->where('ToWarehouse', '0572')
+            ->whereIn('ToWarehouse', ['0572','0921'])
+            ->select(
+                'OrderNumber',
+                'ReceivingDate',
+                'ReceivingTime',
+                'ToWarehouse',
+                'Warehouse',
+                'Status',
+                'TransactionStatus',
+                'TransactionId'
+            );
+    }
+
+    public function scopeGetReceivedTransfers($query){
+        return $query->where('Company', 100)
+            ->where('Division', 100)
+            ->where('TransactionStatus', 1) //received
+            ->whereNotIn('ToWarehouse', ['0311','0312'])
+            ->whereNotIn('Warehouse', ['0311','0312'])
             ->select(
                 'OrderNumber',
                 'ReceivingDate',

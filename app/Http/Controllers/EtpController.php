@@ -21,11 +21,15 @@ class EtpController extends Controller
         return response()->json($data);
     }
 
+    public function getTransferTransactions(){
+        return EtpDelivery::getReceivedTransfers()
+            ->whereBetween('ReceivingDate',[now()->format('Ymd'),now()->format('Ymd')])
+            ->get()->toArray();
+    }
+
     public function getStoreSync(){
         $data = [];
-        $data['sync'] = EtpCashOrderTrx::getStoreSync()->with([
-            'wh'
-        ])->get();
+        $data['sync'] = EtpCashOrderTrx::getStoreSync()->with(['wh'])->get();
 
         return response()->json($data);
     }
