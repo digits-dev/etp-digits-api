@@ -306,17 +306,11 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 		if (Helper::myChannel() == 1) { //RETAIL
 			$data['reasons'] = Cache::remember('rma_reasons_mo' . Helper::myStore(), now()->addDays(1), function () {
-				return Reason::select('bea_mo_reason as bea_reason', 'pullout_reason', 'allow_multi_items')
-					->where('transaction_types_id', TransactionType::RMA)
-					->where('status', 'ACTIVE')
-					->get();
+				return Reason::activeMo(TransactionType::RMA)->get();
 			});
 		} else {
 			$data['reasons'] = Cache::remember('rma_reasons_so' . Helper::myStore(), now()->addDays(1), function () {
-				return Reason::select('bea_so_reason as bea_reason', 'pullout_reason', 'allow_multi_items')
-					->where('transaction_types_id', TransactionType::RMA)
-					->where('status', 'ACTIVE')
-					->get();
+				return Reason::activeSo(TransactionType::RMA)->get();
 			});
 		}
 
