@@ -30,4 +30,10 @@ class Reason extends Model
     public function scopeGetReason($query, $reason) {
         return $query->where('pullout_reason',$reason)->first();
     }
+
+    public function scopeActive($query, $transactionType) {
+        return $query->where('status', 'ACTIVE')
+            ->where('transaction_types_id', $transactionType)
+            ->select('id','pullout_reason');
+    }
 }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class Pullout extends Model
 {
@@ -19,6 +20,7 @@ class Pullout extends Model
     const PARTIALLY_RECEIVED = 4;
 
     protected $table = 'pullouts';
+    protected $connection = 'mysql';
     protected $fillable = [
         'sor_mor_number',
         'document_number',
@@ -88,5 +90,33 @@ class Pullout extends Model
             ->where('status', self::FOR_RECEIVING)
             ->select('sor_mor_number', 'document_number')
             ->orderBy('created_at', 'asc')->get();
+    }
+
+    public function scopeGetPending(){
+        return $this->where('status', self::PENDING)
+            ->select('sor_mor_number', 'document_number')
+            ->orderBy('created_at', 'asc');
+    }
+
+    public function scopeGetPendingLines(){
+        return $this->where('pullouts.status', self::PENDING)
+            //add not fra, fbd
+            ->join('pullout_lines', 'pullouts.id', 'pullout_lines.pullouts_id')
+            ->join('items', 'pullout_lines.item_code', 'items.digits_code')
+            ->join('store_masters as whfrom', 'pullouts.wh_from', 'whfrom.warehouse_code')
+            ->join('store_masters as whto', 'pullouts.wh_to', 'whto.warehouse_code')
+            ->join('reasons', 'pullouts.reasons_id', 'reasons.id')
+            ->select(
+                'pullouts.document_number',
+                'reasons.bea_mo_reason as reason_id',
+                'whfrom.doo_subinventory as from_subinventory',
+                'pullouts.to_org_id as org_id',
+                DB::raw("(SELECT 'TO CHECK') as transfer_subinventory"),
+                'whto.doo_subinventory as to_wh',
+                'pullout_lines.id as line_id',
+                'items.beach_item_id as item_id',
+                DB::raw('CAST(pullout_lines.qty AS SIGNED) * -1 as quantity')
+            )
+            ->orderBy('pullouts.transaction_date', 'asc');
     }
 }

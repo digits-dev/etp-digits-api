@@ -20,6 +20,7 @@ class StoreMaster extends Model
         'doo_subinventory',
         'sit_subinventory',
         'org_subinventory',
+        'transfer_groups_id',
         'status',
         'created_by',
         'updated_by'
@@ -29,5 +30,15 @@ class StoreMaster extends Model
         return $query->select(['id','channels_id','to_org_id'])
             ->where('warehouse_code', $whCode)
             ->first();
+    }
+
+    public function scopeActive($query){
+        return $query->where('status', 'ACTIVE')
+            ->select('id','warehouse_code','store_name');
+    }
+
+    public function scopeGetTransferByGroup($query, $group){
+        return $query->where('status', 'ACTIVE')
+            ->where('transfer_groups_id', $group);
     }
 }

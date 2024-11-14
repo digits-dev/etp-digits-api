@@ -12,12 +12,6 @@ class Delivery extends Model
 {
     use HasFactory;
 
-    const PENDING = 0;
-    const PROCESSING = 1;
-    const RECEIVED = 2;
-    const PROCESSING_DOTR = 3;
-    const PROCESSING_SIT = 4;
-
     protected $table = 'deliveries';
     protected $fillable = [
         'order_number',
@@ -53,15 +47,23 @@ class Delivery extends Model
     }
 
     public function scopeGetProcessing(){
-        return $this->where('status', self::PROCESSING)
+        return $this->where('status', OrderStatus::PROCESSING)
             ->where('interface_flag', 1)
             ->where('transaction_type', 'MO')
             ->select('order_number')
             ->orderBy('transaction_date','asc');
     }
 
+    public function scopeDoneProcessing(){
+        return $this->where('status', OrderStatus::PROCESSING)
+            ->where('interface_flag', 0)
+            ->where('transaction_type', 'MO')
+            ->select('order_number')
+            ->orderBy('transaction_date','asc');
+    }
+
     public function scopeGetPendingDotr(){
-        return $this->where('status', self::PENDING)
+        return $this->where('status', OrderStatus::PENDING)
             ->where('interface_flag', 0)
             ->where('transaction_type', 'MO')
             ->where('customer_name', 'NOT LIKE','%FBD')
@@ -70,7 +72,7 @@ class Delivery extends Model
     }
 
     public function scopeGetPendingSit(){
-        return $this->where('status', self::PENDING)
+        return $this->where('status', OrderStatus::PENDING)
             ->where('interface_flag', 0)
             ->where('transaction_type', 'MO')
             ->where('customer_name', 'LIKE','%FBD')
@@ -79,7 +81,7 @@ class Delivery extends Model
     }
 
     public function scopeGetProcessingSit(){
-        return $this->where('status', self::PROCESSING_SIT)
+        return $this->where('status', OrderStatus::PROCESSING_SIT)
             ->where('interface_flag', 1)
             ->where('transaction_type', 'MO')
             ->where('customer_name', 'LIKE','%FBD')
@@ -102,7 +104,7 @@ class Delivery extends Model
                 'delivery_lines.ordered_item_id as item_id',
                 'delivery_lines.shipped_quantity as quantity',
             )
-            ->where('deliveries.status', self::PROCESSING_SIT)
+            ->where('deliveries.status', OrderStatus::PROCESSING_SIT)
             ->where('deliveries.interface_flag', 0)
             ->where('deliveries.transaction_type', 'MO')
             ->where('deliveries.customer_name', 'LIKE','%FBD')
@@ -110,14 +112,14 @@ class Delivery extends Model
     }
 
     public function scopeGetProcessingDotr(){
-        return $this->where('status', self::PROCESSING_DOTR)
+        return $this->where('status', OrderStatus::PROCESSING_DOTR)
             ->where('interface_flag', 0)
             ->select('order_number','dr_number','to_org_id as org_id','to_warehouse_id')
             ->orderBy('transaction_date','asc');
     }
 
     public function scopeGetDotrProcessing(){
-        return $this->where('status', self::PROCESSING_DOTR)
+        return $this->where('status', OrderStatus::PROCESSING_DOTR)
             ->where('interface_flag', 1)
             ->select('order_number','dr_number','to_org_id as org_id','to_warehouse_id')
             ->orderBy('transaction_date','asc');
@@ -125,13 +127,13 @@ class Delivery extends Model
 
     public function scopeGetProcessingLines(){
         return self::getHeadLineQuery()
-            ->where('deliveries.status', self::PROCESSING)
-            ->where('deliveries.interface_flag', 1);
+            ->where('deliveries.status', OrderStatus::PROCESSING)
+            ->where('deliveries.interface_flag', 0);
     }
 
     public function scopeGetPendingDotrLines(){
         return self::getHeadLineQuery()
-            ->where('deliveries.status', self::PENDING)
+            ->where('deliveries.status', OrderStatus::PENDING)
             ->where('deliveries.customer_name', 'NOT LIKE','%FBD')
             ->where('deliveries.interface_flag', 0);
     }

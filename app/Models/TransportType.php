@@ -10,6 +10,9 @@ class TransportType extends Model
 {
     use HasFactory, SoftDeletes;
 
+    public const LOGISTICS = 1;
+    public const HANDCARRY = 2;
+
     protected $fillable = [
         'transport_type',
         'status',
@@ -18,6 +21,7 @@ class TransportType extends Model
     ];
 
     public function scopeActive($query){
-        return $query->where('status', 'ACTIVE');
+        return $query->where('status', 'ACTIVE')
+            ->select('id', 'transport_type');
     }
 }

@@ -12,6 +12,7 @@ class TransactionType extends Model
     const STW = 1;
     const RMA = 2;
     const STS = 3;
+    const STR = 4;
 
     protected $fillable = [
         'transaction_type',
