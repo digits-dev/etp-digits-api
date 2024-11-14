@@ -34,6 +34,7 @@ class Reason extends Model
     public function scopeActive($query, $transactionType) {
         return $query->where('status', 'ACTIVE')
             ->where('transaction_types_id', $transactionType)
-            ->select('id','pullout_reason');
+            ->select('id', 'pullout_reason')
+            ->orderBy('pullout_reason', 'ASC');
     }
 }
