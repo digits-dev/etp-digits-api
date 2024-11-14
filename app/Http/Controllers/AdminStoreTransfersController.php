@@ -6,9 +6,6 @@ use App\Models\CmsPrivilege;
 use App\Models\Item;
 use App\Models\SerialNumber;
 use App\Models\StoreTransfer;
-use crocodicstudio\crudbooster\helpers\CRUDBooster;
-use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use App\Models\Problem;
 use App\Models\Counter;
 use App\Models\OrderStatus;
@@ -18,6 +15,9 @@ use App\Models\StoreMaster;
 use App\Models\TransactionType;
 use App\Models\TransportType;
 use Illuminate\Support\Facades\Cache;
+use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controllers\CBController
 {
@@ -25,7 +25,6 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 	private const SCHEDULER = [CmsPrivilege::SUPERADMIN, CmsPrivilege::LOGISTICS, CmsPrivilege::LOGISTICSTM];
 	private const DOCREATOR = [CmsPrivilege::SUPERADMIN, CmsPrivilege::CASHIER];
 	private const CANVOID = [CmsPrivilege::SUPERADMIN, CmsPrivilege::CASHIER];
-
 
 	public function cbInit()
 	{
@@ -62,7 +61,6 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 		$this->form = [];
 
-
 		if (CRUDBooster::isCreate()){
 			$this->index_button[] = ['label' => 'Create STS', 'url' => route('createSTS'), 'icon' => 'fa fa-plus', 'color' => 'success'];
 		}
@@ -75,20 +73,12 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 				'url' => CRUDBooster::mainpath('void_sts/[id]'),
 				'icon' => 'fa fa-times',
 				'color' => 'danger',
-				'showIf' => "[status]==" . OrderStatus::PENDING . "",
+				'showIf' => "[status] == " . OrderStatus::FORCONFIRMATION,
 				'confirmation' => 'yes',
 				'confirmation_title' => 'Confirm Voiding',
 				'confirmation_text' => 'Are you sure to VOID this transaction?'
 			];
 		}
-
-		$this->addaction[] = [
-			'title' => 'Print',
-			'url' => CRUDBooster::mainpath('print') . '/[id]',
-			'icon' => 'fa fa-print',
-			'color' => 'info',
-			'showIf' => "[status] != " . OrderStatus::REJECTED . " && [status] != " . OrderStatus::VOID
-		];
 
 		if (in_array(CRUDBooster::myPrivilegeId(), self::SCHEDULER)) {
 			$this->addaction[] = [
@@ -96,7 +86,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 				'url' => CRUDBooster::mainpath('schedule/[id]'),
 				'icon' => 'fa fa-calendar',
 				'color' => 'warning',
-				'showIf' => "[status]=='" . OrderStatus::FORSCHEDULE . "'"
+				'showIf' => "[status] == " . OrderStatus::FORSCHEDULE
 			];
 		}
 
@@ -106,9 +96,17 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 				'url' => CRUDBooster::mainpath('create-do-no/[id]'),
 				'icon' => 'fa fa-edit',
 				'color' => 'warning',
-				'showIf' => "[status]=='" . OrderStatus::CREATEINPOS . "'"
+				'showIf' => "[status] == " . OrderStatus::CREATEINPOS
 			];
 		}
+
+        $this->addaction[] = [
+			'title' => 'Print',
+			'url' => CRUDBooster::mainpath('print') . '/[id]',
+			'icon' => 'fa fa-print',
+			'color' => 'info',
+			'showIf' => "[status] != " . OrderStatus::REJECTED . " && [status] != " . OrderStatus::VOID
+		];
 
 		$this->load_css = [];
 		$this->load_css[] = asset("css/font-family.css");
@@ -116,17 +114,12 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 	}
 
 
-	public function actionButtonSelected($id_selected, $button_name)
-	{
-		//Your code here
-
-	}
-
 	public function hook_query_index(&$query)
 	{
 		if(!CRUDBooster::isSuperadmin()){
 			if (in_array(CRUDBooster::myPrivilegeId() ,self::SCHEDULER)) {
-				$query->where('store_transfers.status', OrderStatus::FORSCHEDULE)->where('transport_types_id', 1);
+				$query->where('store_transfers.status', OrderStatus::FORSCHEDULE)
+                ->where('transport_types_id', TransportType::LOGISTICS);
 			}
 			else{
 				$query->where('store_transfers.created_by', CRUDBooster::myId());
@@ -137,7 +130,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 	public function getDetail($id)
 	{
-		if (!CRUDBooster::isRead() && $this->global_privilege == FALSE || $this->button_detail == FALSE) {
+		if (!CRUDBooster::isRead() && !$this->global_privilege || !$this->button_detail) {
 			CRUDBooster::redirect(CRUDBooster::adminPath(), trans("crudbooster.denied_access"));
 		}
 
@@ -156,7 +149,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 		if (CRUDBooster::isSuperadmin()) {
 
-			$data['transfer_from'] = Cache::remember('transfer_from_if' . Helper::myStore(), 36000, function () {
+			$data['transfer_from'] = Cache::remember('transfer_from_if' . Helper::myStore(), now()->addDays(1), function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
@@ -166,7 +159,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 
 		} else {
 
-			$data['transfer_from'] = Cache::remember('transfer_from_else' . Helper::myStore(), 36000, function () {
+			$data['transfer_from'] = Cache::remember('transfer_from_else' . Helper::myStore(), now()->addDays(1), function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->whereIn('id', [Helper::myStore()])
 				->where('status', 'ACTIVE')
@@ -176,7 +169,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 			});
 		}
 
-		$data['transfer_to'] = Cache::remember('sts_transfer_to' . Helper::myStore(), 36000, function () {
+		$data['transfer_to'] = Cache::remember('sts_transfer_to' . Helper::myStore(), now()->addDays(1), function () {
 			return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('transfer_groups_id', Helper::myTransferGroup())
 				->where('status', 'ACTIVE')
@@ -186,17 +179,12 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 				->get();
 		});
 
-		$data['reasons'] = Cache::remember('sts_reason' . Helper::myStore(), 36000, function () {
-			return Reason::select('id', 'pullout_reason')
-				->where('transaction_types_id', TransactionType::STS) // STS
-				->where('status', 'ACTIVE')
-				->get();
+		$data['reasons'] = Cache::remember('sts_reason' . Helper::myStore(), now()->addDays(1), function () {
+			return Reason::active(TransactionType::STS)->get();
 		});
 
-		$data['transport_type'] = Cache::remember('transport_type', 36000, function () {
-			return TransportType::select('id', 'transport_type')
-				->where('status', 'ACTIVE')
-				->get();
+		$data['transport_type'] = Cache::remember('transport_type', now()->addDays(1), function () {
+			return TransportType::active()->get();
 		});
 
 		return view("store-transfer.create-sts", $data);
@@ -293,7 +281,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		}
 
 		$counter->increment('reference_number');
-		CRUDBooster::redirect(CRUDBooster::mainpath(), "STS created successfully!", 'success');
+		CRUDBooster::redirect(CRUDBooster::mainpath(), "STS {$combined_ref} created successfully!", 'success');
 	}
 
 	public function voidSTS($id)

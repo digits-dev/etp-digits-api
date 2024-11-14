@@ -6,7 +6,6 @@ use App\Helpers\Helper;
 use App\Models\CmsPrivilege;
 use App\Models\StorePullout;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Carbon;
@@ -72,7 +71,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 				'url' => CRUDBooster::mainpath('void_pullout/[id]'),
 				'icon' => 'fa fa-times',
 				'color' => 'danger',
-				'showIf' => "[status]==" . OrderStatus::PENDING. "",
+				'showIf' => "[status] == " . OrderStatus::PENDING,
 				'confirmation' => 'yes',
 				'confirmation_title' => 'Confirm Voiding',
 				'confirmation_text' => 'Are you sure to VOID this transaction?'
@@ -85,7 +84,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 				'url' => CRUDBooster::mainpath('schedule/[id]'),
 				'icon' => 'fa fa-calendar',
 				'color' => 'warning',
-				'showIf' => "[status]=='" . OrderStatus::FORSCHEDULE . "'"
+				'showIf' => "[status] == " . OrderStatus::FORSCHEDULE
 			];
 		}
 
@@ -95,7 +94,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 				'url' => CRUDBooster::mainpath('create-do-no/[id]'),
 				'icon' => 'fa fa-edit',
 				'color' => 'warning',
-				'showIf' => "[status]=='" . OrderStatus::CREATEINPOS . "'"
+				'showIf' => "[status] == " . OrderStatus::CREATEINPOS
 			];
 		}
 
@@ -104,7 +103,6 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 	public function hook_query_index(&$query) {
 		if(!CRUDBooster::isSuperadmin()){
-
 			if (in_array(CRUDBooster::myPrivilegeId() ,self::SCHEDULER)) {
 				$query->where('store_pullouts.status', OrderStatus::FORSCHEDULE)->where('transport_types_id', 1);
 			}
@@ -118,26 +116,34 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 	public function getDetail($id)
 	{
-
-		if (!CRUDBooster::isRead() && $this->global_privilege == FALSE || $this->button_detail == FALSE) {
+		if (!CRUDBooster::isRead() && !$this->global_privilege || !$this->button_detail) {
 			CRUDBooster::redirect(CRUDBooster::adminPath(), trans("crudbooster.denied_access"));
 		}
 
 		$data = [];
 		$data['page_title'] = "Pullout Details";
-		$data['store_pullout'] = StorePullout::with(['transportTypes', 'approvedBy', 'rejectedBy', 'scheduledBy', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
+		$data['store_pullout'] = StorePullout::with([
+            'transportTypes', 'approvedBy',
+            'rejectedBy', 'scheduledBy',
+            'reasons', 'lines', 'statuses',
+            'storesFrom', 'storesTo', 'lines.serials',
+            'lines.item'])->find($id);
 
 		return view('store-pullout.detail', $data);
 	}
 
 	public function createSTW()
 	{
+        if (!CRUDBooster::isCreate() && !$this->global_privilege) {
+			CRUDBooster::redirect(CRUDBooster::adminPath(), trans("crudbooster.denied_access"));
+		}
+
 		$data = array();
 		$data['page_title'] = 'Create STW';
 
 		if (CRUDBooster::isSuperadmin()) {
 
-			$data['transfer_from'] = Cache::remember('transfer_from_if'. Helper::myStore(), 36000, function () {
+			$data['transfer_from'] = Cache::remember('transfer_from_if'. Helper::myStore(), now()->addDays(1), function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
@@ -147,7 +153,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 		} else {
 
-			$data['transfer_from'] = Cache::remember('transfer_from_else' . Helper::myStore(), 36000, function () {
+			$data['transfer_from'] = Cache::remember('transfer_from_else' . Helper::myStore(), now()->addDays(1), function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->whereIn('id', [Helper::myStore()])
 				->where('status', 'ACTIVE')
@@ -157,7 +163,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			});
 		}
 
-		$data['transfer_to'] = Cache::remember('stw_transfer_to' . Helper::myStore(), 36000, function () {
+		$data['transfer_to'] = Cache::remember('stw_transfer_to' . Helper::myStore(), now()->addDays(1), function () {
 			return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->where('store_name', 'DIGITS WAREHOUSE')
@@ -167,7 +173,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 
 		if (Helper::myChannel() == 1) { //RETAIL
-			$data['reasons'] = Cache::remember('stw_reason_mo' . Helper::myStore(), 36000, function () {
+			$data['reasons'] = Cache::remember('stw_reason_mo' . Helper::myStore(), now()->addDays(1), function () {
 				return Reason::select('bea_mo_reason as bea_reason', 'pullout_reason')
 					->where('transaction_types_id', TransactionType::STW)
 					->where('status', 'ACTIVE')
@@ -175,7 +181,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			});
 
 		} else {
-			$data['reasons'] = Cache::remember('stw_reason_so' . Helper::myStore(), 36000, function () {
+			$data['reasons'] = Cache::remember('stw_reason_so' . Helper::myStore(), now()->addDays(1), function () {
 				return Reason::select('bea_so_reason as bea_reason', 'pullout_reason')
 					->where('transaction_types_id', TransactionType::STW)
 					->where('status', 'ACTIVE')
@@ -184,10 +190,8 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 		}
 
-		$data['transport_type'] = Cache::remember('transport_type', 36000, function () {
-			return TransportType::select('id', 'transport_type')
-				->where('status', 'ACTIVE')
-				->get();
+		$data['transport_type'] = Cache::remember('transport_type', now()->addDays(1), function () {
+			return TransportType::active()->get();
 		});
 
 		return view("store-pullout.create-stw", $data);
@@ -195,7 +199,6 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 	public function postStwPullout(Request $request)
 	{
-		// Validations
 		try {
 			$validatedData = $request->validate([
 				'pullout_from' => 'required|max:255',
@@ -228,7 +231,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			'ref_number' => $combined_ref,
 			'memo' => $validatedData['memo'],
 			'pullout_date' => Carbon::parse($validatedData['pullout_date']),
-			'transaction_type' => 1, // STW
+			'transaction_type' => TransactionType::STW, // STW
 			'wh_from' => $validatedData['pullout_from'],
 			'wh_to' => $validatedData['pullout_to'],
 			'hand_carrier' => $hand_carrier,
@@ -269,12 +272,17 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 	public function createSTR()
 	{
+
+        if (!CRUDBooster::isCreate() && !$this->global_privilege) {
+			CRUDBooster::redirect(CRUDBooster::adminPath(), trans("crudbooster.denied_access"));
+		}
+
 		$data = array();
 		$data['page_title'] = 'Create ST RMA';
 
 		if (CRUDBooster::isSuperadmin()) {
 
-			$data['transfer_from'] = Cache::remember('transfer_from_if' . Helper::myStore(), 36000, function () {
+			$data['transfer_from'] = Cache::remember('transfer_from_if' . Helper::myStore(), now()->addDays(1), function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->whereNotIn('store_name', ['RMA WAREHOUSE', 'DIGITS WAREHOUSE'])
@@ -284,7 +292,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 		} else {
 
-			$data['transfer_from'] = Cache::remember('transfer_from_else' . Helper::myStore(), 36000, function () {
+			$data['transfer_from'] = Cache::remember('transfer_from_else' . Helper::myStore(), now()->addDays(1), function () {
 				return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->whereIn('id', [Helper::myStore()])
 				->where('status', 'ACTIVE')
@@ -294,7 +302,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			});
 		}
 
-		$data['transfer_to'] = Cache::remember('str_transfer_to' . Helper::myStore(), 36000, function () {
+		$data['transfer_to'] = Cache::remember('str_transfer_to' . Helper::myStore(), now()->addDays(1), function () {
 			return StoreMaster::select('id', 'store_name', 'warehouse_code')
 				->where('status', 'ACTIVE')
 				->where('store_name', 'RMA WAREHOUSE')
@@ -303,14 +311,14 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		});
 
 		if (Helper::myChannel() == 1) { //RETAIL
-			$data['reasons'] = Cache::remember('rma_reasons_mo' . Helper::myStore(), 36000, function () {
+			$data['reasons'] = Cache::remember('rma_reasons_mo' . Helper::myStore(), now()->addDays(1), function () {
 				return Reason::select('bea_mo_reason as bea_reason', 'pullout_reason', 'allow_multi_items')
 					->where('transaction_types_id', TransactionType::RMA)
 					->where('status', 'ACTIVE')
 					->get();
 			});
 		} else {
-			$data['reasons'] = Cache::remember('rma_reasons_so' . Helper::myStore(), 36000, function () {
+			$data['reasons'] = Cache::remember('rma_reasons_so' . Helper::myStore(), now()->addDays(1), function () {
 				return Reason::select('bea_so_reason as bea_reason', 'pullout_reason', 'allow_multi_items')
 					->where('transaction_types_id', TransactionType::RMA)
 					->where('status', 'ACTIVE')
@@ -318,12 +326,9 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			});
 		}
 
-		$data['transport_type'] = Cache::remember('transport_type', 36000, function () {
-			return TransportType::select('id', 'transport_type')
-				->where('status', 'ACTIVE')
-				->get();
+		$data['transport_type'] = Cache::remember('transport_type', now()->addDays(1), function () {
+			return TransportType::active()->get();
 		});
-
 
 		return view("store-pullout.create-str", $data);
 	}
@@ -365,7 +370,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 			'ref_number' => $combined_ref,
 			'memo' => $validatedData['memo'],
 			'pullout_date' => Carbon::parse($validatedData['pullout_date']),
-			'transaction_type' => 2, // STR
+			'transaction_type' => TransactionType::RMA, // STR
 			'wh_from' => $validatedData['pullout_from'],
 			'wh_to' => $validatedData['pullout_to'],
 			'hand_carrier' => $hand_carrier,
@@ -418,36 +423,41 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 	public function voidPullout($id)
 	{
-
-		StorePullout::where('id', $id)->update(['status' => OrderStatus::VOID]);
+		$pullout = StorePullout::findOrFail($id);
+        $pullout->status = OrderStatus::VOID;
+        $pullout->save();
 
 		CRUDBooster::redirect(CRUDBooster::mainpath(), 'Pullout voided successfully!', 'success')->send();
 	}
 
 	public function printPullout($id)
 	{
-
-		if (!CRUDBooster::isRead() && $this->global_privilege == FALSE || $this->button_detail == FALSE) {
+		if (!CRUDBooster::isRead() && !$this->global_privilege || !$this->button_detail) {
 			CRUDBooster::redirect(CRUDBooster::adminPath(), trans("crudbooster.denied_access"));
 		}
 
 		$data = [];
 		$data['page_title'] = "Print Pullout Details";
-		$data['store_pullout'] = StorePullout::with(['transportTypes', 'scheduledBy', 'approvedBy', 'rejectedBy', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
+		$data['store_pullout'] = StorePullout::with(['transportTypes', 'scheduledBy',
+            'approvedBy', 'rejectedBy', 'reasons',
+            'lines', 'statuses', 'storesFrom',
+            'storesTo', 'lines.serials', 'lines.item'])
+            ->find($id);
 
 		return view('store-pullout.print', $data);
 	}
 
 	public function getSchedule($id)
 	{
-
-		if (!CRUDBooster::isRead() && $this->global_privilege == FALSE || $this->button_detail == FALSE) {
+		if (!CRUDBooster::isRead() && !$this->global_privilege || !$this->button_detail) {
 			CRUDBooster::redirect(CRUDBooster::adminPath(), trans("crudbooster.denied_access"));
 		}
 
 		$data = [];
 		$data['page_title'] = "Schedule Pullout";
-		$data['store_pullout'] = StorePullout::with(['transportTypes', 'reasons', 'lines', 'statuses', 'storesfrom', 'storesto', 'lines.serials', 'lines.item'])->find($id);
+		$data['store_pullout'] = StorePullout::with(['transportTypes', 'reasons', 'lines',
+            'statuses', 'storesfrom', 'storesto', 'lines.serials', 'lines.item'])
+            ->find($id);
 
 		return view('store-pullout.schedule', $data);
 	}
@@ -462,8 +472,9 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 				'status' => OrderStatus::FORRECEIVING
 			]);
 
-		if ($record)
+		if ($record){
 			CRUDBooster::redirect(CRUDBooster::mainpath('print') . '/' . $request->header_id, '', '')->send();
+        }
 		else {
 			CRUDBooster::redirect(CRUDBooster::mainpath(), 'Failed! No transaction has been scheduled for transfer.', 'danger')->send();
 		}
@@ -471,14 +482,16 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 
 	public function getCreateDoNo($id)
 	{
-
-		if (!CRUDBooster::isRead() && $this->global_privilege == FALSE || $this->button_detail == FALSE) {
+		if (!CRUDBooster::isRead() && !$this->global_privilege || !$this->button_detail) {
 			CRUDBooster::redirect(CRUDBooster::adminPath(), trans("crudbooster.denied_access"));
 		}
 
 		$data = [];
 		$data['page_title'] = "Pullout Create Do";
-		$data['store_pullout'] = StorePullout::with(['transportTypes', 'reasons', 'lines', 'statuses', 'storesfrom', 'storesto', 'lines.serials', 'lines.item'])->find($id);
+		$data['store_pullout'] = StorePullout::with(['transportTypes', 'reasons', 'lines',
+            'statuses', 'storesfrom', 'storesto', 'lines.serials', 'lines.item'])
+            ->find($id);
+
 		$data['action_url'] = route('savePulloutCreateDoNo');
 		return view('store-pullout.create-do-no', $data);
 	}
