@@ -27,6 +27,12 @@ class EtpController extends Controller
             ->get()->toArray();
     }
 
+    public function getDeliveryTransactions(){
+        return EtpDelivery::getReceivedDelivery()
+            ->whereBetween('ReceivingDate',[now()->format('Ymd'),now()->format('Ymd')])
+            ->get()->toArray();
+    }
+
     public function getStoreSync(){
         $data = [];
         $data['sync'] = EtpCashOrderTrx::getStoreSync()->with(['wh'])->get();

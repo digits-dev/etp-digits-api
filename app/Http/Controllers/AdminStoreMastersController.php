@@ -95,14 +95,19 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 					$('#modal-pull-updated-stores').modal('show');
 				}
                 $(document).ready(function() {
-                    $('.dateInput').datepicker({
-                        format: 'yyyy-mm-dd',
+                    $('.dateInput').daterangepicker({
+                    locale: {
+                        format: 'YYYY-MM-DD HH:mm:ss',
+                    },
                         autoclose: true,
-                        todayHighlight: true
-                    }).on('changeDate', function(e) {
-                        const date = e.format('yyyy-mm-dd');
-                        console.log(date);
-                    });
+                        todayHighlight: true,
+                        autoApply: false,
+                        singleDatePicker: true,
+                        timePicker: true,
+                        timePickerIncrement: 1,
+                        timePicker24Hour: true,
+                        showDropdown: true,
+                    })
                 });
             ";
 
