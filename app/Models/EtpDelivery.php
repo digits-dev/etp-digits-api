@@ -34,7 +34,7 @@ class EtpDelivery extends Model
         return $query->where('Company', 100)
             ->where('Division', 100)
             ->where('TransactionStatus', 1) //received
-            ->whereIn('ToWarehouse', ['0572','0921'])
+            ->whereIn('Warehouse', ['0311','0312'])
             ->select(
                 'OrderNumber',
                 'ReceivingDate',
