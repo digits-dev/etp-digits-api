@@ -61,6 +61,8 @@ class ItemMasterController extends Controller
                 ['path' => $request->url()]       // Set the base URL for pagination links
             );
 
+            unset($data['links']);
+
             return response()->json([
                 'api_status' => 1,
                 'api_message' => 'success',

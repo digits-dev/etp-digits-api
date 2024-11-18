@@ -102,7 +102,7 @@ class OraclePullController extends Controller
 
     private function processOrders($orders, $transactionAttr=[], $transactionDate){
         $deliveryHeader = [];
-        foreach($orders ?? [] as $key => $value){
+        foreach($orders ?? [] as $value){
             $whKey = 'warehouse_key'.str_replace(" ","_",$value->customer_name);
             $warehouse = Cache::remember($whKey, 3600, function () use ($value) {
                 return StoreMaster::where('bea_mo_store_name', $value->customer_name)
@@ -203,7 +203,7 @@ class OraclePullController extends Controller
 
     public function processOrgTransfers(){
         $deliveries = Delivery::doneProcessing()->get();
-        foreach ($deliveries ?? [] as $key => $dr) {
+        foreach ($deliveries ?? [] as $dr) {
             $orders = OracleShipmentHeader::query()->getShipmentByRef($dr->order_number);
             if($orders->getModel()->exists){
                 try {
@@ -228,7 +228,7 @@ class OraclePullController extends Controller
 
     public function processOrgTransfersReceiving(){
         $deliveries = Delivery::getPendingDotr()->get();
-        foreach ($deliveries ?? [] as $key => $dr) {
+        foreach ($deliveries ?? [] as $dr) {
             $orders = EtpDelivery::query()->getReceivedDeliveryByWh($dr->order_number, $dr->to_warehouse_id)->first();
             if($orders->getModel()->exists){
                 try {
@@ -236,7 +236,7 @@ class OraclePullController extends Controller
                     $delivery = Delivery::where('order_number', $dr->order_number)->first();
                     if ($delivery) {
                         $delivery->update([
-                            'status' => Delivery::PROCESSING_DOTR,
+                            'status' => OrderStatus::PROCESSING_DOTR,
                             'interface_flag' => 0,
                         ]);
 
@@ -253,7 +253,7 @@ class OraclePullController extends Controller
 
     public function processSubInvTransfersReceiving(){
         $deliveries = Delivery::getPendingSit()->get();
-        foreach ($deliveries ?? [] as $key => $dr) {
+        foreach ($deliveries ?? [] as $dr) {
             $orders = EtpDelivery::query()->getReceivedDeliveryByWh($dr->order_number, $dr->to_warehouse_id)->first();
             if($orders->getModel()->exists){
                 try {
@@ -261,7 +261,7 @@ class OraclePullController extends Controller
                     $delivery = Delivery::where('order_number', $dr->order_number)->first();
                     if ($delivery) {
                         $delivery->update([
-                            'status' => Delivery::PROCESSING_SIT,
+                            'status' => OrderStatus::PROCESSING_SIT,
                             'interface_flag' => 0,
                         ]);
 
@@ -278,7 +278,7 @@ class OraclePullController extends Controller
 
     public function updateOrgTransfers(){
         $deliveries = Delivery::getDotrProcessing()->get();
-        foreach ($deliveries ?? [] as $key => $dr) {
+        foreach ($deliveries ?? [] as $dr) {
             $orders = OracleShipmentHeader::query()->getRcvShipmentByRef($dr->dr_number);
             if(sizeof($orders) > 0){
                 $statusCodes = array_map(function($item) {
@@ -315,7 +315,7 @@ class OraclePullController extends Controller
 
     public function processReturnTransactions(){
         $pullouts = Pullout::getProcessing();
-        foreach ($pullouts as $key => $pullout) {
+        foreach ($pullouts as $pullout) {
             $orders = OracleShipmentHeader::query()->getShipmentByRef($pullout->document_number);
             if($orders->getModel()->exists){
                 try {
@@ -337,7 +337,7 @@ class OraclePullController extends Controller
 
     public function updateReturnTransactions(){
         $pullouts = Pullout::getReceivingReturns();
-        foreach ($pullouts as $key => $pullout) {
+        foreach ($pullouts as $pullout) {
             if(!is_null($pullout->sor_mor_number)){
                 $orders = OracleOrderHeader::query()->getOrderReturns($pullout->sor_mor_number);
                 if($orders->getModel()->exists){
