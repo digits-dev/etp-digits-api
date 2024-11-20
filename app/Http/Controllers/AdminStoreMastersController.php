@@ -79,10 +79,10 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
             if(CRUDBooster::isUpdate() && CRUDBooster::isSuperadmin()) {
                 $this->button_selected[] = ['label'=>'Set Status ACTIVE','icon'=>'fa fa-check-circle','name'=>'set_status_active'];
 				$this->button_selected[] = ['label'=>'Set Status INACTIVE','icon'=>'fa fa-times-circle','name'=>'set_status_inactive'];
-                foreach ($this->activeChannel as $keyChannel => $valueChannel) {
+                foreach ($this->activeChannel as $valueChannel) {
                     $this->button_selected[] = ["label"=>"Set Channel as {$valueChannel->channel_code}","icon"=>"fa fa-check-circle","name"=>"set_channel_{$valueChannel->channel_code}"];
                 }
-                foreach ($this->activeTransferGroup as $keyTransferGroup => $valueTransferGroup) {
+                foreach ($this->activeTransferGroup as $valueTransferGroup) {
                     $this->button_selected[] = ["label"=>"Set Transfer Group as {$valueTransferGroup->group}","icon"=>"fa fa-check-circle","name"=>"set_group_{$valueTransferGroup->group}"];
                 }
             }

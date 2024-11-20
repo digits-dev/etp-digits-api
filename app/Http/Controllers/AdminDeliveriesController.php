@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Helpers\Helper;
 use App\Models\Delivery;
+use App\Models\EtpDelivery;
+use App\Models\OrderStatus;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -217,6 +219,32 @@ use Illuminate\Support\Facades\Session;
             },'lines.serials'])->find($id);
 
             return view('deliveries.detail', $data);
+        }
+
+        public function updateDeliveryStatus(){
+            $dateFrom = now()->format('Ymd');
+            $dateTo = now()->format('Ymd');
+
+            $etpDeliveries = EtpDelivery::getReceivedDelivery()
+                ->whereBetween('ReceivingDate',[$dateFrom, $dateTo])
+                ->get();
+
+            foreach ($etpDeliveries ?? [] as $drTrx) {
+                try {
+                    DB::beginTransaction();
+                    $drHead = Delivery::where('dr_number', $drTrx->OrderNumber)
+                        ->where('status','!=',OrderStatus::PROCESSING_DOTR)->first();
+
+                    if($drHead){
+                        $drHead->status = OrderStatus::PROCESSING_DOTR;
+                        $drHead->save();
+                    }
+                    DB::commit();
+                } catch (Exception $e) {
+                    DB::rollBack();
+                    Log::error($e->getMessage());
+                }
+            }
         }
 
 	}

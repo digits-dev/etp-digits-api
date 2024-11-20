@@ -152,4 +152,6 @@ Route::group(['middleware' => ['authapi'],'prefix' => 'api'], function(){
     //sync items
     Route::get('sync-new-items', [ItemSyncService::class,'syncNewItems']);
     Route::get('sync-updated-items', [ItemSyncService::class,'syncUpdatedItems']);
+
+    Route::get('update-received-deliveries', [DeliveryController::class,'updateReceivedDeliveryStatus']);
 });

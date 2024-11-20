@@ -2,6 +2,7 @@
 
 namespace App\Console;
 
+use App\Http\Controllers\AdminDeliveriesController;
 use App\Http\Controllers\AdminStoreTransfersController;
 use App\Http\Controllers\OraclePullController;
 use App\Services\ItemSyncService;
@@ -52,7 +53,7 @@ class Kernel extends ConsoleKernel
         $schedule->call(function(){
             $oracle = new OraclePullController();
             $oracle->processOrgTransfers();
-            $oracle->processOrgTransfersReceiving();//for dotr
+            // $oracle->processOrgTransfersReceiving();//for dotr
             $oracle->processSubInvTransfersReceiving();//for sitr
             $oracle->processReturnTransactions();
             $oracle->updateOracleItemId();
@@ -64,6 +65,9 @@ class Kernel extends ConsoleKernel
         $schedule->call(function(){
             $oracle = new OraclePullController();
             $oracle->updateOrgTransfers();
+
+            $etpDeliveries = new AdminDeliveriesController();
+            $etpDeliveries->updateDeliveryStatus();
         })->everyFiveMinutes()->between('01:00:00', '05:00:00');
 
     }

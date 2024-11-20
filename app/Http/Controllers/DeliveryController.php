@@ -3,15 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Delivery;
-use App\Models\ItemMaster;
-use Carbon\Carbon;
+use App\Models\EtpDelivery;
+use App\Models\OrderStatus;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-
-// use Illuminate\Support\Facades\Request;
 
 class DeliveryController extends Controller
 {
@@ -47,6 +45,7 @@ class DeliveryController extends Controller
                 );
             }])
             ->whereBetween('deliveries.created_at', [$request->datefrom, $request->dateto])
+            ->whereIn('deliveries.to_warehouse_id',['0572','0041']) //limit stores for auto pull delivery etp
             ->select(
                 'deliveries.id',
                 'deliveries.dr_number as reference_code',
@@ -88,16 +87,16 @@ class DeliveryController extends Controller
                 'dr_numbers' => ['required'],
             ]);
             $count = 0;
-            foreach ($request->dr_numbers ?? [] as $key => $value) {
+            foreach ($request->dr_numbers ?? [] as $value) {
                 try{
                     $order = Delivery::where('dr_number', $value)->first();
                     if($order){
-                        if($order->status != 2){
-                            $order->status = 2;
+                        if($order->status != OrderStatus::RECEIVED){
+                            $order->status = OrderStatus::RECEIVED;
                             $order->save();
                             $count++;
                         }
-                        elseif ($order->status == 2) {
+                        elseif ($order->status == OrderStatus::RECEIVED) {
                             throw new Exception("Delivery #{$value} has already been received!");
                         }
                     }
@@ -134,6 +133,41 @@ class DeliveryController extends Controller
                 'errors' => $ex->errors(),
                 'http_status' => 401
             ], 401);
+        }
+    }
+
+    public function updateReceivedDeliveryStatus(Request $request){
+
+        $request->validate([
+            'datefrom' => ['required', 'date_format:Ymd', 'before:dateto'],
+            'dateto'   => ['required', 'date_format:Ymd', 'after:datefrom'],
+        ], [
+            'datefrom.before' => 'The datefrom must be before the dateto.',
+            'dateto.after'    => 'The dateto must be after the datefrom.',
+        ]);
+
+        $dateFrom = $request->datefrom;
+        $dateTo = $request->dateto;
+
+        $etpDeliveries = EtpDelivery::getReceivedDelivery()
+            ->whereBetween('ReceivingDate',[$dateFrom, $dateTo])
+            ->get();
+
+        foreach ($etpDeliveries ?? [] as $drTrx) {
+            try {
+                DB::beginTransaction();
+                $drHead = Delivery::where('dr_number', $drTrx->OrderNumber)
+                    ->where('status','!=',OrderStatus::PROCESSING_DOTR)->first();
+
+                if($drHead){
+                    $drHead->status = OrderStatus::PROCESSING_DOTR;
+                    $drHead->save();
+                }
+                DB::commit();
+            } catch (Exception $e) {
+                DB::rollBack();
+                Log::error($e->getMessage());
+            }
         }
     }
 }
