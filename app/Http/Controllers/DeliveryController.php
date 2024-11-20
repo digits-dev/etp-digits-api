@@ -138,36 +138,53 @@ class DeliveryController extends Controller
 
     public function updateReceivedDeliveryStatus(Request $request){
 
-        $request->validate([
-            'datefrom' => ['required', 'date_format:Ymd', 'before:dateto'],
-            'dateto'   => ['required', 'date_format:Ymd', 'after:datefrom'],
-        ], [
-            'datefrom.before' => 'The datefrom must be before the dateto.',
-            'dateto.after'    => 'The dateto must be after the datefrom.',
-        ]);
+        try{
+            $request->validate([
+                'datefrom' => ['required', 'date_format:Ymd', 'before:dateto'],
+                'dateto'   => ['required', 'date_format:Ymd', 'after:datefrom'],
+            ], [
+                'datefrom.before' => 'The datefrom must be before the dateto.',
+                'dateto.after'    => 'The dateto must be after the datefrom.',
+            ]);
 
-        $dateFrom = $request->datefrom;
-        $dateTo = $request->dateto;
+            $dateFrom = $request->datefrom;
+            $dateTo = $request->dateto;
 
-        $etpDeliveries = EtpDelivery::getReceivedDelivery()
-            ->whereBetween('ReceivingDate',[$dateFrom, $dateTo])
-            ->get();
+            $etpDeliveries = EtpDelivery::getReceivedDelivery()
+                ->whereBetween('ReceivingDate',[$dateFrom, $dateTo])
+                ->get();
+            $drNumbers = [];
+            foreach ($etpDeliveries ?? [] as $drTrx) {
+                try {
+                    DB::beginTransaction();
+                    $drHead = Delivery::where('dr_number', $drTrx->OrderNumber)
+                        ->where('status','!=',OrderStatus::PROCESSING_DOTR)->first();
 
-        foreach ($etpDeliveries ?? [] as $drTrx) {
-            try {
-                DB::beginTransaction();
-                $drHead = Delivery::where('dr_number', $drTrx->OrderNumber)
-                    ->where('status','!=',OrderStatus::PROCESSING_DOTR)->first();
-
-                if($drHead){
-                    $drHead->status = OrderStatus::PROCESSING_DOTR;
-                    $drHead->save();
+                    if($drHead){
+                        $drHead->status = OrderStatus::PROCESSING_DOTR;
+                        $drHead->save();
+                        $drNumbers[] = $drHead->dr_number;
+                    }
+                    DB::commit();
+                } catch (Exception $e) {
+                    DB::rollBack();
+                    Log::error($e->getMessage());
                 }
-                DB::commit();
-            } catch (Exception $e) {
-                DB::rollBack();
-                Log::error($e->getMessage());
+                return response()->json([
+                    'api_status' => 1,
+                    'api_message' => 'success',
+                    'data' => "List of DR# ".implode(",", $drNumbers)." received! {$drNumbers} records!",
+                    'http_status' => 200
+                ], 200);
             }
+        }
+        catch(ValidationException $ex){
+            return response()->json([
+                'api_status' => 0,
+                'api_message' => 'Validation failed',
+                'errors' => $ex->errors(),
+                'http_status' => 401
+            ], 401);
         }
     }
 }

@@ -30,7 +30,8 @@ class Delivery extends Model
         'status',
         'transaction_date',
         'interface_flag',
-        'shipment_header_id'
+        'shipment_header_id',
+        'received_date'
     ];
 
     public function lines() : HasMany {

@@ -6,6 +6,7 @@ use App\Helpers\Helper;
 use App\Models\Delivery;
 use App\Models\EtpDelivery;
 use App\Models\OrderStatus;
+use Carbon\Carbon;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -236,6 +237,7 @@ use Illuminate\Support\Facades\Session;
                         ->where('status','!=',OrderStatus::PROCESSING_DOTR)->first();
 
                     if($drHead){
+                        $drHead->received_date = Carbon::parse($drTrx->ReceivingDate);
                         $drHead->status = OrderStatus::PROCESSING_DOTR;
                         $drHead->save();
                     }
