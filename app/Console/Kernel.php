@@ -39,15 +39,15 @@ class Kernel extends ConsoleKernel
             $oracle->moveOrderPull(request());
             $oracle->salesOrderPull(request());
 
-            $datefrom = Carbon::now()->format("Y-m-d");
-            $dateto = Carbon::now()->addDays(1)->format("Y-m-d");
+            $dateFrom = Carbon::now()->format("Y-m-d");
+            $dateTo = Carbon::now()->addDays(1)->format("Y-m-d");
 
             $itemSync = new ItemSyncService();
-            $itemSync->syncNewItems(request()->merge(['datefrom'=>$datefrom,'dateto'=>$dateto]));
-            $itemSync->syncUpdatedItems(request()->merge(['datefrom'=>$datefrom,'dateto'=>$dateto]));
+            $itemSync->syncNewItems(request()->merge(['datefrom'=>$dateFrom,'dateto'=>$dateTo]));
+            $itemSync->syncUpdatedItems(request()->merge(['datefrom'=>$dateFrom,'dateto'=>$dateTo]));
 
             $whSync = new WarehouseSyncService();
-            $whSync->syncNewWarehouse(request()->merge(['datefrom'=>$datefrom,'dateto'=>$dateto]));
+            $whSync->syncNewWarehouse(request()->merge(['datefrom'=>$dateFrom,'dateto'=>$dateTo]));
         })->hourly();
 
         $schedule->call(function(){
