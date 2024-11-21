@@ -155,8 +155,6 @@ class DeliveryController extends Controller
                 ->whereBetween('ReceivingDate',[$dateFrom, $dateTo])
                 ->get();
 
-            Log::debug(json_encode($etpDeliveries->toArray()));
-
             $drNumbers = [];
             foreach ($etpDeliveries ?? [] as $drTrx) {
                 try {
@@ -175,16 +173,15 @@ class DeliveryController extends Controller
                     DB::rollBack();
                     Log::error($e->getMessage());
                 }
-
-                $countDrNumbers = count($drNumbers);
-
-                return response()->json([
-                    'api_status' => 1,
-                    'api_message' => 'success',
-                    'data' => "List of DR# ".implode(",", $drNumbers)." received! {$countDrNumbers} records!",
-                    'http_status' => 200
-                ], 200);
             }
+
+            $countDrNumbers = count($drNumbers);
+            return response()->json([
+                'api_status' => 1,
+                'api_message' => 'success',
+                'data' => "List of DR# ".implode(",", $drNumbers)." received! {$countDrNumbers} records!",
+                'http_status' => 200
+            ], 200);
         }
         catch(ValidationException $ex){
             return response()->json([

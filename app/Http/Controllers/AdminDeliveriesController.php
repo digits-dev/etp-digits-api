@@ -234,11 +234,11 @@ use Illuminate\Support\Facades\Session;
                 try {
                     DB::beginTransaction();
                     $drHead = Delivery::where('dr_number', $drTrx->OrderNumber)
-                        ->where('status','!=',OrderStatus::PROCESSING_DOTR)->first();
+                        ->where('status', '!=', OrderStatus::PROCESSING_DOTR)->first();
 
                     if($drHead){
                         $drHead->received_date = Carbon::parse($drTrx->ReceivingDate);
-                        $drHead->status = OrderStatus::PROCESSING_DOTR;
+                        $drHead->status = ($drHead->transaction_type == 'MO') ? OrderStatus::PROCESSING_DOTR : OrderStatus::RECEIVED;
                         $drHead->save();
                     }
                     DB::commit();
