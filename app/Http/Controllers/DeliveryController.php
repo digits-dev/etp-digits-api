@@ -154,15 +154,18 @@ class DeliveryController extends Controller
             $etpDeliveries = EtpDelivery::getReceivedDelivery()
                 ->whereBetween('ReceivingDate',[$dateFrom, $dateTo])
                 ->get();
+
+            Log::debug(json_encode($etpDeliveries->toArray()));
+
             $drNumbers = [];
             foreach ($etpDeliveries ?? [] as $drTrx) {
                 try {
                     DB::beginTransaction();
                     $drHead = Delivery::where('dr_number', $drTrx->OrderNumber)
-                        ->where('status','!=',OrderStatus::PROCESSING_DOTR)->first();
+                        ->where('status', '!=', OrderStatus::PROCESSING_DOTR)->first();
 
                     if($drHead){
-                        $drHead->status = OrderStatus::PROCESSING_DOTR;
+                        $drHead->status = ($drHead->transaction_type == 'MO') ? OrderStatus::PROCESSING_DOTR : OrderStatus::RECEIVED;
                         $drHead->received_date = Carbon::parse($drTrx->ReceivingDate);
                         $drHead->save();
                         $drNumbers[] = $drHead->dr_number;
