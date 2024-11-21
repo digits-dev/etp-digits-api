@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Delivery;
 use App\Models\EtpDelivery;
 use App\Models\OrderStatus;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -162,6 +163,7 @@ class DeliveryController extends Controller
 
                     if($drHead){
                         $drHead->status = OrderStatus::PROCESSING_DOTR;
+                        $drHead->received_date = Carbon::parse($drTrx->ReceivingDate);
                         $drHead->save();
                         $drNumbers[] = $drHead->dr_number;
                     }
@@ -170,10 +172,13 @@ class DeliveryController extends Controller
                     DB::rollBack();
                     Log::error($e->getMessage());
                 }
+
+                $countDrNumbers = count($drNumbers);
+
                 return response()->json([
                     'api_status' => 1,
                     'api_message' => 'success',
-                    'data' => "List of DR# ".implode(",", $drNumbers)." received! {$drNumbers} records!",
+                    'data' => "List of DR# ".implode(",", $drNumbers)." received! {$countDrNumbers} records!",
                     'http_status' => 200
                 ], 200);
             }
