@@ -254,8 +254,11 @@ class OraclePullController extends Controller
     public function processSubInvTransfersReceiving(){
         $deliveries = Delivery::getPendingSit()->get();
         foreach ($deliveries ?? [] as $dr) {
-            $orders = EtpDelivery::query()->getReceivedDeliveryByWh($dr->order_number, $dr->to_warehouse_id)->first();
-            if($orders->getModel()->exists){
+            $orders = EtpDelivery::query()
+                ->getReceivedDeliveryByWh($dr->order_number, $dr->to_warehouse_id)
+                ->first();
+
+            if($orders){
                 try {
                     DB::beginTransaction();
                     $delivery = Delivery::where('order_number', $dr->order_number)->first();
