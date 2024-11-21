@@ -175,9 +175,13 @@ class OraclePushController extends Controller
     }
 
     private function processPushtoOrderRcvInterface($transactionType, $data=[]){
+        $interfaceHeaders = new OracleInterfaceService();
+        $headerInterfaceId = $interfaceHeaders->getHeaderNextValue();
+        $groupInterfaceId = $interfaceHeaders->getGroupNextValue();
+
         $details = [
-            'HEADER_INTERFACE_ID' => $this->nextHeader,
-            'GROUP_ID' => $this->nextGroup,
+            'HEADER_INTERFACE_ID' => $headerInterfaceId,
+            'GROUP_ID' => $groupInterfaceId,
             'PROCESSING_STATUS_CODE' => 'PENDING',
             'TRANSACTION_TYPE' => 'NEW',
             'LAST_UPDATE_DATE' => $this->sysDate,
@@ -188,10 +192,11 @@ class OraclePushController extends Controller
             'EXPECTED_RECEIPT_DATE' => $this->sysDate,
             'VALIDATION_FLAG' => 'Y'
         ];
+
         $ref = [];
         $returnValue = [];
-        $returnValue['header_interface_id'] = $this->nextHeader;
-        $returnValue['group_id'] = $this->nextGroup;
+        $returnValue['header_interface_id'] = $headerInterfaceId;
+        $returnValue['group_id'] = $groupInterfaceId;
 
         switch ($transactionType) {
             case 'MOR': case 'DOTR':
@@ -204,7 +209,7 @@ class OraclePushController extends Controller
             case 'SOR':
                 $details['RECEIPT_SOURCE_CODE'] = 'CUSTOMER';
                 $details['CUSTOMER_ID'] = $data['customer_id'];
-                $ref['HEADER_INTERFACE_ID'] = $this->nextHeader;
+                $ref['HEADER_INTERFACE_ID'] = $headerInterfaceId;
                 break;
             default:
                 # code...

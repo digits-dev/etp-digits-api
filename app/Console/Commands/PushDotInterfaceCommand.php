@@ -44,7 +44,7 @@ class PushDotInterfaceCommand extends Command
     public function handle()
     {
         $this->info('Running push dot interface.');
-        // $this->oraclePushController->pushDotInterface($this->deliveryInterfaceService);
+        $this->oraclePushController->pushDotInterface($this->deliveryInterfaceService);
         $this->info('Done push dot interface.');
 
         $this->info('Running push dotr interface.');
