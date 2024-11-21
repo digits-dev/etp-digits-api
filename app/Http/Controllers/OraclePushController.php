@@ -58,12 +58,12 @@ class OraclePushController extends Controller
 
     public function pushDotrInterface(DeliveryInterfaceService $deliveryInterface){
         foreach ($deliveryInterface->getProcessingDotrDelivery() ?? [] as $value) {
-            $this->processPushtoOrderRcvInterface('DOTR', $value);
+            $headerInterface = $this->processPushtoOrderRcvInterface('DOTR', $value);
             $shipment = OracleShipmentHeader::query()->getShipmentByRef($value['dr_number']);
             $headerId = ($shipment->getModel()->exists) ? $shipment->shipment_header_id : null;
             $lines = OracleShipmentLine::getShipmentById($headerId)->toArray();
             foreach ($lines as $valueLine) {
-                $this->processPushtoOrderRcvLineInterface('DOTR', array_merge($valueLine, $value));
+                $this->processPushtoOrderRcvLineInterface('DOTR', array_merge($valueLine, $value, $headerInterface));
             }
 
             $drInterfaced = Delivery::where('order_number', $value['order_number'])->first();
@@ -183,6 +183,10 @@ class OraclePushController extends Controller
             'VALIDATION_FLAG' => 'Y'
         ];
         $ref = [];
+        $returnValue = [];
+        $returnValue['HEADER_INTERFACE_ID'] = $this->nextHeader;
+        $returnValue['GROUP_ID'] = $this->nextGroup;
+
         switch ($transactionType) {
             case 'MOR': case 'DOTR':
                 $details['RECEIPT_SOURCE_CODE'] = 'INVENTORY';
@@ -209,14 +213,16 @@ class OraclePushController extends Controller
             DB::connection('oracle')->rollBack();
             Log::error($e->getMessage());
         }
+
+        return $returnValue;
     }
 
     private function processPushtoOrderRcvLineInterface($transactionType, $data=[]){
         $transactionId = OracleDual::getTransactionNextValue();
         $details = [
             'INTERFACE_TRANSACTION_ID' => $transactionId, //$this->transaction,
-            'HEADER_INTERFACE_ID' => $this->nextHeader,
-            'GROUP_ID' => $this->nextGroup,
+            'HEADER_INTERFACE_ID' => $data['header_interface_id'],
+            'GROUP_ID' => $data['group_id'],
             'LAST_UPDATE_DATE' => $this->sysDate,
             'LAST_UPDATED_BY' => 0,
             'CREATION_DATE' => $this->sysDate,
