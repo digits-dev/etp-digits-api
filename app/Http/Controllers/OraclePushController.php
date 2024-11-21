@@ -58,12 +58,18 @@ class OraclePushController extends Controller
 
     public function pushDotrInterface(DeliveryInterfaceService $deliveryInterface){
         foreach ($deliveryInterface->getProcessingDotrDelivery() ?? [] as $value) {
+            //push to header interface
             $headerInterface = $this->processPushtoOrderRcvInterface('DOTR', $value);
+
             $shipment = OracleShipmentHeader::query()->getShipmentByRef($value['dr_number']);
             $headerId = ($shipment->getModel()->exists) ? $shipment->shipment_header_id : null;
             $lines = OracleShipmentLine::getShipmentById($headerId)->toArray();
+
             foreach ($lines as $valueLine) {
-                $this->processPushtoOrderRcvLineInterface('DOTR', array_merge($valueLine, $value, $headerInterface));
+                //push to line interface
+                $dataPushLine = array_merge($valueLine, $value, $headerInterface);
+                Log::debug(json_encode($dataPushLine));
+                $this->processPushtoOrderRcvLineInterface('DOTR', $dataPushLine);
             }
 
             $drInterfaced = Delivery::where('order_number', $value['order_number'])->first();
@@ -184,8 +190,8 @@ class OraclePushController extends Controller
         ];
         $ref = [];
         $returnValue = [];
-        $returnValue['HEADER_INTERFACE_ID'] = $this->nextHeader;
-        $returnValue['GROUP_ID'] = $this->nextGroup;
+        $returnValue['header_interface_id'] = $this->nextHeader;
+        $returnValue['group_id'] = $this->nextGroup;
 
         switch ($transactionType) {
             case 'MOR': case 'DOTR':
