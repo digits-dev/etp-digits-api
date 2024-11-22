@@ -97,7 +97,40 @@ class ItemMasterController extends Controller
                 ->whereBetween('item_masters.updated_at', [$request->datefrom, $request->dateto])
                 ->orderBy('item_masters.digits_code','ASC')->paginate(50);
 
-            $data = $items->toArray();
+            //add rma items
+            $rmaItems = RmaItem::getItems()
+                ->whereBetween('rma_item_masters.updated_at', [$request->datefrom, $request->dateto])
+                ->orderBy('rma_item_masters.digits_code','ASC')->paginate(50);
+
+            //add admin items
+            $adminItems = AdminItem::getItems()
+                ->whereBetween('digits_imfs.updated_at', [$request->datefrom, $request->dateto])
+                ->orderBy('digits_imfs.digits_code','ASC')->paginate(50);
+
+            $acctgIitems = AccountingItem::getItems()
+                ->whereBetween('accounting_items.updated_at', [$request->datefrom, $request->dateto])
+                ->orderBy('accounting_items.digits_code','ASC')->paginate(50);
+
+            // Combine the data arrays, but handle the pagination metadata separately
+            $combinedData = array_merge(
+                $items->items(),
+                $rmaItems->items(),
+                $adminItems->items(),
+                $acctgIitems->items()
+            );
+
+            // Create a new paginator with the combined data
+            $perPage = 50;
+            $total = $items->total() + $rmaItems->total() + $adminItems->total() + $acctgIitems->total(); // Total items from both paginators
+
+            $data = new LengthAwarePaginator(
+                $combinedData,                    // Combined items array
+                $total,                           // Total items count
+                $perPage,                         // Items per page
+                $items->currentPage(),            // Use current page of the first paginator
+                ['path' => $request->url()]       // Set the base URL for pagination links
+            );
+
             unset($data['links']);
 
             return response()->json([
