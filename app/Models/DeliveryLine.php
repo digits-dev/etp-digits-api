@@ -29,7 +29,7 @@ class DeliveryLine extends Model
     }
 
     public function item() : BelongsTo {
-        return $this->belongsTo(ItemMaster::class, 'ordered_item', 'digits_code');
+        return $this->belongsTo(Item::class, 'ordered_item', 'digits_code');
     }
 
     public function serials() : HasMany {
