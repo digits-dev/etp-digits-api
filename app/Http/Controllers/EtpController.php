@@ -16,7 +16,8 @@ class EtpController extends Controller
             'status',
             'lines',
             'lines.item'
-        ])->get();
+        ])->orderBy('dohead.receivingdate','asc')
+        ->get();
 
         return response()->json($data);
     }
