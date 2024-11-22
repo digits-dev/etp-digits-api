@@ -68,7 +68,6 @@ class OraclePushController extends Controller
             foreach ($lines as $valueLine) {
                 //push to line interface
                 $dataPushLine = array_merge($valueLine, $value, $headerInterface);
-                Log::debug(json_encode($dataPushLine));
                 $this->processPushtoOrderRcvLineInterface('DOTR', $dataPushLine);
             }
 
@@ -266,6 +265,7 @@ class OraclePushController extends Controller
                 $details['SHIPMENT_HEADER_ID'] = $data['shipment_header_id'];
                 $details['SHIPMENT_LINE_ID'] = $data['shipment_line_id'];
                 $ref['SHIPMENT_LINE_ID'] = $data['shipment_line_id'];
+                $ref['SHIPMENT_NUM'] = $data['dr_number'];
                 break;
             case 'SOR':
                 $details['OE_ORDER_HEADER_ID'] = $data['oe_order_header_id'];
@@ -321,6 +321,7 @@ class OraclePushController extends Controller
                 $details['LOCATOR_ID'] = $data['locator_id'];
                 $details['SHIPMENT_NUMBER'] = $data['dr_number'];
                 $ref['SHIPMENT_NUMBER'] = $data['dr_number'];
+                $ref['INVENTORY_ITEM_ID'] = $data['item_id'];
             break;
             case 'MOR':
                 $details['SOURCE_CODE'] = 'MIDDLEWARE';
