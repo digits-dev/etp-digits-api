@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Delivery;
 use App\Models\EtpDelivery;
+use App\Models\OracleTransactionInterface;
 use App\Models\OrderStatus;
 use Carbon\Carbon;
 use Exception;
@@ -40,7 +41,7 @@ class DeliveryController extends Controller
                 );
             },'lines.serials' => function ($serialQuery) {
                 $serialQuery->select(
-                    'id',
+                    DB::raw('CAST(RIGHT(id, 5) AS UNSIGNED) as id'),
                     'delivery_lines_id',
                     'serial_number'
                 );
@@ -160,7 +161,8 @@ class DeliveryController extends Controller
                 try {
                     DB::beginTransaction();
                     $drHead = Delivery::where('dr_number', $drTrx->OrderNumber)
-                        ->where('status', '!=', OrderStatus::PROCESSING_DOTR)->first();
+                        ->whereNotIn('status', [OrderStatus::PROCESSING_DOTR, OrderStatus::RECEIVED])
+                        ->first();
 
                     if($drHead){
                         $drHead->status = ($drHead->transaction_type == 'MO') ? OrderStatus::PROCESSING_DOTR : OrderStatus::RECEIVED;
@@ -191,5 +193,31 @@ class DeliveryController extends Controller
                 'http_status' => 401
             ], 401);
         }
+    }
+
+    public function checkDeliveryInterface($drNumber){
+        $dotInterface = OracleTransactionInterface::getPushedDotInterfaceSum($drNumber);
+
+        if($dotInterface){
+            $delivery = Delivery::where('dr_number', $drNumber)->first();
+            $sumInterface = $dotInterface * -1;
+
+            if($delivery->total_qty == $sumInterface){
+                //update interface status
+                return response()->json([
+                    'api_status' => 1,
+                    'api_message' => 'success',
+                    'data' => "{$drNumber} has been processed!",
+                    'http_status' => 200
+                ], 200);
+            }
+        }
+
+        return response()->json([
+            'api_status' => 0,
+            'api_message' => 'error',
+            'data' => "{$drNumber} has not been processed!",
+            'http_status' => 404
+        ], 404);
     }
 }

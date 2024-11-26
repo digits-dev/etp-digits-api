@@ -68,7 +68,7 @@ class Kernel extends ConsoleKernel
 
             $etpDeliveries = new AdminDeliveriesController();
             $etpDeliveries->updateDeliveryStatus();
-        })->everyFiveMinutes()->between('01:00:00', '05:00:00');
+        })->everyFiveMinutes();
 
     }
 
