@@ -43,6 +43,11 @@
             table.table.table-bordered th {
                 border: 1px solid black;
             }
+
+            .swal2-popup {
+                font-size: 16px !important;
+            }
+
         </style>
     @endpush
 
