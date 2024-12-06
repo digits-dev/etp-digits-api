@@ -39,8 +39,10 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 	    }
 
         public function hook_query_index(&$query){
-            if(!CRUDBooster::isSuperadmin()){
-                $query->where('stores_id',Helper::myStore());
+            if(!CRUDBooster::isSuperadmin()) {
+                if(Helper::myStore()) {
+                    $query->where('stores_id', Helper::myStore());
+                }
             }
         }
 
