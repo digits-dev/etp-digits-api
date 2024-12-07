@@ -47,7 +47,7 @@ class DeliveryController extends Controller
                 );
             }])
             ->whereBetween('deliveries.created_at', [$request->datefrom, $request->dateto])
-            ->whereIn('deliveries.to_warehouse_id',['0572','0041']) //limit stores for auto pull delivery etp
+            ->whereIn('deliveries.to_warehouse_id',['0572','0041','0971']) //limit stores for auto pull delivery etp
             ->select(
                 'deliveries.id',
                 'deliveries.dr_number as reference_code',
