@@ -126,7 +126,7 @@ class Delivery extends Model
             ->orderBy('transaction_date','asc');
     }
 
-    public function scopeGetProcessingLines(){
+    public function scopeGetProcessingLines(){ //createdot
         return self::getHeadLineQuery()
             ->where('deliveries.status', OrderStatus::PROCESSING)
             ->where('deliveries.interface_flag', 0);
@@ -152,8 +152,29 @@ class Delivery extends Model
                 'store_masters.doo_subinventory as transfer_subinventory',
                 'delivery_lines.id as line_id',
                 'delivery_lines.ordered_item_id as item_id',
-                'delivery_lines.shipped_quantity as quantity',
-            )
+                'delivery_lines.shipped_quantity as quantity')
             ->orderBy('deliveries.transaction_date', 'asc');
+    }
+
+    public function scopeExportWithSerial($query){
+        return $query->join('delivery_lines', 'deliveries.id', 'delivery_lines.deliveries_id')
+            ->join('store_masters', 'deliveries.stores_id', 'store_masters.id')
+            ->join('order_statuses', 'deliveries.status', 'order_statuses.id')
+            ->leftJoin('item_serials', 'delivery_lines.id', 'item_serials.delivery_lines_id')
+            ->leftJoin('items', 'delivery_lines.ordered_item', 'items.digits_code')
+            ->select(
+                'deliveries.dr_number',
+                'items.digits_code',
+                'items.upc_code',
+                'items.item_description',
+                DB::raw("(SELECT 'DIGITS WAREHOUSE') as source"),
+                'store_masters.bea_so_store_name as destination',
+                'delivery_lines.shipped_quantity as qty',
+                'item_serials.serial_number',
+                'deliveries.transaction_date',
+                'deliveries.received_date',
+                'order_statuses.order_status'
+            );
+
     }
 }
