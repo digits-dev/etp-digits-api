@@ -217,7 +217,7 @@ class Helper
 
     public static function generateDrParams() {
 		$query_filter_params = [];
-        if (in_array(CRUDBooster::myPrivilegeId(), [self::VIEWREPORTLOGISTIC,self::VIEWREPORT])) {
+        if (in_array(CRUDBooster::myPrivilegeId(), array_merge(self::VIEWREPORTLOGISTIC,self::VIEWREPORT))) {
 			//do nothing
 		}
 		elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTAPPROVER)) {
