@@ -36,6 +36,7 @@ use Maatwebsite\Excel\Facades\Excel;
 			$this->col[] = ["label"=>"Customer Name","name"=>"customer_name"];
 			$this->col[] = ["label"=>"Transaction Type","name"=>"transaction_type"];
 			$this->col[] = ["label"=>"Order Date","name"=>"transaction_date"];
+			$this->col[] = ["label"=>"Received Date","name"=>"received_date"];
 			$this->col[] = ["label"=>"Status","name"=>"status","join"=>"order_statuses,style"];
 
 			$this->form = [];
