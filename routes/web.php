@@ -17,6 +17,7 @@ use App\Http\Controllers\OraclePullController;
 use App\Http\Controllers\OraclePushController;
 use App\Http\Controllers\WarehouseMasterController;
 use App\Http\Controllers\AdminApprovalMatrixController;
+use App\Http\Controllers\AdminDeliveryHistoryController;
 use App\Services\ItemSyncService;
 use App\Services\WarehouseSyncService;
 use Illuminate\Support\Facades\Route;
@@ -70,6 +71,7 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::get('etp-store-sync', [EtpController::class,'getStoreSync'])->name('get-etp-store-sync');
         Route::get('etp-delivered-by-dr/{drnumber}', [EtpController::class,'getDeliveredTransactionsByNumber']);
         Route::get('processing-dr', [OraclePushController::class,'pushDotInterface']);
+        Route::get('get-processed-interface/{drNumber}', [DeliveryController::class,'checkDeliveryInterface']);
     });
 
     Route::group(['prefix' => 'store_pullouts'], function(){
@@ -133,25 +135,9 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::get('export-stw-str-with-serial',[AdminPulloutHistoryController::class,'exportStwrWithSerial'])->name('export-stw-str-with-serial');
         Route::get('export-stw-str',[AdminPulloutHistoryController::class,'exportStwr'])->name('export-stw-str');
     });
-});
 
-Route::group(['middleware' => ['authapi'],'prefix' => 'api'], function(){
-    //pull deliveries from ERP
-    Route::get('pull-deliveries', [OraclePullController::class,'moveOrderPull']);
-    //pull sales orders from ERP
-    Route::get('pull-sales-orders', [OraclePullController::class,'salesOrderPull']);
-    //deliveries
-    Route::get('get-deliveries', [DeliveryController::class,'getDeliveries']);
-    //item master
-    Route::get('get-new-items', [ItemMasterController::class,'getNewItems']);
-    Route::get('get-updated-items', [ItemMasterController::class,'getUpdatedItems']);
-    //warehouse master
-    Route::get('get-new-warehouse', [WarehouseMasterController::class,'getNewWarehouse']);
-    Route::get('get-updated-warehouse', [WarehouseMasterController::class,'getUpdatedWarehouse']);
-
-    //sync items
-    Route::get('sync-new-items', [ItemSyncService::class,'syncNewItems']);
-    Route::get('sync-updated-items', [ItemSyncService::class,'syncUpdatedItems']);
-
-    Route::get('update-received-deliveries', [DeliveryController::class,'updateReceivedDeliveryStatus']);
+    Route::group(['prefix' => 'delivery_history'], function(){
+        Route::get('export-dr-with-serial',[AdminDeliveryHistoryController::class,'exportDrWithSerial'])->name('export-dr-with-serial');
+        Route::get('export-dr',[AdminDeliveryHistoryController::class,'exportDr'])->name('export-dr');
+    });
 });
