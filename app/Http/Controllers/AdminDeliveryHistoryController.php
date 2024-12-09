@@ -1,8 +1,12 @@
 <?php namespace App\Http\Controllers;
 
+use App\Exports\ExportDrWithoutSerial;
+use App\Exports\ExportDrWithSerial;
 use App\Helpers\Helper;
 use App\Models\Delivery;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 	class AdminDeliveryHistoryController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -36,6 +40,11 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
 			$this->form = [];
 
+            if (CRUDBooster::getCurrentMethod() == 'getIndex') {
+                $this->index_button[] = ["title" => "Export DR with Serial", "label" => "Export DR with Serial", 'color' => 'info', "icon" => "fa fa-download", "url" => route('export-dr-with-serial') . '?' . urldecode(http_build_query(@$_GET))];
+                $this->index_button[] = ["title" => "Export DR", "label" => "Export DR", 'color' => 'success', "icon" => "fa fa-download", "url" => route('export-dr') . '?' . urldecode(http_build_query(@$_GET))];
+            }
+
 	    }
 
         public function hook_query_index(&$query){
@@ -59,6 +68,26 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
             },'lines.serials'])->find($id);
 
             return view('deliveries.detail', $data);
+        }
+
+        public function exportDrWithSerial(Request $request) {
+            $fileName = 'Export DR with Serial- ' . now()->format('Ymdhis') . '.xlsx';
+            $query_filter_params = Helper::generateDrParams();
+            $filter_column = [
+                'filter_column' => $request->get('filter_column'),
+                'filters' => $query_filter_params,
+            ];
+            return Excel::download(new ExportDrWithSerial($filter_column), $fileName);
+        }
+
+        public function exportDr(Request $request) {
+            $fileName = 'Export DR without Serial- ' . now()->format('Ymdhis') . '.xlsx';
+            $query_filter_params = Helper::generateDrParams();
+            $filter_column = [
+                'filter_column' => $request->get('filter_column'),
+                'filters' => $query_filter_params,
+            ];
+            return Excel::download(new ExportDrWithoutSerial($filter_column), $fileName);
         }
 
 	}

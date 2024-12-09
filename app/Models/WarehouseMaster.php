@@ -18,7 +18,7 @@ class WarehouseMaster extends Model
             ->whereNotNull('customer.warehouse_name')
             ->whereNull('customer.close_date')
             ->whereIn('customer.channel_code_id',['RTL','FRA','DTC','SVC'])
-            ->where('customer.warehouse_name','NOT LIKE','%GBO%')
+            ->where('customer.warehouse_name','NOT LIKE','%GASHAPON%')
             ->select(
                 DB::raw('SUBSTRING(customer.customer_code, 5,4) as warehouse_id'),
                 'customer.warehouse_name',

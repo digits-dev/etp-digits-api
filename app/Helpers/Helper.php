@@ -147,7 +147,7 @@ class Helper
 		return $query_filter_params;
 	}
 
-    public function generatePulloutParams() {
+    public static function generatePulloutParams() {
 		$query_filter_params = [];
 
 		if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTLOGISTIC)) {
@@ -209,6 +209,57 @@ class Helper
 			$query_filter_params[] = [
 				'method' => 'where',
 				'params' => ['store_pullouts.stores_id', self::myStore()]
+			];
+		}
+
+		return $query_filter_params;
+	}
+
+    public static function generateDrParams() {
+		$query_filter_params = [];
+        if (in_array(CRUDBooster::myPrivilegeId(), [self::VIEWREPORTLOGISTIC,self::VIEWREPORT])) {
+			//do nothing
+		}
+		elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTAPPROVER)) {
+			$query_filter_params[] = [
+				'method' => 'whereIn',
+				'params' => ['deliveries.stores_id', self::myApprovalStore()]
+			];
+		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHDISTRI)) {
+			$query_filter_params[] = [
+                'method' => 'whereIn',
+                'params' => ['store_masters.channels_id', [6, 7, 10, 11]]
+            ];
+		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHRTLFRAONL)) {
+			if (!self::myStore()) {
+				$query_filter_params[] = [
+					'method' => 'where',
+					'params' => ['store_masters.channels_id', self::myChannel()]
+				];
+			} else {
+				$query_filter_params[] = [
+					'method' => 'where',
+					'params' => ['store_masters.channels_id', self::myChannel()]
+				];
+				$query_filter_params[] = [
+					'method' => 'whereIn',
+					'params' => ['store_masters.id', self::myStore()]
+				];
+			}
+		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHRTLFRAOPS)) {
+			$query_filter_params[] = [
+				'method' => 'whereIn',
+				'params' => ['store_masters.channels_id', [1, 2]]
+			];
+		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHFRAVIEWER)) {
+			$query_filter_params[] = [
+				'method' => 'whereIn',
+				'params' => ['store_masters.id', self::myStore()]
+			];
+		} else {
+			$query_filter_params[] = [
+				'method' => 'where',
+				'params' => ['store_masters.id', self::myStore()]
 			];
 		}
 

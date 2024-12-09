@@ -11,7 +11,6 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
 
 	class AdminDeliveriesController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -56,6 +55,7 @@ use Illuminate\Support\Facades\Session;
 
 			    $this->button_selected[] = ['label'=>'Update Total Amount', 'icon'=>'fa fa-refresh', 'name'=>'calculate_totals'];
 			    $this->button_selected[] = ['label'=>'Update Status PENDING', 'icon'=>'fa fa-file', 'name'=>'update_status_pending'];
+			    $this->button_selected[] = ['label'=>'Update Status RECEIVED', 'icon'=>'fa fa-file', 'name'=>'update_status_received'];
             }
 
             $this->load_js[] = asset("js/delivery.js");
@@ -190,8 +190,20 @@ use Illuminate\Support\Facades\Session;
             if($button_name == "update_status_pending"){
                 try {
                     DB::beginTransaction();
-                    Delivery::whereIn('id',$id_selected)->update([
-                        'status' => Delivery::PENDING
+                    Delivery::whereIn('id', $id_selected)->update([
+                        'status' => OrderStatus::PENDING
+                    ]);
+                    DB::commit();
+                } catch (Exception $ex) {
+                    DB::rollBack();
+                    Log::error($ex->getMessage());
+                }
+            }
+            if($button_name == "update_status_received"){
+                try {
+                    DB::beginTransaction();
+                    Delivery::whereIn('id', $id_selected)->update([
+                        'status' => OrderStatus::RECEIVED
                     ]);
                     DB::commit();
                 } catch (Exception $ex) {
@@ -223,7 +235,7 @@ use Illuminate\Support\Facades\Session;
         }
 
         public function updateDeliveryStatus(){
-            $dateFrom = now()->format('Ymd');
+            $dateFrom = now()->subDays(1)->format('Ymd');
             $dateTo = now()->format('Ymd');
 
             $etpDeliveries = EtpDelivery::getReceivedDelivery()
@@ -234,7 +246,8 @@ use Illuminate\Support\Facades\Session;
                 try {
                     DB::beginTransaction();
                     $drHead = Delivery::where('dr_number', $drTrx->OrderNumber)
-                        ->where('status', '!=', OrderStatus::PROCESSING_DOTR)->first();
+                        ->whereNotIn('status', [OrderStatus::PROCESSING_DOTR, OrderStatus::RECEIVED])
+                        ->first();
 
                     if($drHead){
                         $drHead->received_date = Carbon::parse($drTrx->ReceivingDate);
