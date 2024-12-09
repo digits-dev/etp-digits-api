@@ -97,7 +97,7 @@ class ExportDrWithSerial implements FromCollection, WithHeadings, WithStyles
                 'ITEM DESCRIPTION' => $delivery->item_description ?? '',
                 'SOURCE' => $delivery->source ?? '',
                 'DESTINATION' => $delivery->destination ?? '',
-                'QTY' => $delivery->qty ?? '',
+                'QTY' => $delivery->serial_number ? 1 : $delivery->qty,
                 'SERIAL #' => $delivery->serial_number ?: '',
                 'CREATED DATE' => $delivery->transaction_date,
                 'RECEIVED DATE' => $delivery->received_date,
