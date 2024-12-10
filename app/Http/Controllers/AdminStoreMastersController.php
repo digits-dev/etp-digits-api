@@ -1,5 +1,6 @@
 <?php namespace App\Http\Controllers;
 
+use App\Models\EtpWarehouse;
 use App\Models\StoreMaster;
 use App\Services\SubmasterService;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
@@ -48,6 +49,9 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
             $this->col[] = ["label"=>"ORG Subinventory","name"=>"org_subinventory"];
             $this->col[] = ["label"=>"Transfer Groups","name"=>"transfer_groups_id","join"=>"transfer_groups,group"];
 			$this->col[] = ["label"=>"Status","name"=>"status"];
+			$this->col[] = ["label"=>"EAS Sync","name"=>"eas_flag", "callback"=>function($row){
+                return ($row->eas_flag == 1) ? 'YES' : 'NO';
+            }];
             $this->col[] = ["label"=>"Created By","name"=>"created_by","join"=>"cms_users,name"];
 			$this->col[] = ["label"=>"Created Date","name"=>"created_at"];
 			$this->col[] = ["label"=>"Updated By","name"=>"updated_by","join"=>"cms_users,name"];
@@ -69,23 +73,26 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 				$this->form[] = ['label'=>'Status','name'=>'status','type'=>'select','validation'=>'required','width'=>'col-sm-5','dataenum'=>'ACTIVE;INACTIVE'];
 			}
 
-            $this->index_button = array();
             if(CRUDBooster::isSuperAdmin() && CRUDBooster::getCurrentMethod() == 'getIndex'){
                 $this->index_button[] = ["label"=>"Pull New Stores","url"=>"javascript:pullNewStores()","icon"=>"fa fa-download","color"=>"warning"];
                 $this->index_button[] = ["label"=>"Pull Updated Stores","url"=>"javascript:pullUpdatedStores()","icon"=>"fa fa-refresh","color"=>"info"];
             }
 
-	        $this->button_selected = array();
             if(CRUDBooster::isUpdate() && CRUDBooster::isSuperadmin()) {
                 $this->button_selected[] = ['label'=>'Set Status ACTIVE','icon'=>'fa fa-check-circle','name'=>'set_status_active'];
 				$this->button_selected[] = ['label'=>'Set Status INACTIVE','icon'=>'fa fa-times-circle','name'=>'set_status_inactive'];
+                $this->button_selected[] = ['label'=>'-----','icon'=>'','name'=>'blank'];
                 foreach ($this->activeChannel as $valueChannel) {
                     $this->button_selected[] = ["label"=>"Set Channel as {$valueChannel->channel_code}","icon"=>"fa fa-check-circle","name"=>"set_channel_{$valueChannel->channel_code}"];
                 }
+                $this->button_selected[] = ['label'=>'-----','icon'=>'','name'=>'blank'];
                 foreach ($this->activeTransferGroup as $valueTransferGroup) {
                     $this->button_selected[] = ["label"=>"Set Transfer Group as {$valueTransferGroup->group}","icon"=>"fa fa-check-circle","name"=>"set_group_{$valueTransferGroup->group}"];
                 }
             }
+
+	        $this->table_row_color[] = ["color"=>"warning", "condition"=>"[eas_flag]==0"];
+	        $this->table_row_color[] = ["color"=>"danger", "condition"=>"[status]=='INACTIVE'"];
 
 	        $this->script_js = "
                 function pullNewStores() {
@@ -112,81 +119,81 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
             ";
 
 	        $this->post_index_html = "
-			<div class='modal fade' tabindex='-1' role='dialog' id='modal-pull-new-stores'>
-				<div class='modal-dialog'>
-					<div class='modal-content'>
-						<div class='modal-header'>
-							<button class='close' aria-label='Close' type='button' data-dismiss='modal'>
-								<span aria-hidden='true'>×</span></button>
-							<h4 class='modal-title'><i class='fa fa-download'></i> Pull New Stores</h4>
-						</div>
+                <div class='modal fade' tabindex='-1' role='dialog' id='modal-pull-new-stores'>
+                    <div class='modal-dialog'>
+                        <div class='modal-content'>
+                            <div class='modal-header'>
+                                <button class='close' aria-label='Close' type='button' data-dismiss='modal'>
+                                    <span aria-hidden='true'>×</span></button>
+                                <h4 class='modal-title'><i class='fa fa-download'></i> Pull New Stores</h4>
+                            </div>
 
-						<form method='get' target='_blank' action=".route('stores.pull-new-store').">
-                        <input type='hidden' name='_token' value=".csrf_token().">
-                        ".CRUDBooster::getUrlParameters()."
-                        <div class='modal-body'>
-                            <div class='form-group'>
-                                <label>Date From</label>
-                                <input type='text' name='datefrom' class='form-control dateInput' required />
-                            </div>
-                            <div class='form-group'>
-                                <label>Date To</label>
-                                <input type='text' name='dateto' class='form-control dateInput' required />
-                            </div>
-                            <div class='row'>
-                                <div class='col-md-6'>
-                                    <div class='form-group'>
-                                    <label>Page</label>
-                                    <input type='number' name='page' class='form-control' required value='1'/>
+                            <form method='get' target='_blank' action=".route('stores.pull-new-store').">
+                            <input type='hidden' name='_token' value=".csrf_token().">
+                            ".CRUDBooster::getUrlParameters()."
+                            <div class='modal-body'>
+                                <div class='form-group'>
+                                    <label>Date From</label>
+                                    <input type='text' name='datefrom' class='form-control dateInput' required />
+                                </div>
+                                <div class='form-group'>
+                                    <label>Date To</label>
+                                    <input type='text' name='dateto' class='form-control dateInput' required />
+                                </div>
+                                <div class='row'>
+                                    <div class='col-md-6'>
+                                        <div class='form-group'>
+                                        <label>Page</label>
+                                        <input type='number' name='page' class='form-control' required value='1'/>
+                                        </div>
+                                    </div>
+                                    <div class='col-md-6'>
+                                        <div class='form-group'>
+                                        <label>Limit</label>
+                                        <input type='number' name='limit' class='form-control' required value='500'/>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class='col-md-6'>
-                                    <div class='form-group'>
-                                    <label>Limit</label>
-                                    <input type='number' name='limit' class='form-control' required value='500'/>
-                                    </div>
+                            </div>
+                            <div class='modal-footer' align='right'>
+                                <button class='btn btn-default' type='button' data-dismiss='modal'>Close</button>
+                                <button class='btn btn-primary btn-submit' type='submit'>Submit</button>
+                            </div>
+                        </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class='modal fade' tabindex='-1' role='dialog' id='modal-pull-updated-stores'>
+                    <div class='modal-dialog'>
+                        <div class='modal-content'>
+                            <div class='modal-header'>
+                                <button class='close' aria-label='Close' type='button' data-dismiss='modal'>
+                                    <span aria-hidden='true'>×</span></button>
+                                <h4 class='modal-title'><i class='fa fa-download'></i> Pull Updated Stores</h4>
+                            </div>
+
+                            <form method='get' target='_blank' action=".route('stores.pull-updated-store').">
+                            <input type='hidden' name='_token' value=".csrf_token().">
+                            ".CRUDBooster::getUrlParameters()."
+                            <div class='modal-body'>
+                                <div class='form-group'>
+                                    <label>Date From</label>
+                                    <input type='text' name='datefrom' class='form-control dateInput' required />
+                                </div>
+                                <div class='form-group'>
+                                    <label>Date To</label>
+                                    <input type='text' name='dateto' class='form-control dateInput' required />
                                 </div>
                             </div>
-						</div>
-						<div class='modal-footer' align='right'>
-                            <button class='btn btn-default' type='button' data-dismiss='modal'>Close</button>
-                            <button class='btn btn-primary btn-submit' type='submit'>Submit</button>
-                        </div>
-                    </form>
-					</div>
-				</div>
-			</div>
-
-            <div class='modal fade' tabindex='-1' role='dialog' id='modal-pull-updated-stores'>
-				<div class='modal-dialog'>
-					<div class='modal-content'>
-						<div class='modal-header'>
-							<button class='close' aria-label='Close' type='button' data-dismiss='modal'>
-								<span aria-hidden='true'>×</span></button>
-							<h4 class='modal-title'><i class='fa fa-download'></i> Pull Updated Stores</h4>
-						</div>
-
-						<form method='get' target='_blank' action=".route('stores.pull-updated-store').">
-                        <input type='hidden' name='_token' value=".csrf_token().">
-                        ".CRUDBooster::getUrlParameters()."
-                        <div class='modal-body'>
-                            <div class='form-group'>
-                                <label>Date From</label>
-                                <input type='text' name='datefrom' class='form-control dateInput' required />
+                            <div class='modal-footer' align='right'>
+                                <button class='btn btn-default' type='button' data-dismiss='modal'>Close</button>
+                                <button class='btn btn-primary btn-submit' type='submit'>Submit</button>
                             </div>
-                            <div class='form-group'>
-                                <label>Date To</label>
-                                <input type='text' name='dateto' class='form-control dateInput' required />
-                            </div>
-						</div>
-						<div class='modal-footer' align='right'>
-                            <button class='btn btn-default' type='button' data-dismiss='modal'>Close</button>
-                            <button class='btn btn-primary btn-submit' type='submit'>Submit</button>
+                        </form>
                         </div>
-                    </form>
-					</div>
-				</div>
-			</div>
+                    </div>
+                </div>
 			";
 
 	    }
@@ -206,12 +213,12 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
                     break;
                 default:
                     {
-                        foreach ($this->activeChannel as $keyChannel => $valueChannel) {
+                        foreach ($this->activeChannel as $valueChannel) {
                             if($button_name == "set_channel_{$valueChannel->channel_code}"){
                                 $value['channels_id'] = $valueChannel->id;
                             }
                         }
-                        foreach ($this->activeTransferGroup as $keyTransferGroup => $valueTransferGroup) {
+                        foreach ($this->activeTransferGroup as $valueTransferGroup) {
                             if($button_name == "set_group_{$valueTransferGroup->group}"){
                                 $value['transfer_groups_id'] = $valueTransferGroup->id;
                             }

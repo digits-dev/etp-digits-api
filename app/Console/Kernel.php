@@ -60,6 +60,9 @@ class Kernel extends ConsoleKernel
 
             $sts = new AdminStoreTransfersController();
             $sts->updateTransferStatus();
+
+            $whEas = new WarehouseSyncService();
+            $whEas->checkEasWarehouse();
         })->everyMinute();
 
         $schedule->call(function(){
