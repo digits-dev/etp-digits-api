@@ -48,6 +48,9 @@ class Kernel extends ConsoleKernel
 
             $whSync = new WarehouseSyncService();
             $whSync->syncNewWarehouse(request()->merge(['datefrom'=>$dateFrom,'dateto'=>$dateTo]));
+
+            $whEas = new WarehouseSyncService();
+            $whEas->checkEasWarehouse();
         })->hourly();
 
         $schedule->call(function(){
@@ -60,9 +63,6 @@ class Kernel extends ConsoleKernel
 
             $sts = new AdminStoreTransfersController();
             $sts->updateTransferStatus();
-
-            $whEas = new WarehouseSyncService();
-            $whEas->checkEasWarehouse();
         })->everyMinute();
 
         $schedule->call(function(){
