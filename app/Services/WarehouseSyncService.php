@@ -81,7 +81,6 @@ class WarehouseSyncService
         $storeMasters = StoreMaster::where('eas_flag', 0)->get();
         foreach ($storeMasters as $store) {
             $etpWarehouse = EtpWarehouse::getWarehouse($store->warehouse_code);
-            Log::debug(json_encode($etpWarehouse));
             if($etpWarehouse){
                 $store->eas_flag = 1;
                 $store->save();
