@@ -177,4 +177,24 @@ class Delivery extends Model
             );
 
     }
+
+    public function scopeExportWithoutSerial($query){
+        return $query->join('delivery_lines', 'deliveries.id', 'delivery_lines.deliveries_id')
+            ->join('store_masters', 'deliveries.stores_id', 'store_masters.id')
+            ->join('order_statuses', 'deliveries.status', 'order_statuses.id')
+            ->leftJoin('items', 'delivery_lines.ordered_item', 'items.digits_code')
+            ->select(
+                'deliveries.dr_number',
+                'items.digits_code',
+                'items.upc_code',
+                'items.item_description',
+                DB::raw("(SELECT 'DIGITS WAREHOUSE') as source"),
+                'store_masters.bea_so_store_name as destination',
+                'delivery_lines.shipped_quantity as qty',
+                'deliveries.transaction_date',
+                'deliveries.received_date',
+                'order_statuses.order_status'
+            );
+
+    }
 }
