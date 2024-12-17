@@ -44,4 +44,10 @@ class StoreMaster extends Model
         return $query->where('status', 'ACTIVE')
             ->where('transfer_groups_id', $group);
     }
+
+    public function scopeGetDeployedStores($query){
+        return $query->where('status', 'ACTIVE')
+            ->where('is_deployed', 1)
+            ->pluck('warehouse_code');
+    }
 }

@@ -6,6 +6,7 @@ use App\Models\Delivery;
 use App\Models\EtpDelivery;
 use App\Models\OracleTransactionInterface;
 use App\Models\OrderStatus;
+use App\Models\StoreMaster;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -25,6 +26,8 @@ class DeliveryController extends Controller
                 'datefrom.before' => 'The datefrom must be before the dateto.',
                 'dateto.after'    => 'The dateto must be after the datefrom.',
             ]);
+
+            $deployedStores = StoreMaster::getDeployedStores();
 
             // Proceed with the logic if validation passes
             $deliveries = [];
@@ -47,7 +50,7 @@ class DeliveryController extends Controller
                 );
             }])
             ->whereBetween('deliveries.created_at', [$request->datefrom, $request->dateto])
-            ->whereIn('deliveries.to_warehouse_id',['0572','0041','0971','0854']) //limit stores for auto pull delivery etp
+            ->whereIn('deliveries.to_warehouse_id', $deployedStores) //limit stores for auto pull delivery etp
             ->select(
                 'deliveries.id',
                 'deliveries.dr_number as reference_code',
