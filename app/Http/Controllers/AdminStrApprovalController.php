@@ -99,7 +99,7 @@
             $data['page_title'] = "Review Pullout Details";
 			$data['store_pullout'] = StorePullout::with(['transportTypes','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
 
-			$data['action_url'] = route('saveReviewStw');
+			$data['action_url'] = route('saveReviewStr');
 			return view('store-pullout.approval', $data);
 
 		}

@@ -84,18 +84,19 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::post('save-schedule',[AdminStorePulloutsController::class, 'saveSchedule'])->name('saveSchedulePullout');
         Route::get('create-do-no/{id}', [AdminStorePulloutsController::class, 'getCreateDoNo'])->name('showPulloutCreateDoNo');
         Route::post('save-create-do-no',[AdminStorePulloutsController::class, 'saveCreateDoNo'])->name('savePulloutCreateDoNo');
+        Route::post('post-strma-pullout', [AdminStorePulloutsController::class,'postStRmaPullout'])->name('post-strma-pullout');
     });
 
+
     Route::group(['prefix' => 'stw_approval'], function(){
-        Route::get('review/{id}',[AdminStwApprovalController::class,'getApproval'])->name('pullout-approval.review');
+        Route::get('review/{id}',[AdminStwApprovalController::class,'getApproval'])->name('pullout-stw-approval.review');
         Route::post('save-stw-review',[AdminStwApprovalController::class,'saveReviewPullout'])->name('saveReviewStw');
     });
 
     Route::group(['prefix' => 'str_approval'], function(){
-        Route::get('review/{id}',[AdminStrApprovalController::class,'getApproval'])->name('pullout-approval.review');
-        Route::post('save-stw-review',[AdminStrApprovalController::class,'saveReviewPullout'])->name('saveReviewStw');        Route::post('post-strma-pullout', [AdminStorePulloutsController::class,'postStRmaPullout'])->name('post-strma-pullout');
+        Route::get('review/{id}',[AdminStrApprovalController::class,'getApproval'])->name('pullout-str-approval.review');
+        Route::post('save-str-review',[AdminStrApprovalController::class,'saveReviewPullout'])->name('saveReviewStr');
     });
-
     Route::group(['prefix' => 'sts_confirmation'], function(){
         Route::get('confirm/{id}', [AdminStsConfirmationController::class, 'getConfirm'])->name('stsConfirm');
         Route::post('save-confirm',[AdminStsConfirmationController::class, 'saveConfirmST'])->name('saveConfirmST');
