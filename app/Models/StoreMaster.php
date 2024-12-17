@@ -23,7 +23,10 @@ class StoreMaster extends Model
         'transfer_groups_id',
         'status',
         'created_by',
-        'updated_by'
+        'updated_by',
+        'is_deployed',
+        'is_deployed_at',
+        'eas_flag'
     ];
 
     public function scopeGetPulloutDetails($query, $whCode){
