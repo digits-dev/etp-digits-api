@@ -15,7 +15,7 @@ class ItemSyncService
     private function getApiData($url, $parameters=[]){
         $secretKey = config('item-api.secret_key');
         $uniqueString = time();
-        $userAgent = $_SERVER['HTTP_USER_AGENT'];
+        $userAgent = request()->userAgent();
         if($userAgent == '' || is_null($userAgent)){
             $userAgent = config('item-api.user_agent');
         }
