@@ -38,6 +38,10 @@ Route::get('/', function () {
     return redirect('admin/login');
 });
 
+Route::get('/admin', function () {
+    return redirect('admin/statistic_builder/dashboard');
+});
+
 Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CBBackend'],'prefix' => config('crudbooster.ADMIN_PATH')], function(){
     Route::group(['prefix' => 'users'], function () {
         Route::get('change-password',[AdminCmsUsersController::class,'showChangePasswordForm'])->name('show-change-password');
