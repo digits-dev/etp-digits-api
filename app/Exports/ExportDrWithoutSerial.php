@@ -6,10 +6,11 @@ use App\Models\Delivery;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ExportDrWithoutSerial implements FromCollection, WithHeadings, WithStyles
+class ExportDrWithoutSerial implements FromCollection, WithHeadings, WithStyles, WithMapping
 {
     protected $filterColumn;
     protected $filter;
@@ -86,22 +87,23 @@ class ExportDrWithoutSerial implements FromCollection, WithHeadings, WithStyles
 			}
 		}
 
-        $deliveries = $query->get();
+        return $query->get();
+    }
 
-        return $deliveries->map(function ($delivery) {
-            return [
-                'DR #' => $delivery->dr_number,
-                'DIGITS CODE' => $delivery->digits_code ?? '',
-                'UPC CODE' => $delivery->upc_code ?? '',
-                'ITEM DESCRIPTION' => $delivery->item_description ?? '',
-                'SOURCE' => $delivery->source ?? '',
-                'DESTINATION' => $delivery->destination ?? '',
-                'QTY' => $delivery->qty ?? '',
-                'CREATED DATE' => $delivery->transaction_date,
-                'RECEIVED DATE' => $delivery->received_date,
-                'STATUS' => $delivery->order_status ?? ''
-            ];
-        });
+    public function map($row): array
+    {
+        return [
+            $row->dr_number,
+            $row->digits_code ?? '',
+            $row->upc_code ?? '',
+            $row->item_description ?? '',
+            $row->source ?? '',
+            $row->destination ?? '',
+            $row->qty ?? '',
+            $row->transaction_date,
+            $row->received_date,
+            $row->order_status ?? ''
+        ];
     }
 
     public function styles(Worksheet $sheet)

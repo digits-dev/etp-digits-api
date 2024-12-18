@@ -7,10 +7,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Illuminate\Support\Facades\DB;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
-use App\Models\CmsPrivilege;
-use App\Helpers\Helper;
 
 class ExportStsWithSerial implements FromCollection, WithHeadings, WithStyles
 {
