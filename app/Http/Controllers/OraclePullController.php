@@ -75,7 +75,8 @@ class OraclePullController extends Controller
 
         $date_from = $request->datefrom ?? date("Y-m-d H:i:s", strtotime("-5 hour"));
         $date_to = $request->dateto ?? date("Y-m-d H:i:s", strtotime("-1 hour"));
-        foreach ($this->salesOrders as $key_org => $org) {
+
+        foreach ($this->salesOrders as $org) {
 
             $order = OracleOrderHeader::getSalesOrder($org)
                 ->whereBetween('WSH_NEW_DELIVERIES.CONFIRM_DATE', [$date_from, $date_to])
