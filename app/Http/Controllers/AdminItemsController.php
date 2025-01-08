@@ -1,8 +1,12 @@
 <?php namespace App\Http\Controllers;
 
+use App\Exports\ItemExport;
+use App\Helpers\Helper;
 use App\Models\Item;
 use crocodicstudio\crudbooster\controllers\CBController;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 	class AdminItemsController extends CBController {
 
@@ -23,7 +27,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 			$this->button_show = true;
 			$this->button_filter = true;
 			$this->button_import = false;
-			$this->button_export = true;
+			$this->button_export = false;
 			$this->table = "items";
 			# END CONFIGURATION DO NOT REMOVE THIS LINE
 
@@ -61,6 +65,7 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
 
 	        $this->index_button = array();
             if(CRUDBooster::isSuperAdmin()){
+                $this->index_button[] = ["title" => "Export Items", "label" => "Export Items", 'color' => 'info', "icon" => "fa fa-download", "url" => route('export-items') . '?' . urldecode(http_build_query(@$_GET))];
                 $this->index_button[] = ["label"=>"Pull New Items","url"=>"javascript:pullNewItems()","icon"=>"fa fa-download","color"=>"warning"];
                 $this->index_button[] = ["label"=>"Pull Updated Items","url"=>"javascript:pullUpdatedItems()","icon"=>"fa fa-refresh","color"=>"info"];
             }
@@ -185,5 +190,11 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
             Item::whereIn('id', $id_selected)->update($value);
 
 	    }
+
+        public function exportItems(Request $request) {
+            $fileName = 'Export Items - ' . now()->format('Ymdhis') . '.xlsx';
+
+            return Excel::download(new ItemExport(), $fileName);
+        }
 
 	}
