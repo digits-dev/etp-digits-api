@@ -46,7 +46,7 @@ class DeliveryController extends Controller
                 $serialQuery->select(
                     DB::raw('CAST(RIGHT(id, 5) AS UNSIGNED) as id'),
                     'delivery_lines_id',
-                    'serial_number'
+                    DB::raw('CAST(RIGHT(serial_number, 20) AS CHAR(20)) as serial_number')
                 );
             }])
             ->whereBetween('deliveries.created_at', [$request->datefrom, $request->dateto])

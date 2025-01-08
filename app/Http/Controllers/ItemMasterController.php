@@ -25,6 +25,7 @@ class ItemMasterController extends Controller
             // Proceed with the logic if validation passes
             $items = ItemMaster::getItems()
                 ->whereBetween('item_masters.approved_at', [$request->datefrom, $request->dateto])
+                ->whereNotNull('item_masters.initial_wrr_date') //added restriction before etp item creation
                 ->orderBy('item_masters.digits_code','ASC')->paginate(50);
 
             //add rma items
