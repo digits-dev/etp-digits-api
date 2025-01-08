@@ -193,8 +193,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
         public function exportItems(Request $request) {
             $fileName = 'Export Items - ' . now()->format('Ymdhis') . '.xlsx';
-
-            return Excel::download(new ItemExport(), $fileName);
+            $filter_column['filter_column'] = $request->get('filter_column');
+            return Excel::download(new ItemExport($filter_column), $fileName);
         }
 
 	}

@@ -9,6 +9,12 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class ItemExport implements FromCollection, WithHeadings, WithMapping
 {
+    protected $filterColumn;
+
+    public function __construct($filterColumn = null)
+    {
+        $this->filterColumn = $filterColumn['filter_column'];
+    }
 
     public function headings(): array
     {
@@ -27,7 +33,44 @@ class ItemExport implements FromCollection, WithHeadings, WithMapping
     */
     public function collection()
     {
-        return Item::all();
+        $query = Item::select('digits_code',
+            'upc_code',
+            'item_description',
+            'brand',
+            'current_srp',
+            'has_serial'
+        );
+
+        if ($this->filterColumn) {
+            foreach ((array) $this->filterColumn as $key => $fc) {
+                $value = $fc['value'] ?? null;
+                $type = $fc['type'] ?? null;
+
+                if (empty($value) || empty($type)) {
+                    continue;
+                }
+
+                switch ($type) {
+                    case 'empty':
+                        $query->whereNull($key)->orWhere($key, '');
+                        break;
+                    case 'like':
+                    case 'not like':
+                        $query->where($key, $type, '%' . $value . '%');
+                        break;
+                    case 'in':
+                    case 'not in':
+                        $values = explode(',', $value);
+                        $type === 'in' ? $query->whereIn($key, $values) : $query->whereNotIn($key, $values);
+                        break;
+                    default:
+                        $query->where($key, $type, $value);
+                        break;
+                }
+            }
+        }
+
+        return $query->get();
     }
 
     public function map($row): array
