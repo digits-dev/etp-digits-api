@@ -51,6 +51,7 @@ class DeliveryController extends Controller
             }])
             ->whereBetween('deliveries.created_at', [$request->datefrom, $request->dateto])
             ->whereIn('deliveries.to_warehouse_id', $deployedStores) //limit stores for auto pull delivery etp
+            ->where('deliveries.status', 0) //pending status only
             ->select(
                 'deliveries.id',
                 'deliveries.dr_number as reference_code',
