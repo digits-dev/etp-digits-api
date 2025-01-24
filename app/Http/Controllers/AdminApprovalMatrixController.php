@@ -102,7 +102,9 @@
 
 			// Try to get approvers from cache, if not found, fetch from DB and cache it
 			$storelist = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($channel) {
-				return StoreMaster::where('channels_id', $channel)->pluck('bea_so_store_name', 'id');
+				return StoreMaster::where('channels_id', $channel)
+                    ->where('status', 'ACTIVE')
+                    ->pluck('bea_so_store_name', 'id');
 			});
 			return response()->json($storelist);
 		}
