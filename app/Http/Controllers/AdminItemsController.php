@@ -64,7 +64,7 @@ use Maatwebsite\Excel\Facades\Excel;
             }
 
 	        $this->index_button = array();
-            if(CRUDBooster::isSuperAdmin()){
+            if(CRUDBooster::isSuperAdmin() && CRUDBooster::getCurrentMethod() == 'getIndex'){
                 $this->index_button[] = ["title" => "Export Items", "label" => "Export Items", 'color' => 'info', "icon" => "fa fa-download", "url" => route('export-items') . '?' . urldecode(http_build_query(@$_GET))];
                 $this->index_button[] = ["label"=>"Pull New Items","url"=>"javascript:pullNewItems()","icon"=>"fa fa-download","color"=>"warning"];
                 $this->index_button[] = ["label"=>"Pull Updated Items","url"=>"javascript:pullUpdatedItems()","icon"=>"fa fa-refresh","color"=>"info"];
