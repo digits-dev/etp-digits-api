@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\Helper;
 use App\Models\Delivery;
 use App\Models\EtpDelivery;
+use App\Models\EtpReceiving;
 use App\Models\OrderStatus;
 use Carbon\Carbon;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
@@ -249,7 +250,10 @@ use Illuminate\Support\Facades\Log;
                         ->whereNotIn('status', [OrderStatus::PROCESSING_DOTR, OrderStatus::RECEIVED])
                         ->first();
 
-                    if($drHead){
+                    $etpRcvHead = EtpReceiving::getReceivedDelivery($drTrx->OrderNumber)->first();
+
+                    if($drHead && $etpRcvHead){
+                        $drHead->document_number = $drTrx->DocumentNumber;
                         $drHead->received_date = Carbon::parse($drTrx->ReceivingDate);
                         $drHead->status = ($drHead->transaction_type == 'MO') ? OrderStatus::PROCESSING_DOTR : OrderStatus::RECEIVED;
                         $drHead->save();

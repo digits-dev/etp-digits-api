@@ -16,6 +16,7 @@ class Delivery extends Model
     protected $fillable = [
         'order_number',
         'dr_number',
+        'document_number',
         'customer_name',
         'to_warehouse_id',
         'customer_po',

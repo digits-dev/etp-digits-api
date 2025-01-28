@@ -91,7 +91,7 @@
                                     <b>Received Date:</b>
                                 </td>
                                 <td>
-                                    {{ $deliveries->received_at }}
+                                    {{ $deliveries->received_date }}
                                 </td>
                             </tr>
                             <tr>
