@@ -253,7 +253,7 @@ use Illuminate\Support\Facades\Log;
                     $etpRcvHead = EtpReceiving::getReceivedDelivery($drTrx->OrderNumber)->first();
 
                     if($drHead && $etpRcvHead){
-                        $drHead->document_number = $drTrx->DocumentNumber;
+                        $drHead->document_number = $etpRcvHead->DocumentNumber;
                         $drHead->received_date = Carbon::parse($drTrx->ReceivingDate);
                         $drHead->status = ($drHead->transaction_type == 'MO') ? OrderStatus::PROCESSING_DOTR : OrderStatus::RECEIVED;
                         $drHead->save();
