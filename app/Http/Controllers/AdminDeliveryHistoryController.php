@@ -64,7 +64,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
             $data = [];
             $data['page_title'] = "Delivery Details";
-            $data['deliveries'] = Delivery::with(['lines' => function ($query) {
+            $data['deliveries'] = Delivery::with(['orderStatus','lines' => function ($query) {
                 $query->orderBy('line_number','ASC');
             },'lines.serials'])->find($id);
 

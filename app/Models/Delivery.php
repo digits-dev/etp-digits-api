@@ -39,6 +39,10 @@ class Delivery extends Model
         return $this->hasMany(DeliveryLine::class, 'deliveries_id');
     }
 
+    public function orderStatus() : BelongsTo {
+        return $this->belongsTo(OrderStatus::class, 'id', 'status');
+    }
+
     // Calculate and update totals
     public function calculateTotals(){
         $this->total_qty = $this->lines->sum('shipped_quantity');

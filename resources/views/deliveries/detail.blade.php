@@ -102,6 +102,14 @@
                                     {{ $deliveries->customer_name }}
                                 </td>
                             </tr>
+                            <tr>
+                                <td style="width: 30%">
+                                    <b>Status:</b>
+                                </td>
+                                <td>
+                                    {{ $deliveries->orderStatus->style }}
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

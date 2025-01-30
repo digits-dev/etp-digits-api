@@ -10,6 +10,7 @@ class OrderStatus extends Model
     use HasFactory;
 
     protected $connection = 'mysql';
+    protected $table = 'order_statuses';
     protected $guarded = [];
 
     public const PENDING = 0;
