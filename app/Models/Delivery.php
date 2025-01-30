@@ -40,7 +40,7 @@ class Delivery extends Model
     }
 
     public function orderStatus() : BelongsTo {
-        return $this->belongsTo(OrderStatus::class, 'id', 'status');
+        return $this->belongsTo(OrderStatus::class, 'status', 'id');
     }
 
     // Calculate and update totals
