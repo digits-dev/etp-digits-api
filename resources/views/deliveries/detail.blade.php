@@ -107,7 +107,7 @@
                                     <b>Status:</b>
                                 </td>
                                 <td>
-                                    {{ $deliveries->orderStatus->style }}
+                                    {{ $deliveries->orderStatus->order_status }}
                                 </td>
                             </tr>
                         </tbody>
@@ -183,7 +183,9 @@
 @push('bottom')
     <script type="text/javascript">
         $(document).ready(function() {
-
+            $(function(){
+                $('body').addClass("sidebar-collapse");
+            });
         });
     </script>
 @endpush
