@@ -82,6 +82,9 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
                 $this->button_selected[] = ['label'=>'Set Status ACTIVE','icon'=>'fa fa-check-circle','name'=>'set_status_active'];
 				$this->button_selected[] = ['label'=>'Set Status INACTIVE','icon'=>'fa fa-times-circle','name'=>'set_status_inactive'];
                 $this->button_selected[] = ['label'=>'-----','icon'=>'','name'=>'blank'];
+                $this->button_selected[] = ['label'=>'Set Deployed YES','icon'=>'fa fa-check-circle','name'=>'set_deployed_yes'];
+				$this->button_selected[] = ['label'=>'Set Deployed NO','icon'=>'fa fa-times-circle','name'=>'set_deployed_no'];
+                $this->button_selected[] = ['label'=>'-----','icon'=>'','name'=>'blank'];
                 foreach ($this->activeChannel as $valueChannel) {
                     $this->button_selected[] = ["label"=>"Set Channel as {$valueChannel->channel_code}","icon"=>"fa fa-check-circle","name"=>"set_channel_{$valueChannel->channel_code}"];
                 }
@@ -210,6 +213,14 @@ use crocodicstudio\crudbooster\helpers\CRUDBooster;
                     break;
                 case 'set_status_inactive':
                     $value['status'] = 'INACTIVE';
+                    break;
+                case 'set_deployed_yes':
+                    $value['is_deployed'] = 1;
+                    $value['is_deployed_at'] = date('Y-m-d H:i:s');
+                    break;
+                case 'set_deployed_no':
+                    $value['is_deployed'] = 0;
+                    $value['is_deployed_at'] = null;
                     break;
                 default:
                     {
