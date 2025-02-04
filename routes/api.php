@@ -39,4 +39,6 @@ Route::group(['middleware' => ['authapi']], function(){
 
     Route::get('update-received-deliveries', [DeliveryController::class,'updateReceivedDeliveryStatus']);
     Route::get('manual-update-received-dr', [AdminDeliveriesController::class,'manualUpdateDeliveryStatus']);
+    //for itg dashboard
+    Route::get('get-itg-store-list', [WarehouseMasterController::class,'getStoreList']);
 });

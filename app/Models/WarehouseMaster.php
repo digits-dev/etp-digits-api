@@ -32,4 +32,20 @@ class WarehouseMaster extends Model
                 'customer.state_id as state_code'
             );
     }
+
+    public function scopeGetStoreList($query){
+        return $query->leftJoin('channels','customer.channel_id','channels.id')
+            ->leftJoin('statuses','customer.status_id','statuses.id')
+            ->whereIn('customer.channel_code_id',['RTL','FRA','SVC'])
+            ->select(
+                DB::raw('SUBSTRING(customer.customer_code, 5,4) as customer_code'),
+                'customer.warehouse_name as short_name',
+                'customer.cutomer_name as customer_name',
+                'customer.concept',
+                'channels.channel_description as customer_type',
+                'customer.open_date',
+                'customer.close_date',
+                'statuses.status_description as status'
+            );
+    }
 }
