@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 	class AdminDeliveriesController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -268,34 +269,62 @@ use Illuminate\Support\Facades\Log;
         }
 
         public function manualUpdateDeliveryStatus(Request $request){
-            $dateFrom = Carbon::parse($request->dateFrom)->format('Ymd');
-            $dateTo = Carbon::parse($request->dateTo)->format('Ymd');
 
-            $etpDeliveries = EtpDelivery::getReceivedDelivery()
-                ->whereBetween('ReceivingDate',[$dateFrom, $dateTo])
-                ->get();
+            try{
+                $request->validate([
+                    'dateFrom' => ['required', 'date_format:Ymd', 'before:dateto'],
+                    'dateTo'   => ['required', 'date_format:Ymd', 'after:datefrom'],
+                ], [
+                    'dateFrom.before' => 'The datefrom must be before the dateto.',
+                    'dateTo.after'    => 'The dateto must be after the datefrom.',
+                ]);
 
-            foreach ($etpDeliveries ?? [] as $drTrx) {
-                try {
-                    DB::beginTransaction();
-                    $drHead = Delivery::where('dr_number', $drTrx->OrderNumber)
-                        ->whereNotIn('status', [OrderStatus::PROCESSING_DOTR, OrderStatus::RECEIVED])
-                        ->first();
+                $dateFrom = Carbon::parse($request->dateFrom)->format('Ymd');
+                $dateTo = Carbon::parse($request->dateTo)->format('Ymd');
 
-                    $etpRcvHead = EtpReceiving::getReceivedDelivery($drTrx->OrderNumber)->first();
+                $etpDeliveries = EtpDelivery::getReceivedDelivery()
+                    ->whereBetween('ReceivingDate',[$dateFrom, $dateTo])
+                    ->get();
 
-                    if($drHead && $etpRcvHead){
-                        $drHead->document_number = $etpRcvHead->DocumentNumber;
-                        $drHead->received_date = Carbon::parse($drTrx->ReceivingDate);
-                        $drHead->status = ($drHead->transaction_type == 'MO') ? OrderStatus::PROCESSING_DOTR : OrderStatus::RECEIVED;
-                        $drHead->save();
+                foreach ($etpDeliveries ?? [] as $drTrx) {
+                    try {
+                        DB::beginTransaction();
+                        $drHead = Delivery::where('dr_number', $drTrx->OrderNumber)
+                            ->whereNotIn('status', [OrderStatus::PROCESSING_DOTR, OrderStatus::RECEIVED])
+                            ->first();
+
+                        $etpRcvHead = EtpReceiving::getReceivedDelivery($drTrx->OrderNumber)->first();
+
+                        if($drHead && $etpRcvHead){
+                            $drHead->document_number = $etpRcvHead->DocumentNumber;
+                            $drHead->received_date = Carbon::parse($drTrx->ReceivingDate);
+                            $drHead->status = ($drHead->transaction_type == 'MO') ? OrderStatus::PROCESSING_DOTR : OrderStatus::RECEIVED;
+                            $drHead->save();
+                        }
+                        DB::commit();
+                    } catch (Exception $e) {
+                        DB::rollBack();
+                        Log::error($e->getMessage());
                     }
-                    DB::commit();
-                } catch (Exception $e) {
-                    DB::rollBack();
-                    Log::error($e->getMessage());
                 }
+
+                return response()->json([
+                    'api_status' => 1,
+                    'api_message' => 'success',
+                    'data' => 'Processing dr received from etp to mw!',
+                    'http_status' => 200
+                ], 200);
             }
+            catch (ValidationException $ex){
+                return response()->json([
+                    'api_status' => 0,
+                    'api_message' => 'Validation failed',
+                    'errors' => $ex->errors(),
+                    'http_status' => 401
+                ], 401);
+            }
+
+
         }
 
 	}
