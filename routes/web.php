@@ -55,7 +55,7 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
     Route::group(['prefix'=>'items'], function () {
         Route::get('sync-new-items', [ItemSyncService::class,'syncNewItems'])->name('items.pull-new-item');
         Route::get('sync-updated-items', [ItemSyncService::class,'syncUpdatedItems'])->name('items.pull-updated-item');
-        Route::get('export-items',[AdminItemsController::class,'exportItems'])->name('export-items');
+        Route::get('export-items', [AdminItemsController::class,'exportItems'])->name('export-items');
     });
     Route::group(['prefix'=>'store_masters'], function () {
         Route::get('sync-new-stores', [WarehouseSyncService::class,'syncNewWarehouse'])->name('stores.pull-new-store');

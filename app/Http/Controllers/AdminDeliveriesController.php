@@ -10,6 +10,7 @@ use App\Models\OrderStatus;
 use Carbon\Carbon;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -238,6 +239,37 @@ use Illuminate\Support\Facades\Log;
         public function updateDeliveryStatus(){
             $dateFrom = now()->subDays(1)->format('Ymd');
             $dateTo = now()->format('Ymd');
+
+            $etpDeliveries = EtpDelivery::getReceivedDelivery()
+                ->whereBetween('ReceivingDate',[$dateFrom, $dateTo])
+                ->get();
+
+            foreach ($etpDeliveries ?? [] as $drTrx) {
+                try {
+                    DB::beginTransaction();
+                    $drHead = Delivery::where('dr_number', $drTrx->OrderNumber)
+                        ->whereNotIn('status', [OrderStatus::PROCESSING_DOTR, OrderStatus::RECEIVED])
+                        ->first();
+
+                    $etpRcvHead = EtpReceiving::getReceivedDelivery($drTrx->OrderNumber)->first();
+
+                    if($drHead && $etpRcvHead){
+                        $drHead->document_number = $etpRcvHead->DocumentNumber;
+                        $drHead->received_date = Carbon::parse($drTrx->ReceivingDate);
+                        $drHead->status = ($drHead->transaction_type == 'MO') ? OrderStatus::PROCESSING_DOTR : OrderStatus::RECEIVED;
+                        $drHead->save();
+                    }
+                    DB::commit();
+                } catch (Exception $e) {
+                    DB::rollBack();
+                    Log::error($e->getMessage());
+                }
+            }
+        }
+
+        public function manualUpdateDeliveryStatus(Request $request){
+            $dateFrom = Carbon::parse($request->dateFrom)->format('Ymd');
+            $dateTo = Carbon::parse($request->dateTo)->format('Ymd');
 
             $etpDeliveries = EtpDelivery::getReceivedDelivery()
                 ->whereBetween('ReceivingDate',[$dateFrom, $dateTo])

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminDeliveriesController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\ItemMasterController;
 use App\Http\Controllers\OraclePullController;
@@ -37,4 +38,5 @@ Route::group(['middleware' => ['authapi']], function(){
     Route::get('sync-updated-items', [ItemSyncService::class,'syncUpdatedItems']);
 
     Route::get('update-received-deliveries', [DeliveryController::class,'updateReceivedDeliveryStatus']);
+    Route::get('manual-update-received-dr', [AdminDeliveriesController::class,'manualUpdateDeliveryStatus']);
 });
