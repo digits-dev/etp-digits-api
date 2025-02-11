@@ -113,7 +113,7 @@ class OraclePullController extends Controller
             $warehouse = Cache::remember($whKey, 3600, function () use ($value) {
                 return StoreMaster::where('bea_mo_store_name', $value->customer_name)
                     ->orWhere('bea_so_store_name', $value->customer_name)
-                    ->select('id as store_id','warehouse_code as warehouse_id',)
+                    ->select('id as store_id','warehouse_code as warehouse_id')
                     ->first();
             });
 
