@@ -45,7 +45,7 @@ class OraclePullController extends Controller
         foreach ($this->moveOrders as $key_org => $org) {
 
             $shipment_numbers = OracleMaterialTransaction::getShipments($date_from, $date_to, $org)->get();
-            foreach ($shipment_numbers as $key_shipment => $shipment) {
+            foreach ($shipment_numbers as $shipment) {
                 $request_numbers[] = $shipment->shipment_number;
             }
 
@@ -59,6 +59,8 @@ class OraclePullController extends Controller
                 case 'DEO':
                     $deliveries = OracleTransactionHeader::getMoveOrders($request_numbers, $org)->get();
                     break;
+                default:
+                    break;
             }
 
             $transaction_date = Carbon::parse($date_from)->format("Y-m-d");
@@ -67,6 +69,7 @@ class OraclePullController extends Controller
                 'from_org' => $key_org,
                 'to_org' => 223
             ];
+
             $this->processOrders($deliveries, $transactions_attr, $transaction_date);
         }
     }
@@ -94,8 +97,10 @@ class OraclePullController extends Controller
 
             $transaction_date = Carbon::parse($date_from)->format("Y-m-d");
             $transactions_attr = [
-                'type' => 'SO'
+                'type' => 'SO',
+                'to_org' => 223
             ];
+
             $this->processOrders($orders, $transactions_attr, $transaction_date);
         }
 
