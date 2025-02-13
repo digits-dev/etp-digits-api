@@ -16,7 +16,7 @@ class Counter extends Model
 
     protected $fillable = [
         'reference_code',
-        'referece_number',
+        'reference_number',
         'type',
         'status',
         'created_by',
