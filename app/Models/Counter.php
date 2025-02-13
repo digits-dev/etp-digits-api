@@ -10,6 +10,10 @@ class Counter extends Model
     use HasFactory;
     protected $table = 'counters';
 
+    public const STW = 1;
+    public const STR = 2;
+    public const STS = 3;
+
     protected $fillable = [
         'reference_code',
         'referece_number',

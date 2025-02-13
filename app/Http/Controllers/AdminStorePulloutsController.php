@@ -215,7 +215,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		}
 
 		// Generated ref_number
-		$counter = Counter::find(2);
+		$counter = Counter::find(Counter::STW);
 		$ref_number = $counter->reference_number;
 		$combined_ref = $counter->reference_code . '-' . $ref_number;
 		$hand_carrier = $validatedData['transport_type'] == 2 ? $validatedData['hand_carrier'] : "";
@@ -349,7 +349,7 @@ class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controlle
 		$allProblems = $request->input('all_problems');
 
 		// Generate ref_number
-		$counter = Counter::find(3);
+		$counter = Counter::find(Counter::STR);
 		$ref_number = $counter->reference_number;
 		$combined_ref = $counter->reference_code . '-' . $ref_number;
 

@@ -235,7 +235,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		}
 
 		// generated ref_number
-		$counter = Counter::find(1);
+		$counter = Counter::find(Counter::STS);
 		$ref_number = $counter->reference_number;
 		$combined_ref = $counter->reference_code . '-' . $ref_number;
 		$hand_carrier = $validatedData['transport_type'] == 2 ? $request->input('hand_carrier') : "";
