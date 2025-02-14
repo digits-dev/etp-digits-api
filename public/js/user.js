@@ -1,4 +1,4 @@
-const noChannelPriv = [1, 3, 6, 12];
+const noChannelPriv = [1, 3, 6, 9, 12, 13, 11, 19];
 
 $("#id_cms_privileges").change(function() {
     const selectedPriv = parseInt($(this).val(), 10);
