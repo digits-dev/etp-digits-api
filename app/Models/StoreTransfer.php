@@ -91,6 +91,7 @@ class StoreTransfer extends Model
 
     public function scopeExport($query){
         return $query->select(
+            'store_transfers.ref_number',
             'store_transfers.document_number',
             'reasons.pullout_reason',
             'transport_types.transport_type',
@@ -119,6 +120,7 @@ class StoreTransfer extends Model
 
     public function scopeExportWithSerial($query){
         return $query->select(
+            'store_transfers.ref_number',
             'store_transfers.document_number',
             'reasons.pullout_reason',
             'transport_types.transport_type',
