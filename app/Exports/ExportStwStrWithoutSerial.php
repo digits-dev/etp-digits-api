@@ -11,8 +11,9 @@ use Illuminate\Support\Facades\DB;
 use App\Models\CmsPrivilege;
 use App\Helpers\Helper;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use Maatwebsite\Excel\Concerns\WithMapping;
 
-class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithStyles
+class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithStyles, WithMapping
 {
     protected $filterColumn;
     protected $filter;
@@ -26,7 +27,8 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
     public function headings(): array
     {
         return [
-            'ST/REF #',
+            'REF #',
+            'ST #',
             'MOR/SOR #',
             'REASON',
             'DIGITS CODE',
@@ -47,39 +49,7 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
 
     public function collection()
     {
-        $query = StorePullout::select(
-            'store_pullouts.document_number',
-            'store_pullouts.sor_mor_number',
-            'store_pullouts.memo',
-            'reasons.pullout_reason',
-            'store_pullouts.created_at',
-            'transport_types.transport_type',
-            'stores_from.store_name AS source',
-            'stores_to.store_name AS destination',
-            'store_pullout_lines.qty',
-            'order_statuses.order_status',
-            'items.digits_code',
-            'items.upc_code',
-            'items.item_description',
-            'cms_users.name as scheduler',
-            'store_pullouts.pullout_date',
-            'store_pullouts.pullout_schedule_date',
-            'transaction_types.transaction_type',
-            'store_pullout_lines.problem_details'
-        )
-        ->leftJoin('reasons', function($join) {
-            $join->on('store_pullouts.reasons_id', '=', 'reasons.bea_mo_reason')
-                 ->orOn('store_pullouts.reasons_id', '=', 'reasons.bea_so_reason');
-        })
-        ->leftJoin('transport_types', 'store_pullouts.transport_types_id', '=', 'transport_types.id')
-        ->leftJoin('transaction_types', 'store_pullouts.transaction_type', '=', 'transaction_types.id')
-        ->leftJoin('store_masters AS stores_from', 'store_pullouts.wh_from', '=', 'stores_from.warehouse_code')
-        ->leftJoin('store_masters AS stores_to', 'store_pullouts.wh_to', '=', 'stores_to.warehouse_code')
-        ->leftJoin('order_statuses', 'store_pullouts.status', '=', 'order_statuses.id')
-        ->leftJoin('store_pullout_lines', 'store_pullouts.id', '=', 'store_pullout_lines.store_pullouts_id')
-        ->leftJoin('items', 'store_pullout_lines.item_code', '=', 'items.digits_code')
-        ->leftJoin('cms_users', 'store_pullouts.scheduled_by', '=', 'cms_users.id')
-        ;    
+        $query = StorePullout::export();
 
         // Apply filters
         if ($this->filterColumn) {
@@ -134,28 +104,30 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
 		}
 
         // Execute the query and map results for export
-        return $query->get()->map(function ($storeTransfer) {
-            return [
-                'ST #' => $storeTransfer->document_number,
-                'MOR/SOR #' => $storeTransfer->sor_mor_number ?? '',
-                'REASON' => $storeTransfer->pullout_reason ?? '',
-                'DIGITS CODE' => $storeTransfer->digits_code ?? '',
-                'UPC CODE' => $storeTransfer->upc_code ?? '',
-                'ITEM DESCRIPTION' => $storeTransfer->item_description ?? '',
-                'SOURCE' => $storeTransfer->source ?? '',
-                'DESTINATION' => $storeTransfer->destination ?? '',
-                'QTY' => $storeTransfer->qty ?? '',
-                'TRANSPORT BY' => $storeTransfer->transport_type ?? '',
-                'SCHEDULED DATE/BY' => !empty($storeTransfer->pullout_schedule_date) ? $storeTransfer->pullout_schedule_date .' / '. $storeTransfer->scheduler : $storeTransfer->pullout_date,
-                'TRANSACTION TYPE' => $storeTransfer->transaction_type,
-                'PROBLEM DETAILS' => $storeTransfer->problem_details,
-                'MEMO' => $storeTransfer->memo,
-                'CREATED DATE' => $storeTransfer->created_at ?? '',
-                'STATUS' => $storeTransfer->order_status ?? ''
-            ];
-        });
+        return $query->get();
     }
 
+    public function map($storePullout) : array {
+        return [
+            $storePullout->ref_number,
+            $storePullout->document_number,
+            $storePullout->sor_mor_number ?? '',
+            $storePullout->pullout_reason ?? '',
+            $storePullout->digits_code ?? '',
+            $storePullout->upc_code ?? '',
+            $storePullout->item_description ?? '',
+            $storePullout->source ?? '',
+            $storePullout->destination ?? '',
+            $storePullout->qty ?? '',
+            $storePullout->transport_type ?? '',
+            !empty($storePullout->pullout_schedule_date) ? $storePullout->pullout_schedule_date .' / '. $storePullout->scheduler : $storePullout->pullout_date,
+            $storePullout->transaction_type,
+            $storePullout->problem_details,
+            $storePullout->memo,
+            $storePullout->created_at ?? '',
+            $storePullout->order_status ?? ''
+        ];
+    }
     public function styles(Worksheet $sheet)
     {
         $sheet->getStyle('A1:Q1')->applyFromArray([
