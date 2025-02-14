@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Cache;
 class AdminStorePulloutsController extends \crocodicstudio\crudbooster\controllers\CBController
 {
 	private const SCHEDULER = [CmsPrivilege::SUPERADMIN, CmsPrivilege::LOGISTICS, CmsPrivilege::LOGISTICSTM];
-	private const DOCREATOR = [CmsPrivilege::SUPERADMIN, CmsPrivilege::CASHIER];
+	private const DOCREATOR = [CmsPrivilege::SUPERADMIN, CmsPrivilege::CASHIER, CmsPrivilege::CSA];
 	private const CANVOID = [CmsPrivilege::SUPERADMIN, CmsPrivilege::CASHIER];
 
 	public function cbInit()
