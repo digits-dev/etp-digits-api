@@ -97,7 +97,7 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 
 	public function exportStwrWithSerial(Request $request)
 	{
-		$query_filter_params = helper::generatePulloutParams();
+		$query_filter_params = Helper::generatePulloutParams();
 		$filter_column = [
 			'filter_column' => $request->get('filter_column'),
 			'filters' => $query_filter_params,
@@ -107,7 +107,7 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 
 	public function exportStwr(Request $request)
 	{
-		$query_filter_params = helper::generatePulloutParams();
+		$query_filter_params = Helper::generatePulloutParams();
 		$filter_column = [
 			'filter_column' => $request->get('filter_column'),
 			'filters' => $query_filter_params,

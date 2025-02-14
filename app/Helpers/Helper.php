@@ -77,8 +77,9 @@ class Helper
 
     public static function generateStsParams() {
 		$query_filter_params = [];
-
-		if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTLOGISTIC)) {
+        if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORT)) {
+			//do nothing
+		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTLOGISTIC)) {
 			$query_filter_params[] = [
 				'method' => 'where',
 				'params' => ['store_transfers.transport_types_id', 1]
@@ -150,7 +151,9 @@ class Helper
     public static function generatePulloutParams() {
 		$query_filter_params = [];
 
-		if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTLOGISTIC)) {
+        if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORT)) {
+			//do nothing
+		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTLOGISTIC)) {
 			$query_filter_params[] = [
 				'method' => 'where',
 				'params' => ['store_pullouts.transport_types_id', 1]
@@ -217,7 +220,10 @@ class Helper
 
     public static function generateDrParams() {
 		$query_filter_params = [];
-        if (in_array(CRUDBooster::myPrivilegeId(), array_merge(self::VIEWREPORTLOGISTIC,self::VIEWREPORT))) {
+        if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORT)) {
+			//do nothing
+		}
+        if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTLOGISTIC)) {
 			//do nothing
 		}
 		elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTAPPROVER)) {
