@@ -2,12 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\Helper;
 use App\Models\Delivery;
+use App\Models\EtpDelivery;
+use App\Models\EtpReceiving;
+use App\Models\OrderStatus;
+use Carbon\Carbon;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Validation\ValidationException;
 
 	class AdminDeliveriesController extends \crocodicstudio\crudbooster\controllers\CBController {
 
@@ -52,6 +58,7 @@ use Illuminate\Support\Facades\Session;
 
 			    $this->button_selected[] = ['label'=>'Update Total Amount', 'icon'=>'fa fa-refresh', 'name'=>'calculate_totals'];
 			    $this->button_selected[] = ['label'=>'Update Status PENDING', 'icon'=>'fa fa-file', 'name'=>'update_status_pending'];
+			    $this->button_selected[] = ['label'=>'Update Status RECEIVED', 'icon'=>'fa fa-file', 'name'=>'update_status_received'];
             }
 
             $this->load_js[] = asset("js/delivery.js");
@@ -186,8 +193,20 @@ use Illuminate\Support\Facades\Session;
             if($button_name == "update_status_pending"){
                 try {
                     DB::beginTransaction();
-                    Delivery::whereIn('id',$id_selected)->update([
-                        'status' => Delivery::PENDING
+                    Delivery::whereIn('id', $id_selected)->update([
+                        'status' => OrderStatus::PENDING
+                    ]);
+                    DB::commit();
+                } catch (Exception $ex) {
+                    DB::rollBack();
+                    Log::error($ex->getMessage());
+                }
+            }
+            if($button_name == "update_status_received"){
+                try {
+                    DB::beginTransaction();
+                    Delivery::whereIn('id', $id_selected)->update([
+                        'status' => OrderStatus::RECEIVED
                     ]);
                     DB::commit();
                 } catch (Exception $ex) {
@@ -199,15 +218,13 @@ use Illuminate\Support\Facades\Session;
 
         public function hook_query_index(&$query){
             if(!CRUDBooster::isSuperadmin()){
-                $storeAccess = Session::get('store_id');
-                $channelAccess = Session::get('channel_id');
-                $query->where('stores_id',$storeAccess);
+                $query->where('stores_id',Helper::myStore());
             }
         }
 
         public function getDetail($id){
 
-            if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
+            if(!CRUDBooster::isRead() && !$this->global_privilege || !$this->button_detail) {
                 CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
             }
 
@@ -218,6 +235,96 @@ use Illuminate\Support\Facades\Session;
             },'lines.serials'])->find($id);
 
             return view('deliveries.detail', $data);
+        }
+
+        public function updateDeliveryStatus(){
+            $dateFrom = now()->subDays(1)->format('Ymd');
+            $dateTo = now()->format('Ymd');
+
+            $etpDeliveries = EtpDelivery::getReceivedDelivery()
+                ->whereBetween('ReceivingDate',[$dateFrom, $dateTo])
+                ->get();
+
+            foreach ($etpDeliveries ?? [] as $drTrx) {
+                try {
+                    DB::beginTransaction();
+                    $drHead = Delivery::where('dr_number', $drTrx->OrderNumber)
+                        ->whereNotIn('status', [OrderStatus::PROCESSING_DOTR, OrderStatus::RECEIVED])
+                        ->first();
+
+                    $etpRcvHead = EtpReceiving::getReceivedDelivery($drTrx->OrderNumber)->first();
+
+                    if($drHead && $etpRcvHead){
+                        $drHead->document_number = $etpRcvHead->DocumentNumber;
+                        $drHead->received_date = Carbon::parse($drTrx->ReceivingDate);
+                        $drHead->status = ($drHead->transaction_type == 'MO') ? OrderStatus::PROCESSING_DOTR : OrderStatus::RECEIVED;
+                        $drHead->save();
+                    }
+                    DB::commit();
+                } catch (Exception $e) {
+                    DB::rollBack();
+                    Log::error($e->getMessage());
+                }
+            }
+        }
+
+        public function manualUpdateDeliveryStatus(Request $request){
+
+            try{
+                $request->validate([
+                    'dateFrom' => ['required', 'date_format:Ymd', 'before:dateto'],
+                    'dateTo'   => ['required', 'date_format:Ymd', 'after:datefrom'],
+                ], [
+                    'dateFrom.before' => 'The datefrom must be before the dateto.',
+                    'dateTo.after'    => 'The dateto must be after the datefrom.',
+                ]);
+
+                $dateFrom = Carbon::parse($request->dateFrom)->format('Ymd');
+                $dateTo = Carbon::parse($request->dateTo)->format('Ymd');
+
+                $etpDeliveries = EtpDelivery::getReceivedDelivery()
+                    ->whereBetween('ReceivingDate',[$dateFrom, $dateTo])
+                    ->get();
+
+                foreach ($etpDeliveries ?? [] as $drTrx) {
+                    try {
+                        DB::beginTransaction();
+                        $drHead = Delivery::where('dr_number', $drTrx->OrderNumber)
+                            ->whereNotIn('status', [OrderStatus::PROCESSING_DOTR, OrderStatus::RECEIVED])
+                            ->first();
+
+                        $etpRcvHead = EtpReceiving::getReceivedDelivery($drTrx->OrderNumber)->first();
+
+                        if($drHead && $etpRcvHead){
+                            $drHead->document_number = $etpRcvHead->DocumentNumber;
+                            $drHead->received_date = Carbon::parse($drTrx->ReceivingDate);
+                            $drHead->status = ($drHead->transaction_type == 'MO') ? OrderStatus::PROCESSING_DOTR : OrderStatus::RECEIVED;
+                            $drHead->save();
+                        }
+                        DB::commit();
+                    } catch (Exception $e) {
+                        DB::rollBack();
+                        Log::error($e->getMessage());
+                    }
+                }
+
+                return response()->json([
+                    'api_status' => 1,
+                    'api_message' => 'success',
+                    'data' => 'Processing dr received from etp to mw!',
+                    'http_status' => 200
+                ], 200);
+            }
+            catch (ValidationException $ex){
+                return response()->json([
+                    'api_status' => 0,
+                    'api_message' => 'Validation failed',
+                    'errors' => $ex->errors(),
+                    'http_status' => 401
+                ], 401);
+            }
+
+
         }
 
 	}

@@ -44,6 +44,7 @@
 			$this->col[] = ["label"=>"To WH","name"=>"wh_to","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
 			$this->col[] = ["label"=>"Status","name"=>"status","join"=>"order_statuses,style"];
 			$this->col[] = ["label"=>"Transport Type","name"=>"transport_types_id","join"=>"transport_types,style"];
+			$this->col[] = ["label"=>"Created By","name"=>"created_by","join"=>"cms_users,name"];
 			$this->col[] = ["label"=>"Created Date","name"=>"created_at"];
 			# END COLUMNS DO NOT REMOVE THIS LINE
 
@@ -60,7 +61,7 @@
 			$this->load_css = [];
 			$this->load_css[] = asset("css/font-family.css");
 			$this->load_css[] = asset("css/select2-style.css");
-	        
+
 	    }
 
 	    public function hook_query_index(&$query) {
@@ -73,13 +74,13 @@
 				->where('transaction_type', TransactionType::RMA);
 	    }
 
-		
+
 		public function getDetail($id) {
 
 			if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
                 CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
             }
-			
+
 			$data = [];
             $data['page_title'] = "Pullout Details";
 			$data['store_pullout'] = StorePullout::with(['transportTypes','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
@@ -93,12 +94,12 @@
 			if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
                 CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
             }
-			
+
 			$data = [];
             $data['page_title'] = "Review Pullout Details";
 			$data['store_pullout'] = StorePullout::with(['transportTypes','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
-	
-			$data['action_url'] = route('saveReviewStw');
+
+			$data['action_url'] = route('saveReviewStr');
 			return view('store-pullout.approval', $data);
 
 		}
@@ -106,7 +107,7 @@
 		public function saveReviewPullout(Request $request){
 			$date = date('Y-m-d H:i:s');
 			$user = CRUDBooster::myId();
-			if($request->approval_action == 1){ 
+			if($request->approval_action == 1){
 				StorePullout::where('id',$request->header_id)->update([
 					'status' => OrderStatus::CREATEINPOS,
 					'approved_at' => $date,
@@ -115,7 +116,7 @@
 
 				CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->ref_number.' has been approved!','success')->send();
 			}else{
-				
+
 				StorePullout::where('id',$request->header_id)->update([
 					'status' => OrderStatus::REJECTED,
 					'rejected_at' => $date,

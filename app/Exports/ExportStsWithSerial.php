@@ -7,12 +7,10 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Illuminate\Support\Facades\DB;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
-use App\Models\CmsPrivilege;
-use App\Helpers\Helper;
+use Maatwebsite\Excel\Concerns\WithMapping;
 
-class ExportStsWithSerial implements FromCollection, WithHeadings, WithStyles
+class ExportStsWithSerial implements FromCollection, WithHeadings, WithStyles, WithMapping
 {
     protected $filterColumn;
     protected $filter;
@@ -26,6 +24,7 @@ class ExportStsWithSerial implements FromCollection, WithHeadings, WithStyles
     public function headings(): array
     {
         return [
+            'REF #',
             'ST #',
             'REASON',
             'DIGITS CODE',
@@ -92,30 +91,31 @@ class ExportStsWithSerial implements FromCollection, WithHeadings, WithStyles
 			}
 		}
 
-        $storeTransfers = $query->get();
+        return $query->get();
+    }
 
-        return $storeTransfers->map(function ($storeTransfer) {
-            return [
-                'ST #' => $storeTransfer->document_number,
-                'REASON' => $storeTransfer->pullout_reason ?? '',
-                'DIGITS CODE' => $storeTransfer->digits_code ?? '',
-                'UPC CODE' => $storeTransfer->upc_code ?? '',
-                'ITEM DESCRIPTION' => $storeTransfer->item_description ?? '',
-                'SOURCE' => $storeTransfer->source ?? '',
-                'DESTINATION' => $storeTransfer->destination ?? '',
-                'QTY' => $storeTransfer->qty ?? '',
-                'SERIAL #' => $storeTransfer->serial_number ?: '',
-                'TRANSPORT BY' => $storeTransfer->transport_type ?? '',
-                'SCHEDULED DATE/BY' => !empty($storeTransfer->transfer_schedule_date) ? $storeTransfer->transfer_schedule_date .' / '. $storeTransfer->scheduler : $storeTransfer->transfer_date,
-                'CREATED DATE' => $storeTransfer->created_at,
-                'STATUS' => $storeTransfer->order_status ?? ''
-            ];
-        });
+    public function map($storeTransfer) : array {
+        return [
+            $storeTransfer->ref_number,
+            $storeTransfer->document_number,
+            $storeTransfer->pullout_reason ?? '',
+            $storeTransfer->digits_code ?? '',
+            $storeTransfer->upc_code ?? '',
+            $storeTransfer->item_description ?? '',
+            $storeTransfer->source ?? '',
+            $storeTransfer->destination ?? '',
+            $storeTransfer->qty ?? '',
+            $storeTransfer->serial_number ?: '',
+            $storeTransfer->transport_type ?? '',
+            !empty($storeTransfer->transfer_schedule_date) ? $storeTransfer->transfer_schedule_date .' / '. $storeTransfer->scheduler : $storeTransfer->transfer_date,
+            $storeTransfer->created_at,
+            $storeTransfer->order_status ?? ''
+        ];
     }
 
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1:P1')->applyFromArray([
+        $sheet->getStyle('A1:N1')->applyFromArray([
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                 'color' => ['argb' => 'FFFF00'],
@@ -125,7 +125,7 @@ class ExportStsWithSerial implements FromCollection, WithHeadings, WithStyles
             ]
         ]);
 
-        foreach (range('A', 'P') as $column) {
+        foreach (range('A', 'N') as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 

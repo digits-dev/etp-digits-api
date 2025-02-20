@@ -2,8 +2,9 @@
 
 namespace App\Console;
 
+use App\Http\Controllers\AdminDeliveriesController;
+use App\Http\Controllers\AdminStoreTransfersController;
 use App\Http\Controllers\OraclePullController;
-use App\Http\Controllers\OraclePushController;
 use App\Services\ItemSyncService;
 use App\Services\WarehouseSyncService;
 use Carbon\Carbon;
@@ -16,6 +17,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         \App\Console\Commands\MakeService::class,
         \App\Console\Commands\PushDotInterfaceCommand::class,
+        \App\Console\Commands\PushSitInterfaceCommand::class,
         // \App\Console\Commands\TaskOraclePullCommand::class,
     ];
 
@@ -28,7 +30,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('task:orderpull')->hourly();
-        // $schedule->command('interface:push-dot-dotr')->everyFifteenMinutes();
+        $schedule->command('interface:push-dot-dotr')->everyThirtyMinutes();
+        // $schedule->command('interface:push-sit')->everyFifteenMinutes();
 
         $schedule->call(function(){
 
@@ -36,30 +39,39 @@ class Kernel extends ConsoleKernel
             $oracle->moveOrderPull(request());
             $oracle->salesOrderPull(request());
 
-            $datefrom = Carbon::now()->format("Y-m-d");
-            $dateto = Carbon::now()->addDays(1)->format("Y-m-d");
+            $dateFrom = Carbon::now()->format("Y-m-d");
+            $dateTo = Carbon::now()->addDays(1)->format("Y-m-d");
 
             $itemSync = new ItemSyncService();
-            $itemSync->syncNewItems(request()->merge(['datefrom'=>$datefrom,'dateto'=>$dateto]));
-            $itemSync->syncUpdatedItems(request()->merge(['datefrom'=>$datefrom,'dateto'=>$dateto]));
+            $itemSync->syncNewItems(request()->merge(['datefrom'=>$dateFrom,'dateto'=>$dateTo]));
+            $itemSync->syncUpdatedItems(request()->merge(['datefrom'=>$dateFrom,'dateto'=>$dateTo]));
 
             $whSync = new WarehouseSyncService();
-            $whSync->syncNewWarehouse(request()->merge(['datefrom'=>$datefrom,'dateto'=>$dateto]));
+            $whSync->syncNewWarehouse(request()->merge(['datefrom'=>$dateFrom,'dateto'=>$dateTo]));
+
+            $whEas = new WarehouseSyncService();
+            $whEas->checkEasWarehouse();
         })->hourly();
 
         $schedule->call(function(){
             $oracle = new OraclePullController();
             $oracle->processOrgTransfers();
-            $oracle->processOrgTransfersReceiving();//for dotr
+            // $oracle->processOrgTransfersReceiving();//for dotr
             $oracle->processSubInvTransfersReceiving();//for sitr
             $oracle->processReturnTransactions();
             $oracle->updateOracleItemId();
+
+            $sts = new AdminStoreTransfersController();
+            $sts->updateTransferStatus();
         })->everyMinute();
 
         $schedule->call(function(){
             $oracle = new OraclePullController();
             $oracle->updateOrgTransfers();
-        })->everyFiveMinutes()->between('01:00:00', '05:00:00');
+
+            $etpDeliveries = new AdminDeliveriesController();
+            $etpDeliveries->updateDeliveryStatus();
+        })->everyFiveMinutes();
 
     }
 

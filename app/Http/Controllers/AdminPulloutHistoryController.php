@@ -46,7 +46,8 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 		$this->col[] = ["label" => "Transaction Type", "name" => "transaction_type", "join" => "transaction_types,transaction_type", "join_id" => "id"];
 		$this->col[] = ["label" => "Status", "name" => "status", "join" => "order_statuses,style"];
 		$this->col[] = ["label" => "Transport Type", "name" => "transport_types_id", "join" => "transport_types,style"];
-		$this->col[] = ["label" => "Created Date", "name" => "created_at"];
+		$this->col[] = ["label"=>"Created By","name"=>"created_by","join"=>"cms_users,name"];
+        $this->col[] = ["label" => "Created Date", "name" => "created_at"];
 
 		$this->form = [];
 
@@ -76,7 +77,7 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 				}
 			}
 		}
-	
+
 	}
 
 
@@ -96,7 +97,7 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 
 	public function exportStwrWithSerial(Request $request)
 	{
-		$query_filter_params = helper::generatePulloutParams();
+		$query_filter_params = Helper::generatePulloutParams();
 		$filter_column = [
 			'filter_column' => $request->get('filter_column'),
 			'filters' => $query_filter_params,
@@ -106,7 +107,7 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 
 	public function exportStwr(Request $request)
 	{
-		$query_filter_params = helper::generatePulloutParams();
+		$query_filter_params = Helper::generatePulloutParams();
 		$filter_column = [
 			'filter_column' => $request->get('filter_column'),
 			'filters' => $query_filter_params,

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AccountingItem;
 use App\Models\AdminItem;
-use App\Models\GashaponItemMaster;
 use App\Models\ItemMaster;
 use App\Models\RmaItem;
 use Illuminate\Http\Request;
@@ -25,6 +25,7 @@ class ItemMasterController extends Controller
             // Proceed with the logic if validation passes
             $items = ItemMaster::getItems()
                 ->whereBetween('item_masters.approved_at', [$request->datefrom, $request->dateto])
+                // ->whereNotNull('item_masters.initial_wrr_date') //added restriction before etp item creation
                 ->orderBy('item_masters.digits_code','ASC')->paginate(50);
 
             //add rma items
@@ -37,19 +38,21 @@ class ItemMasterController extends Controller
                 ->whereBetween('digits_imfs.is_approved_at', [$request->datefrom, $request->dateto])
                 ->orderBy('digits_imfs.digits_code','ASC')->paginate(50);
 
-            // $data = $items->toArray();
-            // unset($data['links']);
+            $acctgIitems = AccountingItem::getItems()
+                ->whereBetween('accounting_items.created_at', [$request->datefrom, $request->dateto])
+                ->orderBy('accounting_items.digits_code','ASC')->paginate(50);
 
             // Combine the data arrays, but handle the pagination metadata separately
             $combinedData = array_merge(
                 $items->items(),
                 $rmaItems->items(),
-                $adminItems->items()
+                $adminItems->items(),
+                $acctgIitems->items()
             );
 
             // Create a new paginator with the combined data
             $perPage = 50;
-            $total = $items->total() + $rmaItems->total() + $adminItems->total(); // Total items from both paginators
+            $total = $items->total() + $rmaItems->total() + $adminItems->total() + $acctgIitems->total(); // Total items from both paginators
 
             $data = new LengthAwarePaginator(
                 $combinedData,                    // Combined items array
@@ -59,8 +62,7 @@ class ItemMasterController extends Controller
                 ['path' => $request->url()]       // Set the base URL for pagination links
             );
 
-            // Optionally: If you need to unset or modify specific fields like 'links'
-            // $data->unset('links'); // Not necessary for the paginator
+            unset($data['links']);
 
             return response()->json([
                 'api_status' => 1,
@@ -96,7 +98,40 @@ class ItemMasterController extends Controller
                 ->whereBetween('item_masters.updated_at', [$request->datefrom, $request->dateto])
                 ->orderBy('item_masters.digits_code','ASC')->paginate(50);
 
-            $data = $items->toArray();
+            //add rma items
+            $rmaItems = RmaItem::getItems()
+                ->whereBetween('rma_item_masters.updated_at', [$request->datefrom, $request->dateto])
+                ->orderBy('rma_item_masters.digits_code','ASC')->paginate(50);
+
+            //add admin items
+            $adminItems = AdminItem::getItems()
+                ->whereBetween('digits_imfs.updated_at', [$request->datefrom, $request->dateto])
+                ->orderBy('digits_imfs.digits_code','ASC')->paginate(50);
+
+            $acctgIitems = AccountingItem::getItems()
+                ->whereBetween('accounting_items.updated_at', [$request->datefrom, $request->dateto])
+                ->orderBy('accounting_items.digits_code','ASC')->paginate(50);
+
+            // Combine the data arrays, but handle the pagination metadata separately
+            $combinedData = array_merge(
+                $items->items(),
+                $rmaItems->items(),
+                $adminItems->items(),
+                $acctgIitems->items()
+            );
+
+            // Create a new paginator with the combined data
+            $perPage = 50;
+            $total = $items->total() + $rmaItems->total() + $adminItems->total() + $acctgIitems->total(); // Total items from both paginators
+
+            $data = new LengthAwarePaginator(
+                $combinedData,                    // Combined items array
+                $total,                           // Total items count
+                $perPage,                         // Items per page
+                $items->currentPage(),            // Use current page of the first paginator
+                ['path' => $request->url()]       // Set the base URL for pagination links
+            );
+
             unset($data['links']);
 
             return response()->json([

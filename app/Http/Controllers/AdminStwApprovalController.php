@@ -1,8 +1,6 @@
 <?php namespace App\Http\Controllers;
 
 	use App\Models\OrderStatus;
-	use Session;
-	use DB;
 	use App\Models\StorePullout;
 	use App\Models\TransactionType;
 	use crocodicstudio\crudbooster\helpers\CRUDBooster;
@@ -11,7 +9,9 @@
 	use App\Models\CmsPrivilege;
 
 	class AdminStwApprovalController extends \crocodicstudio\crudbooster\controllers\CBController {
-	private const APPROVER = [CmsPrivilege::APPROVER];
+
+	    private const APPROVER = [CmsPrivilege::APPROVER];
+
 	    public function cbInit() {
 
 			# START CONFIGURATION DO NOT REMOVE THIS LINE
@@ -42,11 +42,12 @@
 			$this->col[] = ["label"=>"To WH","name"=>"wh_to","join"=>"store_masters,store_name","join_id"=>"warehouse_code"];
 			$this->col[] = ["label"=>"Status","name"=>"status","join"=>"order_statuses,style"];
 			$this->col[] = ["label"=>"Transport Type","name"=>"transport_types_id","join"=>"transport_types,style"];
-			$this->col[] = ["label"=>"Created Date","name"=>"created_at"];
+			$this->col[] = ["label"=>"Created By","name"=>"created_by","join"=>"cms_users,name"];
+            $this->col[] = ["label"=>"Created Date","name"=>"created_at"];
 			# END COLUMNS DO NOT REMOVE THIS LINE
 
 			$this->form = [];
-	        
+
 	        $this->addaction = [];
 			$this->addaction[] = [
 				'title' => 'For Approval',
@@ -64,7 +65,7 @@
 
 	    public function actionButtonSelected($id_selected,$button_name) {
 	        //Your code here
-	            
+
 	    }
 
 	    public function hook_query_index(&$query) {
@@ -75,7 +76,7 @@
 			}
 	        $query->where('store_pullouts.status', OrderStatus::PENDING)
 				->where('transaction_type', TransactionType::STW);
-	            
+
 	    }
 
 		public function getDetail($id) {
@@ -83,7 +84,7 @@
 			if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
                 CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
             }
-			
+
 			$data = [];
             $data['page_title'] = "Pullout Details";
 			$data['store_pullout'] = StorePullout::with(['transportTypes','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
@@ -97,7 +98,7 @@
 			if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
                 CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
             }
-			
+
 			$data = [];
             $data['page_title'] = "Review Pullout Details";
 			$data['store_pullout'] = StorePullout::with(['transportTypes','reasons','lines', 'statuses', 'storesfrom', 'storesto' ,'lines.serials', 'lines.item'])->find($id);
@@ -110,7 +111,7 @@
 		public function saveReviewPullout(Request $request){
 			$date = date('Y-m-d H:i:s');
 			$user = CRUDBooster::myId();
-			if($request->approval_action == 1){ 
+			if($request->approval_action == 1){
 				StorePullout::where('id',$request->header_id)->update([
 					'status' =>  OrderStatus::CREATEINPOS,
 					'approved_at' => $date,
@@ -119,7 +120,7 @@
 
 				CRUDBooster::redirect(CRUDBooster::mainpath(),''.$request->ref_number.' has been approved!','success')->send();
 			}else{
-				
+
 				StorePullout::where('id',$request->header_id)->update([
 					'status' => OrderStatus::REJECTED,
 					'rejected_at' => $date,

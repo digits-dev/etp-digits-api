@@ -18,7 +18,7 @@ class WarehouseMaster extends Model
             ->whereNotNull('customer.warehouse_name')
             ->whereNull('customer.close_date')
             ->whereIn('customer.channel_code_id',['RTL','FRA','DTC','SVC'])
-            ->where('customer.warehouse_name','NOT LIKE','%GBO%')
+            ->where('customer.warehouse_name','NOT LIKE','%GASHAPON%')
             ->select(
                 DB::raw('SUBSTRING(customer.customer_code, 5,4) as warehouse_id'),
                 'customer.warehouse_name',
@@ -30,6 +30,22 @@ class WarehouseMaster extends Model
                 'customer.area_code_zip_code as postal_code',
                 'customer.city_id as city_code',
                 'customer.state_id as state_code'
+            );
+    }
+
+    public function scopeGetStoreList($query){
+        return $query->leftJoin('channels','customer.channel_id','channels.id')
+            ->leftJoin('statuses','customer.status_id','statuses.id')
+            ->whereIn('customer.channel_code_id',['RTL','FRA','SVC'])
+            ->select(
+                DB::raw('SUBSTRING(customer.customer_code, 5,4) as customer_code'),
+                'customer.warehouse_name as short_name',
+                'customer.cutomer_name as customer_name',
+                'customer.concept',
+                'channels.channel_description as customer_type',
+                'customer.open_date',
+                'customer.close_date',
+                'statuses.status_description as status'
             );
     }
 }

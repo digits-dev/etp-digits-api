@@ -12,9 +12,9 @@ use App\Models\OracleMaterialTransaction;
 use App\Models\OracleOrderHeader;
 use App\Models\OracleShipmentHeader;
 use App\Models\OracleTransactionHeader;
+use App\Models\OrderStatus;
 use App\Models\Pullout;
 use App\Models\StoreMaster;
-use App\Models\WarehouseMaster;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -45,8 +45,7 @@ class OraclePullController extends Controller
         foreach ($this->moveOrders as $key_org => $org) {
 
             $shipment_numbers = OracleMaterialTransaction::getShipments($date_from, $date_to, $org)->get();
-
-            foreach ($shipment_numbers as $key_shipment => $shipment) {
+            foreach ($shipment_numbers as $shipment) {
                 $request_numbers[] = $shipment->shipment_number;
             }
 
@@ -60,6 +59,8 @@ class OraclePullController extends Controller
                 case 'DEO':
                     $deliveries = OracleTransactionHeader::getMoveOrders($request_numbers, $org)->get();
                     break;
+                default:
+                    break;
             }
 
             $transaction_date = Carbon::parse($date_from)->format("Y-m-d");
@@ -68,6 +69,7 @@ class OraclePullController extends Controller
                 'from_org' => $key_org,
                 'to_org' => 223
             ];
+
             $this->processOrders($deliveries, $transactions_attr, $transaction_date);
         }
     }
@@ -76,7 +78,8 @@ class OraclePullController extends Controller
 
         $date_from = $request->datefrom ?? date("Y-m-d H:i:s", strtotime("-5 hour"));
         $date_to = $request->dateto ?? date("Y-m-d H:i:s", strtotime("-1 hour"));
-        foreach ($this->salesOrders as $key_org => $org) {
+
+        foreach ($this->salesOrders as $org) {
 
             $order = OracleOrderHeader::getSalesOrder($org)
                 ->whereBetween('WSH_NEW_DELIVERIES.CONFIRM_DATE', [$date_from, $date_to])
@@ -94,8 +97,10 @@ class OraclePullController extends Controller
 
             $transaction_date = Carbon::parse($date_from)->format("Y-m-d");
             $transactions_attr = [
-                'type' => 'SO'
+                'type' => 'SO',
+                'to_org' => 223
             ];
+
             $this->processOrders($orders, $transactions_attr, $transaction_date);
         }
 
@@ -103,12 +108,12 @@ class OraclePullController extends Controller
 
     private function processOrders($orders, $transactionAttr=[], $transactionDate){
         $deliveryHeader = [];
-        foreach($orders ?? [] as $key => $value){
+        foreach($orders ?? [] as $value){
             $whKey = 'warehouse_key'.str_replace(" ","_",$value->customer_name);
             $warehouse = Cache::remember($whKey, 3600, function () use ($value) {
                 return StoreMaster::where('bea_mo_store_name', $value->customer_name)
                     ->orWhere('bea_so_store_name', $value->customer_name)
-                    ->select('id as store_id','warehouse_code as warehouse_id',)
+                    ->select('id as store_id','warehouse_code as warehouse_id')
                     ->first();
             });
 
@@ -132,7 +137,7 @@ class OraclePullController extends Controller
                     'to_org_id' => ($isFBD != 'FBD') ? $transactionAttr['to_org'] : 263,
                     'transaction_type' => $transactionAttr['type'],
                     'transaction_date' => $transactionDate,
-                    'status' => ($transactionAttr['type'] == 'MO' && $isFBD != 'FBD') ? Delivery::PROCESSING : Delivery::PENDING
+                    'status' => ($transactionAttr['type'] == 'MO' && $isFBD != 'FBD') ? OrderStatus::PROCESSING : OrderStatus::PENDING
                 ]);
 
                 // $orderedItem = $value->ordered_item;
@@ -203,8 +208,8 @@ class OraclePullController extends Controller
     }
 
     public function processOrgTransfers(){
-        $deliveries = Delivery::getProcessing()->get();
-        foreach ($deliveries ?? [] as $key => $dr) {
+        $deliveries = Delivery::doneProcessing()->get();
+        foreach ($deliveries ?? [] as $dr) {
             $orders = OracleShipmentHeader::query()->getShipmentByRef($dr->order_number);
             if($orders->getModel()->exists){
                 try {
@@ -212,7 +217,7 @@ class OraclePullController extends Controller
                     $delivery = Delivery::where('order_number', $dr->order_number)->first();
                     if ($delivery) {
                         $delivery->update([
-                            'status' => Delivery::PENDING,
+                            'status' => OrderStatus::PENDING,
                             'interface_flag' => 0,
                         ]);
 
@@ -229,7 +234,7 @@ class OraclePullController extends Controller
 
     public function processOrgTransfersReceiving(){
         $deliveries = Delivery::getPendingDotr()->get();
-        foreach ($deliveries ?? [] as $key => $dr) {
+        foreach ($deliveries ?? [] as $dr) {
             $orders = EtpDelivery::query()->getReceivedDeliveryByWh($dr->order_number, $dr->to_warehouse_id)->first();
             if($orders->getModel()->exists){
                 try {
@@ -237,7 +242,7 @@ class OraclePullController extends Controller
                     $delivery = Delivery::where('order_number', $dr->order_number)->first();
                     if ($delivery) {
                         $delivery->update([
-                            'status' => Delivery::PROCESSING_DOTR,
+                            'status' => OrderStatus::PROCESSING_DOTR,
                             'interface_flag' => 0,
                         ]);
 
@@ -254,15 +259,18 @@ class OraclePullController extends Controller
 
     public function processSubInvTransfersReceiving(){
         $deliveries = Delivery::getPendingSit()->get();
-        foreach ($deliveries ?? [] as $key => $dr) {
-            $orders = EtpDelivery::query()->getReceivedDeliveryByWh($dr->order_number, $dr->to_warehouse_id)->first();
-            if($orders->getModel()->exists){
+        foreach ($deliveries ?? [] as $dr) {
+            $orders = EtpDelivery::query()
+                ->getReceivedDeliveryByWh($dr->order_number, $dr->to_warehouse_id)
+                ->first();
+
+            if($orders){
                 try {
                     DB::beginTransaction();
                     $delivery = Delivery::where('order_number', $dr->order_number)->first();
                     if ($delivery) {
                         $delivery->update([
-                            'status' => Delivery::PROCESSING_SIT,
+                            'status' => OrderStatus::PROCESSING_SIT,
                             'interface_flag' => 0,
                         ]);
 
@@ -279,7 +287,7 @@ class OraclePullController extends Controller
 
     public function updateOrgTransfers(){
         $deliveries = Delivery::getDotrProcessing()->get();
-        foreach ($deliveries ?? [] as $key => $dr) {
+        foreach ($deliveries ?? [] as $dr) {
             $orders = OracleShipmentHeader::query()->getRcvShipmentByRef($dr->dr_number);
             if(sizeof($orders) > 0){
                 $statusCodes = array_map(function($item) {
@@ -294,7 +302,7 @@ class OraclePullController extends Controller
                         $delivery = Delivery::where('order_number', $dr->order_number)->first();
                         if ($delivery) {
                             $delivery->update([
-                                'status' => Delivery::RECEIVED,
+                                'status' => OrderStatus::RECEIVED,
                                 'interface_flag' => 0,
                             ]);
 
@@ -316,7 +324,7 @@ class OraclePullController extends Controller
 
     public function processReturnTransactions(){
         $pullouts = Pullout::getProcessing();
-        foreach ($pullouts as $key => $pullout) {
+        foreach ($pullouts as $pullout) {
             $orders = OracleShipmentHeader::query()->getShipmentByRef($pullout->document_number);
             if($orders->getModel()->exists){
                 try {
@@ -338,7 +346,7 @@ class OraclePullController extends Controller
 
     public function updateReturnTransactions(){
         $pullouts = Pullout::getReceivingReturns();
-        foreach ($pullouts as $key => $pullout) {
+        foreach ($pullouts as $pullout) {
             if(!is_null($pullout->sor_mor_number)){
                 $orders = OracleOrderHeader::query()->getOrderReturns($pullout->sor_mor_number);
                 if($orders->getModel()->exists){

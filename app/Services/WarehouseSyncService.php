@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\EtpWarehouse;
 use App\Models\StoreMaster;
 use App\Models\WarehouseMaster;
 use Exception;
@@ -74,5 +75,17 @@ class WarehouseSyncService
             }
 
         }
+    }
+
+    public function checkEasWarehouse(){
+        $storeMasters = StoreMaster::where('eas_flag', 0)->get();
+        foreach ($storeMasters as $store) {
+            $etpWarehouse = EtpWarehouse::getWarehouse($store->warehouse_code);
+            if($etpWarehouse){
+                $store->eas_flag = 1;
+                $store->save();
+            }
+        }
+        Log::info('Done checking eas warehouse!');
     }
 }

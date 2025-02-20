@@ -43,5 +43,11 @@ class OracleTransactionInterface extends Model
         'SCHEDULED_FLAG',
         'TRANSACTION_REFERENCE',
         'TRANSACTION_SOURCE_NAME',
+        'SHIPMENT_NUMBER'
     ];
+
+    public function scopeGetPushedDotInterfaceSum($query, $drNumber){
+        return $query->where('SHIPMENT_NUMBER', $drNumber)
+            ->sum('TRANSACTION_QUANTITY');
+    }
 }

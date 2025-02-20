@@ -7,12 +7,13 @@ use App\Models\StoreTransfer;
 use Illuminate\Support\Facades\Session;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use App\Models\CmsPrivilege;
+
 class Helper
 {
     private const VIEWREPORT = [CmsPrivilege::SUPERADMIN, CmsPrivilege::AUDIT, CmsPrivilege::IC, CmsPrivilege::MERCH];
 	private const VIEWREPORTLOGISTIC = [CmsPrivilege::LOGISTICS, CmsPrivilege::LOGISTICSTM];
 	private const VIEWREPORTAPPROVER = [CmsPrivilege::APPROVER];
-	private const VIEWREPORTWHRMA = [CmsPrivilege::RMA, CmsPrivilege::WH];
+	private const VIEWREPORTWHRMA = [CmsPrivilege::RMA, CmsPrivilege::WHTM, CmsPrivilege::WHTL];
 	private const VIEWREPORTWHDISTRI = [CmsPrivilege::DISTRIOPS];
 	private const VIEWREPORTWHRTLFRAONL = [CmsPrivilege::RTLOPS, CmsPrivilege::FRAOPS];
 	private const VIEWREPORTWHRTLFRAOPS = [CmsPrivilege::RTLFRAOPS];
@@ -74,10 +75,11 @@ class Helper
         }
     }
 
-    public function generateStsParams() {
+    public static function generateStsParams() {
 		$query_filter_params = [];
-	
-		if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTLOGISTIC)) {
+        if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORT)) {
+			//do nothing
+		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTLOGISTIC)) {
 			$query_filter_params[] = [
 				'method' => 'where',
 				'params' => ['store_transfers.transport_types_id', 1]
@@ -107,7 +109,7 @@ class Helper
 				]
 			];
 		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHRTLFRAONL)) {
-			if (!selff::myStore()) {
+			if (!self::myStore()) {
 				$query_filter_params[] = [
 					'method' => 'where',
 					'params' => ['store_transfers.channels_id', self::myChannel()]
@@ -137,15 +139,21 @@ class Helper
 				'method' => 'where',
 				'params' => ['store_transfers.stores_id', self::myStore()]
 			];
+            $query_filter_params[] = [
+				'method' => 'orWhere',
+				'params' => ['store_transfers.stores_id_destination', self::myStore()]
+			];
 		}
-		
+
 		return $query_filter_params;
 	}
 
-    public function generatePulloutParams() {
+    public static function generatePulloutParams() {
 		$query_filter_params = [];
-	
-		if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTLOGISTIC)) {
+
+        if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORT)) {
+			//do nothing
+		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTLOGISTIC)) {
 			$query_filter_params[] = [
 				'method' => 'where',
 				'params' => ['store_pullouts.transport_types_id', 1]
@@ -175,7 +183,7 @@ class Helper
 				]
 			];
 		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHRTLFRAONL)) {
-			if (!selff::myStore()) {
+			if (!self::myStore()) {
 				$query_filter_params[] = [
 					'method' => 'where',
 					'params' => ['store_pullouts.channels_id', self::myChannel()]
@@ -206,7 +214,61 @@ class Helper
 				'params' => ['store_pullouts.stores_id', self::myStore()]
 			];
 		}
-		
+
+		return $query_filter_params;
+	}
+
+    public static function generateDrParams() {
+		$query_filter_params = [];
+        if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORT)) {
+			//do nothing
+		}
+        if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTLOGISTIC)) {
+			//do nothing
+		}
+		elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTAPPROVER)) {
+			$query_filter_params[] = [
+				'method' => 'whereIn',
+				'params' => ['deliveries.stores_id', self::myApprovalStore()]
+			];
+		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHDISTRI)) {
+			$query_filter_params[] = [
+                'method' => 'whereIn',
+                'params' => ['store_masters.channels_id', [6, 7, 10, 11]]
+            ];
+		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHRTLFRAONL)) {
+			if (!self::myStore()) {
+				$query_filter_params[] = [
+					'method' => 'where',
+					'params' => ['store_masters.channels_id', self::myChannel()]
+				];
+			} else {
+				$query_filter_params[] = [
+					'method' => 'where',
+					'params' => ['store_masters.channels_id', self::myChannel()]
+				];
+				$query_filter_params[] = [
+					'method' => 'whereIn',
+					'params' => ['store_masters.id', self::myStore()]
+				];
+			}
+		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHRTLFRAOPS)) {
+			$query_filter_params[] = [
+				'method' => 'whereIn',
+				'params' => ['store_masters.channels_id', [1, 2]]
+			];
+		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTWHFRAVIEWER)) {
+			$query_filter_params[] = [
+				'method' => 'whereIn',
+				'params' => ['store_masters.id', self::myStore()]
+			];
+		} else {
+			$query_filter_params[] = [
+				'method' => 'where',
+				'params' => ['store_masters.id', self::myStore()]
+			];
+		}
+
 		return $query_filter_params;
 	}
 }

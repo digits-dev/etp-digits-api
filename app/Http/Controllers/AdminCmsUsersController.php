@@ -3,6 +3,7 @@
 use App\Imports\UserImport;
 use App\Models\CmsUser;
 use App\Services\ChannelService;
+use App\Services\SubmasterService;
 use crocodicstudio\crudbooster\controllers\CBController;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Exception;
@@ -15,8 +16,8 @@ class AdminCmsUsersController extends CBController {
 
     protected $activeChannel;
 
-    public function __construct(ChannelService $channelService) {
-        $this->activeChannel = $channelService->getChannels();
+    public function __construct(SubmasterService $submasterService) {
+        $this->activeChannel = $submasterService->getChannels();
     }
 
 	public function cbInit() {
@@ -25,8 +26,8 @@ class AdminCmsUsersController extends CBController {
 		$this->primary_key         = 'id';
 		$this->title_field         = "name";
 		$this->button_action_style = 'button_icon';
-		$this->button_import 	   = FALSE;
-		$this->button_export 	   = FALSE;
+		$this->button_import 	   = false;
+		$this->button_export 	   = false;
 		# END CONFIGURATION DO NOT REMOVE THIS LINE
 
 		# START COLUMNS DO NOT REMOVE THIS LINE
@@ -71,6 +72,8 @@ class AdminCmsUsersController extends CBController {
         if(CRUDBooster::isSuperAdmin() && CRUDBooster::getCurrentMethod() == 'getIndex'){
             $this->index_button[] = ["label"=>"Upload Users","url"=>"javascript:uploadUsers()","icon"=>"fa fa-upload","color"=>"warning"];
         }
+
+        $this->load_js[] = asset("js/user.js");
 
         $this->script_js = "
             function uploadUsers() {
@@ -252,7 +255,7 @@ class AdminCmsUsersController extends CBController {
 
     public function importUsersTemplate(){
         $path = storage_path('app/templates/user-import-template.csv');
-        $datefile = date("YmdHis");
+        $datefile = now()->format('Y-m-d H:i:s');
         return response()->download($path, "user-import-template-{$datefile}.csv");
     }
 }

@@ -3,15 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Delivery;
-use App\Models\ItemMaster;
+use App\Models\EtpDelivery;
+use App\Models\OracleTransactionInterface;
+use App\Models\OrderStatus;
+use App\Models\StoreMaster;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
-
-// use Illuminate\Support\Facades\Request;
 
 class DeliveryController extends Controller
 {
@@ -25,6 +26,8 @@ class DeliveryController extends Controller
                 'datefrom.before' => 'The datefrom must be before the dateto.',
                 'dateto.after'    => 'The dateto must be after the datefrom.',
             ]);
+
+            $deployedStores = StoreMaster::getDeployedStores();
 
             // Proceed with the logic if validation passes
             $deliveries = [];
@@ -41,12 +44,14 @@ class DeliveryController extends Controller
                 );
             },'lines.serials' => function ($serialQuery) {
                 $serialQuery->select(
-                    'id',
+                    DB::raw('CAST(RIGHT(id, 5) AS UNSIGNED) as id'),
                     'delivery_lines_id',
-                    'serial_number'
+                    DB::raw('CAST(RIGHT(serial_number, 20) AS CHAR(20)) as serial_number')
                 );
             }])
             ->whereBetween('deliveries.created_at', [$request->datefrom, $request->dateto])
+            ->whereIn('deliveries.to_warehouse_id', $deployedStores) //limit stores for auto pull delivery etp
+            ->where('deliveries.status', 0) //pending status only
             ->select(
                 'deliveries.id',
                 'deliveries.dr_number as reference_code',
@@ -88,16 +93,16 @@ class DeliveryController extends Controller
                 'dr_numbers' => ['required'],
             ]);
             $count = 0;
-            foreach ($request->dr_numbers ?? [] as $key => $value) {
+            foreach ($request->dr_numbers ?? [] as $value) {
                 try{
                     $order = Delivery::where('dr_number', $value)->first();
                     if($order){
-                        if($order->status != 2){
-                            $order->status = 2;
+                        if($order->status != OrderStatus::RECEIVED){
+                            $order->status = OrderStatus::RECEIVED;
                             $order->save();
                             $count++;
                         }
-                        elseif ($order->status == 2) {
+                        elseif ($order->status == OrderStatus::RECEIVED) {
                             throw new Exception("Delivery #{$value} has already been received!");
                         }
                     }
@@ -135,5 +140,88 @@ class DeliveryController extends Controller
                 'http_status' => 401
             ], 401);
         }
+    }
+
+    public function updateReceivedDeliveryStatus(Request $request){
+
+        try{
+            $request->validate([
+                'datefrom' => ['required', 'date_format:Ymd', 'before:dateto'],
+                'dateto'   => ['required', 'date_format:Ymd', 'after:datefrom'],
+            ], [
+                'datefrom.before' => 'The datefrom must be before the dateto.',
+                'dateto.after'    => 'The dateto must be after the datefrom.',
+            ]);
+
+            $dateFrom = $request->datefrom;
+            $dateTo = $request->dateto;
+
+            $etpDeliveries = EtpDelivery::getReceivedDelivery()
+                ->whereBetween('ReceivingDate',[$dateFrom, $dateTo])
+                ->get();
+
+            $drNumbers = [];
+            foreach ($etpDeliveries ?? [] as $drTrx) {
+                try {
+                    DB::beginTransaction();
+                    $drHead = Delivery::where('dr_number', $drTrx->OrderNumber)
+                        ->whereNotIn('status', [OrderStatus::PROCESSING_DOTR, OrderStatus::RECEIVED])
+                        ->first();
+
+                    if($drHead){
+                        $drHead->status = ($drHead->transaction_type == 'MO') ? OrderStatus::PROCESSING_DOTR : OrderStatus::RECEIVED;
+                        $drHead->received_date = Carbon::parse($drTrx->ReceivingDate);
+                        $drHead->save();
+                        $drNumbers[] = $drHead->dr_number;
+                    }
+                    DB::commit();
+                } catch (Exception $e) {
+                    DB::rollBack();
+                    Log::error($e->getMessage());
+                }
+            }
+
+            $countDrNumbers = count($drNumbers);
+            return response()->json([
+                'api_status' => 1,
+                'api_message' => 'success',
+                'data' => "List of DR# ".implode(",", $drNumbers)." received! {$countDrNumbers} records!",
+                'http_status' => 200
+            ], 200);
+        }
+        catch(ValidationException $ex){
+            return response()->json([
+                'api_status' => 0,
+                'api_message' => 'Validation failed',
+                'errors' => $ex->errors(),
+                'http_status' => 401
+            ], 401);
+        }
+    }
+
+    public function checkDeliveryInterface($drNumber){
+        $dotInterface = OracleTransactionInterface::getPushedDotInterfaceSum($drNumber);
+
+        if($dotInterface){
+            $delivery = Delivery::where('dr_number', $drNumber)->first();
+            $sumInterface = $dotInterface * -1;
+
+            if($delivery->total_qty == $sumInterface){
+                //update interface status
+                return response()->json([
+                    'api_status' => 1,
+                    'api_message' => 'success',
+                    'data' => "{$drNumber} has been processed!",
+                    'http_status' => 200
+                ], 200);
+            }
+        }
+
+        return response()->json([
+            'api_status' => 0,
+            'api_message' => 'error',
+            'data' => "{$drNumber} has not been processed!",
+            'http_status' => 404
+        ], 404);
     }
 }

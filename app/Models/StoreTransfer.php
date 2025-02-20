@@ -46,9 +46,9 @@ class StoreTransfer extends Model
         return $this->where('status', OrderStatus::CONFIRMED);
     }
     public function scopeForConfirmation(){
-        return $this->where('status', OrderStatus::FORCONFIRMATION); 
+        return $this->where('status', OrderStatus::FORCONFIRMATION);
     }
-  
+
     public function lines() : HasMany {
         return $this->hasMany(StoreTransferLine::class, 'store_transfers_id');
     }
@@ -64,7 +64,7 @@ class StoreTransfer extends Model
     public function storesFrom() : BelongsTo {
         return $this->belongsTo(StoreMaster::class, 'wh_from', 'warehouse_code');
     }
-    
+
     public function storesTo() : BelongsTo {
         return $this->belongsTo(StoreMaster::class, 'wh_to', 'warehouse_code');
     }
@@ -91,6 +91,7 @@ class StoreTransfer extends Model
 
     public function scopeExport($query){
         return $query->select(
+            'store_transfers.ref_number',
             'store_transfers.document_number',
             'reasons.pullout_reason',
             'transport_types.transport_type',
@@ -119,6 +120,7 @@ class StoreTransfer extends Model
 
     public function scopeExportWithSerial($query){
         return $query->select(
+            'store_transfers.ref_number',
             'store_transfers.document_number',
             'reasons.pullout_reason',
             'transport_types.transport_type',

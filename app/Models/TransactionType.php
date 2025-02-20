@@ -12,6 +12,7 @@ class TransactionType extends Model
     const STW = 1;
     const RMA = 2;
     const STS = 3;
+    const STR = 4;
 
     protected $fillable = [
         'transaction_type',
@@ -19,4 +20,8 @@ class TransactionType extends Model
         'created_by',
         'updated_by'
     ];
+
+    public function scopeActive($query){
+        return $query->where('status', 'ACTIVE');
+    }
 }

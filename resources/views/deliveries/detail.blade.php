@@ -91,7 +91,7 @@
                                     <b>Received Date:</b>
                                 </td>
                                 <td>
-                                    {{ $deliveries->received_at }}
+                                    {{ $deliveries->received_date }}
                                 </td>
                             </tr>
                             <tr>
@@ -100,6 +100,14 @@
                                 </td>
                                 <td>
                                     {{ $deliveries->customer_name }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 30%">
+                                    <b>Status:</b>
+                                </td>
+                                <td>
+                                    {{ $deliveries->orderStatus->order_status }}
                                 </td>
                             </tr>
                         </tbody>
@@ -175,7 +183,9 @@
 @push('bottom')
     <script type="text/javascript">
         $(document).ready(function() {
-
+            $(function(){
+                $('body').addClass("sidebar-collapse");
+            });
         });
     </script>
 @endpush

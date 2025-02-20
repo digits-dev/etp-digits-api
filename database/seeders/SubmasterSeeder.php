@@ -2,6 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\CmsPrivilege;
+use App\Models\OrderStatus;
 use App\Models\TransactionType;
 use App\Models\TransportType;
 use App\Models\Problem;
@@ -17,8 +19,8 @@ class SubmasterSeeder extends Seeder
     public function run()
     {
         $transportTypes = [
-            'LOGISTICS',
-            'HAND CARRY'
+            'LOGISTICS'=>'<span class="label label-primary">LOGISTICS</span>',
+            'HAND CARRY'=>'<span class="label label-info">HAND CARRY</span>',
         ];
 
         $transactionTypes = [
@@ -56,14 +58,59 @@ class SubmasterSeeder extends Seeder
             'SOUND - NO VOLUME'
         ];
 
-        $createdBy = [
-            'status' => 'ACTIVE',
-            'created_by' => 0
+        $orderStatus = [
+            'PENDING'=>'<span class="label label-warning">PENDING</span>',
+            'APPROVED'=>'<span class="label label-primary">APPROVED</span>',
+            'PROCESSING'=>'<span class="label label-info">PROCESSING</span>',
+            'RECEIVED'=>'<span class="label label-success">RECEIVED</span>',
+            'REJECTED'=>'<span class="label label-danger">REJECTED</span',
+            'FOR RECEIVING'=>'<span class="label label-primary">FOR RECEIVING</span>',
+            'FOR SCHEDULE'=>'<span class="label label-warning">FOR SCHEDULE</span>',
+            'CLOSED'=>'<span class="label label-danger">CLOSED</span>',
+            'VOID'=>'<span class="label label-danger">VOID</span>',
+            'FOR CONFIRMATION'=>'<span class="label label-warning">FOR CONFIRMATION</span>',
+            'FOR APPROVAL'=>'<span class="label label-warning">FOR APPROVAL</span>',
+            'CREATE IN POS'=>'<span class="label label-primary">CREATE IN POS</span>',
+            'CONFIRMED'=>'<span class="label label-primary">CONFIRMED</span>',
+            'PROCESSING-DOTR'=>'<span class="label label-info">PROCESSING-DOTR</span>'
         ];
 
-        foreach ($transportTypes as $value) {
-            $newTransportValue['transport_type'] = $value;
-            TransportType::updateOrInsert(['transport_type' => $value],
+        $privileges = [
+            'Cashier',
+            'Approver',
+            'Customer Service Associate',
+            'Store Head',
+            'Logistics TL',
+            'Audit',
+            'Inventory Control',
+            'Brand Merch TM',
+            'Warehouse TM',
+            'RMA',
+            'Logistics TM',
+            'Distribution Ops',
+            'Retail Ops',
+            'Franchise Ops',
+            'Retail Franchise Ops',
+            'Franchise Viewer',
+            'Warehouse TL'
+        ];
+
+        $createdBy = [
+            'status' => 'ACTIVE',
+            'created_by' => 1,
+            'created_at' => now()
+        ];
+
+        $privDefault = [
+            'is_superadmin' => 0,
+            'theme_color' => 'skin-blue',
+            'created_at' => now()
+        ];
+
+        foreach ($transportTypes as $key => $value) {
+            $newTransportValue['transport_type'] = $key;
+            $newTransportValue['style'] = $value;
+            TransportType::updateOrInsert(['transport_type' => $key],
                 array_merge($createdBy,$newTransportValue));
         }
 
@@ -77,6 +124,19 @@ class SubmasterSeeder extends Seeder
             $newProblemValue['problem_details'] = $value;
             Problem::updateOrInsert(['problem_details' => $value],
                 array_merge($createdBy,$newProblemValue));
+        }
+
+        foreach ($orderStatus as $key => $value) {
+            $newOrderStatusValue['order_status'] = $key;
+            $newOrderStatusValue['style'] = $value;
+            OrderStatus::updateOrInsert(['order_status' => $key],
+                array_merge($createdBy,$newOrderStatusValue));
+        }
+
+        foreach ($privileges as $value) {
+            $newPrivilegeValue['name'] = $value;
+            CmsPrivilege::updateOrInsert(['name' => $value],
+                array_merge($privDefault,$newPrivilegeValue));
         }
     }
 }

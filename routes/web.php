@@ -17,6 +17,8 @@ use App\Http\Controllers\OraclePullController;
 use App\Http\Controllers\OraclePushController;
 use App\Http\Controllers\WarehouseMasterController;
 use App\Http\Controllers\AdminApprovalMatrixController;
+use App\Http\Controllers\AdminDeliveryHistoryController;
+use App\Http\Controllers\AdminItemsController;
 use App\Services\ItemSyncService;
 use App\Services\WarehouseSyncService;
 use Illuminate\Support\Facades\Route;
@@ -37,6 +39,10 @@ Route::get('/', function () {
     return redirect('admin/login');
 });
 
+Route::get('/admin', function () {
+    return redirect('admin/statistic_builder/dashboard');
+});
+
 Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CBBackend'],'prefix' => config('crudbooster.ADMIN_PATH')], function(){
     Route::group(['prefix' => 'users'], function () {
         Route::get('change-password',[AdminCmsUsersController::class,'showChangePasswordForm'])->name('show-change-password');
@@ -49,6 +55,7 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
     Route::group(['prefix'=>'items'], function () {
         Route::get('sync-new-items', [ItemSyncService::class,'syncNewItems'])->name('items.pull-new-item');
         Route::get('sync-updated-items', [ItemSyncService::class,'syncUpdatedItems'])->name('items.pull-updated-item');
+        Route::get('export-items', [AdminItemsController::class,'exportItems'])->name('export-items');
     });
     Route::group(['prefix'=>'store_masters'], function () {
         Route::get('sync-new-stores', [WarehouseSyncService::class,'syncNewWarehouse'])->name('stores.pull-new-store');
@@ -70,6 +77,7 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::get('etp-store-sync', [EtpController::class,'getStoreSync'])->name('get-etp-store-sync');
         Route::get('etp-delivered-by-dr/{drnumber}', [EtpController::class,'getDeliveredTransactionsByNumber']);
         Route::get('processing-dr', [OraclePushController::class,'pushDotInterface']);
+        Route::get('get-processed-interface/{drNumber}', [DeliveryController::class,'checkDeliveryInterface']);
     });
 
     Route::group(['prefix' => 'store_pullouts'], function(){
@@ -80,20 +88,21 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::post('post-stw-pullout', [AdminStorePulloutsController::class,'postStwPullout'])->name('post-stw-pullout');
         Route::get('schedule/{id}', [AdminStorePulloutsController::class, 'getSchedule'])->name('stwSchedule');
         Route::post('save-schedule',[AdminStorePulloutsController::class, 'saveSchedule'])->name('saveSchedulePullout');
-        Route::get('create-do-no/{id}', [AdminStorePulloutsController::class, 'getCreateDoNo'])->name('showPulloutCreateDoNo');  
+        Route::get('create-do-no/{id}', [AdminStorePulloutsController::class, 'getCreateDoNo'])->name('showPulloutCreateDoNo');
         Route::post('save-create-do-no',[AdminStorePulloutsController::class, 'saveCreateDoNo'])->name('savePulloutCreateDoNo');
+        Route::post('post-strma-pullout', [AdminStorePulloutsController::class,'postStRmaPullout'])->name('post-strma-pullout');
     });
 
+
     Route::group(['prefix' => 'stw_approval'], function(){
-        Route::get('review/{id}',[AdminStwApprovalController::class,'getApproval'])->name('pullout-approval.review');
+        Route::get('review/{id}',[AdminStwApprovalController::class,'getApproval'])->name('pullout-stw-approval.review');
         Route::post('save-stw-review',[AdminStwApprovalController::class,'saveReviewPullout'])->name('saveReviewStw');
     });
 
     Route::group(['prefix' => 'str_approval'], function(){
-        Route::get('review/{id}',[AdminStrApprovalController::class,'getApproval'])->name('pullout-approval.review');
-        Route::post('save-stw-review',[AdminStrApprovalController::class,'saveReviewPullout'])->name('saveReviewStw');        Route::post('post-strma-pullout', [AdminStorePulloutsController::class,'postStRmaPullout'])->name('post-strma-pullout');
+        Route::get('review/{id}',[AdminStrApprovalController::class,'getApproval'])->name('pullout-str-approval.review');
+        Route::post('save-str-review',[AdminStrApprovalController::class,'saveReviewPullout'])->name('saveReviewStr');
     });
-
     Route::group(['prefix' => 'sts_confirmation'], function(){
         Route::get('confirm/{id}', [AdminStsConfirmationController::class, 'getConfirm'])->name('stsConfirm');
         Route::post('save-confirm',[AdminStsConfirmationController::class, 'saveConfirmST'])->name('saveConfirmST');
@@ -103,7 +112,7 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::get('review/{id}', [AdminStsApprovalController::class, 'getApproval'])->name('stsApproval');
         Route::post('save-review',[AdminStsApprovalController::class, 'saveReviewST'])->name('saveReviewST');
     });
-       
+
     Route::group(['prefix' => 'store_transfers'], function(){
         Route::get('create-sts', [AdminStoreTransfersController::class,'createSTS'])->name('createSTS');
         Route::get('void_sts/{id}', [AdminStoreTransfersController::class, 'voidSTS'])->name('voidSTS');
@@ -113,7 +122,7 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::get('schedule/{id}', [AdminStoreTransfersController::class, 'getSchedule'])->name('stsSchedule');
         Route::post('save-schedule',[AdminStoreTransfersController::class, 'saveSchedule'])->name('saveScheduleTransfer');
         Route::get('print/{id}', [AdminStoreTransfersController::class, 'printSTS'])->name('printSTS');
-        Route::get('create-do-no/{id}', [AdminStoreTransfersController::class, 'getCreateDoNo'])->name('showCreateDoNo');  
+        Route::get('create-do-no/{id}', [AdminStoreTransfersController::class, 'getCreateDoNo'])->name('showCreateDoNo');
         Route::post('save-create-do-no',[AdminStoreTransfersController::class, 'saveCreateDoNo'])->name('saveCreateDoNo');
     });
 
@@ -133,23 +142,9 @@ Route::group(['middleware' => ['web','\crocodicstudio\crudbooster\middlewares\CB
         Route::get('export-stw-str-with-serial',[AdminPulloutHistoryController::class,'exportStwrWithSerial'])->name('export-stw-str-with-serial');
         Route::get('export-stw-str',[AdminPulloutHistoryController::class,'exportStwr'])->name('export-stw-str');
     });
-});
 
-Route::group(['middleware' => ['authapi'],'prefix' => 'api'], function(){
-    //pull deliveries from ERP
-    Route::get('pull-deliveries', [OraclePullController::class,'moveOrderPull']);
-    //pull sales orders from ERP
-    Route::get('pull-sales-orders', [OraclePullController::class,'salesOrderPull']);
-    //deliveries
-    Route::get('get-deliveries', [DeliveryController::class,'getDeliveries']);
-    //item master
-    Route::get('get-new-items', [ItemMasterController::class,'getNewItems']);
-    Route::get('get-updated-items', [ItemMasterController::class,'getUpdatedItems']);
-    //warehouse master
-    Route::get('get-new-warehouse', [WarehouseMasterController::class,'getNewWarehouse']);
-    Route::get('get-updated-warehouse', [WarehouseMasterController::class,'getUpdatedWarehouse']);
-
-    //sync items
-    Route::get('sync-new-items', [ItemSyncService::class,'syncNewItems']);
-    Route::get('sync-updated-items', [ItemSyncService::class,'syncUpdatedItems']);
+    Route::group(['prefix' => 'delivery_history'], function(){
+        Route::get('export-dr-with-serial',[AdminDeliveryHistoryController::class,'exportDrWithSerial'])->name('export-dr-with-serial');
+        Route::get('export-dr',[AdminDeliveryHistoryController::class,'exportDr'])->name('export-dr');
+    });
 });

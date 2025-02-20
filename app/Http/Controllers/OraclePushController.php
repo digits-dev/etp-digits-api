@@ -10,13 +10,16 @@ use App\Models\OracleOrderReceivingLineInterface;
 use App\Models\OracleShipmentHeader;
 use App\Models\OracleShipmentLine;
 use App\Models\OracleTransactionInterface;
+use App\Models\OrderStatus;
+use App\Models\Pullout;
+use App\Models\PulloutLine;
 use App\Services\DeliveryInterfaceService;
 use App\Services\OracleInterfaceService;
+use App\Services\PulloutInterfaceService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use PDO;
 
 class OraclePushController extends Controller
 {
@@ -37,35 +40,40 @@ class OraclePushController extends Controller
     }
 
     public function pushDotInterface(DeliveryInterfaceService $deliveryInterface){
-        foreach ($deliveryInterface->getProcessingDeliveryLines() ?? [] as $key => $value) {
+        foreach ($deliveryInterface->getProcessingDeliveryLines() ?? [] as $value) {
             $this->processTransferInterface('DOT', $value);
             //update interface flag
-            $drline = DeliveryLine::find($value['line_id']);
-            $drline->interface_flag = 1;
-            $drline->save();
+            $drLine = DeliveryLine::find($value['line_id']);
+            $drLine->interface_flag = 1;
+            $drLine->save();
         }
 
         //update interface flag to headers
-        foreach ($deliveryInterface->getProcessingDelivery() ?? [] as $key => $value) {
-            $drhead = Delivery::where('order_number', $value['order_number'])->first();
-            $drhead->interface_flag = 1;
-            $drhead->save();
+        foreach ($deliveryInterface->getProcessingDelivery() ?? [] as $value) {
+            $drHead = Delivery::where('order_number', $value['order_number'])->first();
+            $drHead->interface_flag = 1;
+            $drHead->save();
         }
     }
 
     public function pushDotrInterface(DeliveryInterfaceService $deliveryInterface){
-        foreach ($deliveryInterface->getProcessingDotrDelivery() ?? [] as $key => $value) {
-            $this->processPushtoOrderRcvInterface('DOTR', $value);
+        foreach ($deliveryInterface->getProcessingDotrDelivery() ?? [] as $value) {
+            //push to header interface
+            $headerInterface = $this->processPushtoOrderRcvInterface('DOTR', $value);
+
             $shipment = OracleShipmentHeader::query()->getShipmentByRef($value['dr_number']);
             $headerId = ($shipment->getModel()->exists) ? $shipment->shipment_header_id : null;
             $lines = OracleShipmentLine::getShipmentById($headerId)->toArray();
+
             foreach ($lines as $valueLine) {
-                $this->processPushtoOrderRcvLineInterface('DOTR', array_merge($valueLine, $value));
+                //push to line interface
+                $dataPushLine = array_merge($valueLine, $value, $headerInterface);
+                $this->processPushtoOrderRcvLineInterface('DOTR', $dataPushLine);
             }
 
             $drInterfaced = Delivery::where('order_number', $value['order_number'])->first();
             $drInterfaced->update([
-                'status' => Delivery::PROCESSING_DOTR,
+                'status' => OrderStatus::PROCESSING_DOTR,
                 'shipment_header_id' => $headerId,
                 'interface_flag' => 1
             ]);
@@ -77,35 +85,51 @@ class OraclePushController extends Controller
     }
 
     public function pushSitInterface(DeliveryInterfaceService $deliveryInterface){
-        foreach ($deliveryInterface->getProcessingSitLines() ?? [] as $key => $value) {
+        foreach ($deliveryInterface->getProcessingSitLines() ?? [] as $value) {
             $this->processTransferInterface('SIT', $value);
 
             //update interface flag
-            $drline = DeliveryLine::find($value['line_id']);
-            $drline->interface_flag = 1;
-            $drline->save();
+            $drLine = DeliveryLine::find($value['line_id']);
+            $drLine->interface_flag = 1;
+            $drLine->save();
         }
 
         //update interface flag to headers
-        foreach ($deliveryInterface->getProcessingSit() ?? [] as $key => $value) {
-            $drhead = Delivery::where('order_number', $value['order_number'])->first();
-            $drhead->interface_flag = 1;
-            $drhead->save();
+        foreach ($deliveryInterface->getProcessingSit() ?? [] as $value) {
+            $drHead = Delivery::where('order_number', $value['order_number'])->first();
+            $drHead->interface_flag = 1;
+            $drHead->save();
         }
     }
 
+    public function pushMorInterface(PulloutInterfaceService $pulloutInterface){
+        foreach ($pulloutInterface->getPendingLines() ?? [] as $value) {
+            if($value['to_wh'] == 'DIGITS'){
+                $value['transfer_org_id'] = 224;
+            }
+            if($value['to_wh'] == 'RMA'){
+                $value['transfer_org_id'] = 225;
+            }
+            if($value['from_subinventory'] == 'ECOM'){
+                $value['transfer_org_id'] = 263;
+            }
 
-    public function pushMorInterface(Request $request){
+            $this->processTransferInterface('MOR', $value);
+            //update interface flag
+            $pulloutLine = PulloutLine::find($value['line_id']);
+            $pulloutLine->interface_flag = 1;
+            $pulloutLine->save();
+        }
 
-        //validate request
-        $request->validate([
-            'dr_number' => ['required','integer'],
-            'org_id' => ['required','integer'],
-        ]);
-
-        $this->processPushtoOrderRcvInterface('MOR', $request->toArray());
-
+        //update interface flag to headers
+        foreach ($pulloutInterface->getPending() ?? [] as $value) {
+            $pulloutHead = Pullout::where('document_number', $value['document_number'])->first();
+            $pulloutHead->status = Pullout::PROCESSING;
+            $pulloutHead->interface_flag = 1;
+            $pulloutHead->save();
+        }
     }
+
 
     public function pushMorLinesInterface(Request $request){
 
@@ -150,9 +174,13 @@ class OraclePushController extends Controller
     }
 
     private function processPushtoOrderRcvInterface($transactionType, $data=[]){
+        $interfaceHeaders = new OracleInterfaceService();
+        $headerInterfaceId = $interfaceHeaders->getHeaderNextValue();
+        $groupInterfaceId = $interfaceHeaders->getGroupNextValue();
+
         $details = [
-            'HEADER_INTERFACE_ID' => $this->nextHeader,
-            'GROUP_ID' => $this->nextGroup,
+            'HEADER_INTERFACE_ID' => $headerInterfaceId,
+            'GROUP_ID' => $groupInterfaceId,
             'PROCESSING_STATUS_CODE' => 'PENDING',
             'TRANSACTION_TYPE' => 'NEW',
             'LAST_UPDATE_DATE' => $this->sysDate,
@@ -163,7 +191,12 @@ class OraclePushController extends Controller
             'EXPECTED_RECEIPT_DATE' => $this->sysDate,
             'VALIDATION_FLAG' => 'Y'
         ];
+
         $ref = [];
+        $returnValue = [];
+        $returnValue['header_interface_id'] = $headerInterfaceId;
+        $returnValue['group_id'] = $groupInterfaceId;
+
         switch ($transactionType) {
             case 'MOR': case 'DOTR':
                 $details['RECEIPT_SOURCE_CODE'] = 'INVENTORY';
@@ -175,7 +208,7 @@ class OraclePushController extends Controller
             case 'SOR':
                 $details['RECEIPT_SOURCE_CODE'] = 'CUSTOMER';
                 $details['CUSTOMER_ID'] = $data['customer_id'];
-                $ref['HEADER_INTERFACE_ID'] = $this->nextHeader;
+                $ref['HEADER_INTERFACE_ID'] = $headerInterfaceId;
                 break;
             default:
                 # code...
@@ -183,21 +216,23 @@ class OraclePushController extends Controller
         }
 
         try {
-            DB::beginTransaction();
+            DB::connection('oracle')->beginTransaction();
             OracleOrderReceivingHeaderInterface::updateOrInsert($ref, $details);
-            DB::commit();
+            DB::connection('oracle')->commit();
         } catch (Exception $e) {
-            DB::rollBack();
+            DB::connection('oracle')->rollBack();
             Log::error($e->getMessage());
         }
+
+        return $returnValue;
     }
 
     private function processPushtoOrderRcvLineInterface($transactionType, $data=[]){
         $transactionId = OracleDual::getTransactionNextValue();
         $details = [
             'INTERFACE_TRANSACTION_ID' => $transactionId, //$this->transaction,
-            'HEADER_INTERFACE_ID' => $this->nextHeader,
-            'GROUP_ID' => $this->nextGroup,
+            'HEADER_INTERFACE_ID' => $data['header_interface_id'],
+            'GROUP_ID' => $data['group_id'],
             'LAST_UPDATE_DATE' => $this->sysDate,
             'LAST_UPDATED_BY' => 0,
             'CREATION_DATE' => $this->sysDate,
@@ -230,6 +265,7 @@ class OraclePushController extends Controller
                 $details['SHIPMENT_HEADER_ID'] = $data['shipment_header_id'];
                 $details['SHIPMENT_LINE_ID'] = $data['shipment_line_id'];
                 $ref['SHIPMENT_LINE_ID'] = $data['shipment_line_id'];
+                $ref['SHIPMENT_NUM'] = $data['dr_number'];
                 break;
             case 'SOR':
                 $details['OE_ORDER_HEADER_ID'] = $data['oe_order_header_id'];
@@ -246,11 +282,11 @@ class OraclePushController extends Controller
         }
 
         try {
-            DB::beginTransaction();
+            DB::connection('oracle')->beginTransaction();
             OracleOrderReceivingLineInterface::updateOrInsert($ref, $details);
-            DB::commit();
+            DB::connection('oracle')->commit();
         } catch (Exception $e) {
-            DB::rollBack();
+            DB::connection('oracle')->rollBack();
             Log::error($e->getMessage());
         }
     }
@@ -285,6 +321,7 @@ class OraclePushController extends Controller
                 $details['LOCATOR_ID'] = $data['locator_id'];
                 $details['SHIPMENT_NUMBER'] = $data['dr_number'];
                 $ref['SHIPMENT_NUMBER'] = $data['dr_number'];
+                $ref['INVENTORY_ITEM_ID'] = $data['item_id'];
             break;
             case 'MOR':
                 $details['SOURCE_CODE'] = 'MIDDLEWARE';
@@ -292,8 +329,8 @@ class OraclePushController extends Controller
                 $details['TRANSACTION_TYPE_ID'] = 21;
                 $details['TRANSACTION_QUANTITY'] = $data['quantity'];
                 $details['REASON_ID'] = $data['reason_id'];
-                $details['SHIPMENT_NUMBER'] = $data['dr_number'];
-                $ref['SHIPMENT_NUMBER'] = $data['dr_number'];
+                $details['SHIPMENT_NUMBER'] = $data['document_number'];
+                $ref['SHIPMENT_NUMBER'] = $data['document_number'];
             break;
             case 'SIT':
                 $details['SOURCE_CODE'] = 'INV';
@@ -319,11 +356,11 @@ class OraclePushController extends Controller
                 break;
         }
         try {
-            DB::beginTransaction();
+            DB::connection('oracle')->beginTransaction();
             OracleTransactionInterface::updateOrInsert($ref, $details);
-            DB::commit();
+            DB::connection('oracle')->commit();
         } catch (Exception $e) {
-            DB::rollBack();
+            DB::connection('oracle')->rollBack();
             Log::error($e->getMessage());
         }
     }

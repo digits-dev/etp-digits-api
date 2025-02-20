@@ -1,20 +1,22 @@
-<?php namespace App\Http\Controllers;
+<?php
 
-use App\Models\OrderStatus;
-use App\Models\StoreTransfer;
-use App\Models\CmsPrivilege;
-	use Session;
+namespace App\Http\Controllers;
+
+    use App\Models\OrderStatus;
+    use App\Models\StoreTransfer;
+    use App\Models\CmsPrivilege;
 	use Illuminate\Http\Request;
-	use DB;
 	use crocodicstudio\crudbooster\helpers\CRUDBooster;
 	use App\Helpers\Helper;
 
 	class AdminStsApprovalController extends \crocodicstudio\crudbooster\controllers\CBController {
+
 		private const APPROVER = [CmsPrivilege::APPROVER];
+
 	    public function cbInit() {
 
 			# START CONFIGURATION DO NOT REMOVE THIS LINE
-			$this->title_field = "id";
+			$this->title_field = "ref_number";
 			$this->limit = "20";
 			$this->orderby = "ref_number,desc";
 			$this->global_privilege = false;
@@ -59,33 +61,26 @@ use App\Models\CmsPrivilege;
 			$this->load_css[] = asset("css/select2-style.css");
 	    }
 
-		
-
-	    public function actionButtonSelected($id_selected,$button_name) {
-	        //Your code here
-	            
-	    }
 
 		public function getDetail($id) {
 
-			if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
+			if(!CRUDBooster::isRead() && !$this->global_privilege || !$this->button_detail) {
                 CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
             }
-			
+
             $data = [];
             $data['page_title'] = "Stock Transfer Details";
 			$data['store_transfer'] = StoreTransfer::with(['transportTypes','reasons','lines', 'storesFrom', 'storesTo' ,'lines.serials', 'lines.item'])->find($id);
-
 
 			return view('store-transfer.sts-approval-detail', $data);
 		}
 
 		public function getApproval($id) {
 
-			if(!CRUDBooster::isRead() && $this->global_privilege==FALSE || $this->button_detail==FALSE) {
+			if(!CRUDBooster::isUpdate() && !$this->global_privilege || !$this->button_edit) {
                 CRUDBooster::redirect(CRUDBooster::adminPath(),trans("crudbooster.denied_access"));
             }
-			
+
             $data = [];
             $data['page_title'] = "Store Transfer Approval";
 			$data['store_transfer'] = StoreTransfer::with(['transportTypes','reasons','lines', 'storesFrom', 'storesTo' ,'lines.serials', 'lines.item'])->find($id);

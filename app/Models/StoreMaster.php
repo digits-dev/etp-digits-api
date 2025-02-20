@@ -20,14 +20,34 @@ class StoreMaster extends Model
         'doo_subinventory',
         'sit_subinventory',
         'org_subinventory',
+        'transfer_groups_id',
         'status',
         'created_by',
-        'updated_by'
+        'updated_by',
+        'is_deployed',
+        'is_deployed_at',
+        'eas_flag'
     ];
 
     public function scopeGetPulloutDetails($query, $whCode){
         return $query->select(['id','channels_id','to_org_id'])
             ->where('warehouse_code', $whCode)
             ->first();
+    }
+
+    public function scopeActive($query){
+        return $query->where('status', 'ACTIVE')
+            ->select('id','warehouse_code','store_name');
+    }
+
+    public function scopeGetTransferByGroup($query, $group){
+        return $query->where('status', 'ACTIVE')
+            ->where('transfer_groups_id', $group);
+    }
+
+    public function scopeGetDeployedStores($query){
+        return $query->where('status', 'ACTIVE')
+            ->where('is_deployed', 1)
+            ->pluck('warehouse_code');
     }
 }

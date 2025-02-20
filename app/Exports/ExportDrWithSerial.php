@@ -2,18 +2,15 @@
 
 namespace App\Exports;
 
-use App\Models\StorePullout;
+use App\Models\Delivery;
+use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Illuminate\Support\Facades\DB;
-use App\Models\CmsPrivilege;
-use App\Helpers\Helper;
-use crocodicstudio\crudbooster\helpers\CRUDBooster;
-use Maatwebsite\Excel\Concerns\WithMapping;
 
-class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithStyles, WithMapping
+class ExportDrWithSerial implements FromCollection, WithHeadings, WithStyles, WithMapping
 {
     protected $filterColumn;
     protected $filter;
@@ -27,30 +24,23 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
     public function headings(): array
     {
         return [
-            'REF #',
-            'ST #',
-            'MOR/SOR #',
-            'REASON',
+            'DR #',
             'DIGITS CODE',
             'UPC CODE',
             'ITEM DESCRIPTION',
             'SOURCE',
             'DESTINATION',
             'QTY',
-            'TRANSPORT BY',
-            'SCHEDULED DATE/BY',
-            'TRANSACTION TYPE',
-            'PROBLEM DETAILS',
-            'MEMO',
+            'SERIAL #',
             'CREATED DATE',
+            'RECEIVED DATE',
             'STATUS'
         ];
     }
 
     public function collection()
     {
-        $query = StorePullout::export();
-
+        $query = Delivery::exportWithSerial();
         // Apply filters
         if ($this->filterColumn) {
             foreach ((array) $this->filterColumn as $key => $fc) {
@@ -66,18 +56,13 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
                         $query->whereNull($key)->orWhere($key, '');
                         break;
                     case 'like':
-                        $query->where($key, 'like', '%' . $value . '%');
-                        break;
                     case 'not like':
-                        $query->where($key, 'not like', '%' . $value . '%');
+                        $query->where($key, $type, '%' . $value . '%');
                         break;
                     case 'in':
-                        $values = explode(',', $value);
-                        $query->whereIn($key, $values);
-                        break;
                     case 'not in':
                         $values = explode(',', $value);
-                        $query->whereNotIn($key, $values);
+                        $type === 'in' ? $query->whereIn($key, $values) : $query->whereNotIn($key, $values);
                         break;
                     default:
                         $query->where($key, $type, $value);
@@ -103,34 +88,29 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
 			}
 		}
 
-        // Execute the query and map results for export
         return $query->get();
     }
 
-    public function map($storePullout) : array {
+    public function map($row): array
+    {
         return [
-            $storePullout->ref_number,
-            $storePullout->document_number,
-            $storePullout->sor_mor_number ?? '',
-            $storePullout->pullout_reason ?? '',
-            $storePullout->digits_code ?? '',
-            $storePullout->upc_code ?? '',
-            $storePullout->item_description ?? '',
-            $storePullout->source ?? '',
-            $storePullout->destination ?? '',
-            $storePullout->qty ?? '',
-            $storePullout->transport_type ?? '',
-            !empty($storePullout->pullout_schedule_date) ? $storePullout->pullout_schedule_date .' / '. $storePullout->scheduler : $storePullout->pullout_date,
-            $storePullout->transaction_type,
-            $storePullout->problem_details,
-            $storePullout->memo,
-            $storePullout->created_at ?? '',
-            $storePullout->order_status ?? ''
+            $row->dr_number,
+            $row->digits_code ?? '',
+            $row->upc_code ?? '',
+            $row->item_description ?? '',
+            $row->source ?? '',
+            $row->destination ?? '',
+            $row->serial_number ? 1 : $row->qty,
+            $row->serial_number ?? '',
+            $row->transaction_date,
+            $row->received_date,
+            $row->order_status ?? ''
         ];
     }
+
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1:Q1')->applyFromArray([
+        $sheet->getStyle('A1:K1')->applyFromArray([
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                 'color' => ['argb' => 'FFFF00'],
@@ -140,7 +120,7 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
             ]
         ]);
 
-        foreach (range('A', 'Q') as $column) {
+        foreach (range('A', 'K') as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 

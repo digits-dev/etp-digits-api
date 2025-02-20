@@ -31,7 +31,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 3
+                'sorting'           => 6
             ],
             [
                 'name'              => 'Channel',
@@ -43,7 +43,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 1
+                'sorting'           => 2
             ],
             [
                 'name'              => 'Items',
@@ -55,7 +55,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 2
+                'sorting'           => 3
             ],
             [
                 'name'              => 'Order Status',
@@ -67,7 +67,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 3
+                'sorting'           => 4
             ],
             [
                 'name'              => 'Problems',
@@ -79,7 +79,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 4
+                'sorting'           => 5
             ],
             [
                 'name'              => 'Reason',
@@ -91,7 +91,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 5
+                'sorting'           => 6
             ],
             [
                 'name'              => 'Stores',
@@ -103,7 +103,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 6
+                'sorting'           => 7
             ],
             [
                 'name'              => 'Transaction Type',
@@ -115,7 +115,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 7
+                'sorting'           => 8
             ],
             [
                 'name'              => 'Transport Type',
@@ -127,7 +127,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 8
+                'sorting'           => 9
             ],
             [
                 'name'              => 'Deliveries',
@@ -199,7 +199,7 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 7
+                'sorting'           => 5
             ],
             [
                 'name'              => 'STS History',
@@ -296,7 +296,43 @@ class CmsMenuSeeder extends Seeder
                 'is_active'         => 1,
                 'is_dashboard'      => 0,
                 'id_cms_privileges' => 1,
-                'sorting'           => 9
+                'sorting'           => 1
+            ],
+            [
+                'name'              => 'Transfer Groupings',
+                'type'              => 'Route',
+                'path'              => 'AdminTransferGroupsControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-circle-o',
+                'parent_id'         => $submaster,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 10
+            ],
+            [
+                'name'              => 'Counter',
+                'type'              => 'Route',
+                'path'              => 'AdminCountersControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-circle-o',
+                'parent_id'         => $submaster,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 11
+            ],
+            [
+                'name'              => 'Delivery History',
+                'type'              => 'Route',
+                'path'              => 'AdminDeliveryHistoryControllerGetIndex',
+                'color'             => 'normal',
+                'icon'              => 'fa fa-file-text-o',
+                'parent_id'         => $historyMenu ?? 0,
+                'is_active'         => 1,
+                'is_dashboard'      => 0,
+                'id_cms_privileges' => 1,
+                'sorting'           => 3
             ],
 
         ];
