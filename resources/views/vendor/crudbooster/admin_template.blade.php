@@ -126,6 +126,45 @@
             display: block
         }
 
+        .skin-black-light{
+            background-color: #333;
+        }
+        .skin-black{
+            background-color: #333;
+        }
+
+        .skin-yellow{
+            background-color: #f39c12;
+        }
+        .skin-yellow-light{
+            background-color: #f39c12;
+        }
+
+        .skin-blue-light{
+            background-color: #3c8dbc;
+        }
+        .skin-blue{
+            background-color: #3c8dbc;
+        }
+        .skin-green{
+            background-color: #00a65a;
+        }
+        .skin-green-light{
+            background-color: #00a65a;
+        }
+        .skin-purple{
+            background-color: #605ca8;
+        }
+        .skin-purple-light{
+            background-color: #605ca8;
+        }
+        .skin-red-light{
+            background-color: #dd4b39;
+        }
+        .skin-red{
+            background-color: #dd4b39;
+        }
+
         #table_dashboard.table-bordered, #table_dashboard.table-bordered thead tr th, #table_dashboard.table-bordered tbody tr td {
             border: 1px solid #bbbbbb !important;
         }
@@ -145,14 +184,14 @@
 <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
 
-        <section class="content-header">
+        <section class="content-header" style="background-color: white;border-bottom: 1px solid #e2e2e2; padding-bottom: 15px;">
             <?php
             $module = CRUDBooster::getCurrentModule();
             ?>
             @if($module)
                 <h1>
                     <!--Now you can define $page_icon alongside $page_tite for custom forms to follow CRUDBooster theme style -->
-                    <i class='{!! ($page_icon)?:$module->icon !!}'></i> {!! ucwords(($page_title)?:$module->name) !!} &nbsp;&nbsp;
+                    <i style=" margin-right: 5px;  padding: 8px 10px; border-radius: 10px; color: white;" class="{{ Session::get('theme_color') }} {{ $page_icon ?? $module->icon }}"></i> <span style="font-weight: 700">{!! ucwords(($page_title)?:$module->name) !!}</span>  &nbsp;&nbsp;
 
 
                     @if(CRUDBooster::getCurrentMethod() == 'getIndex')

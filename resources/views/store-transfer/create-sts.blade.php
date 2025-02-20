@@ -33,6 +33,10 @@
             .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
                 color: #fff !important;
             }
+
+            .swal2-popup {
+                font-size: 16px !important;
+            }
             
         </style>
     @endpush
