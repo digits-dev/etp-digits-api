@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\MakeService::class,
         \App\Console\Commands\PushDotInterfaceCommand::class,
         \App\Console\Commands\PushSitInterfaceCommand::class,
+        \App\Console\Commands\PushMorInterfaceCommand::class,
         // \App\Console\Commands\TaskOraclePullCommand::class,
     ];
 
@@ -32,6 +33,7 @@ class Kernel extends ConsoleKernel
         // $schedule->command('task:orderpull')->hourly();
         $schedule->command('interface:push-dot-dotr')->everyThirtyMinutes();
         // $schedule->command('interface:push-sit')->everyFifteenMinutes();
+        $schedule->command('interface:push-mor')->everyThirtyMinutes();
 
         $schedule->call(function(){
 
