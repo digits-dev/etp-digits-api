@@ -111,7 +111,10 @@ class Pullout extends Model
                 'reasons.bea_mo_reason as reason_id',
                 'whfrom.doo_subinventory as from_subinventory',
                 'pullouts.to_org_id as org_id',
-                DB::raw("(SELECT 'TO CHECK') as transfer_subinventory"),
+                DB::raw("CASE
+                    WHEN pullouts.transaction_type = 'STR' THEN 'TO CHECK'
+                    ELSE whfrom.org_subinventory
+                END as transfer_subinventory"),
                 'whto.doo_subinventory as to_wh',
                 'pullout_lines.id as line_id',
                 'items.beach_item_id as item_id',
