@@ -14,9 +14,9 @@ class Pullout extends Model
 
     const FOR_RECEIVING = 5;
     const PENDING = 0;
-    const APPROVED = 1;
-    const PROCESSING = 2;
-    const RECEIVED = 3;
+    const APPROVED = 2;
+    const PROCESSING = 3;
+    const RECEIVED = 1;
     const PARTIALLY_RECEIVED = 4;
 
     protected $table = 'pullouts';
