@@ -222,11 +222,9 @@ class Helper
 		$query_filter_params = [];
         if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORT)) {
 			//do nothing
-		}
-        if (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTLOGISTIC)) {
+		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTLOGISTIC)) {
 			//do nothing
-		}
-		elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTAPPROVER)) {
+		} elseif (in_array(CRUDBooster::myPrivilegeId(), self::VIEWREPORTAPPROVER)) {
 			$query_filter_params[] = [
 				'method' => 'whereIn',
 				'params' => ['deliveries.stores_id', self::myApprovalStore()]

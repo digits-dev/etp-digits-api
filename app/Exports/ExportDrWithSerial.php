@@ -8,6 +8,7 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class ExportDrWithSerial implements FromCollection, WithHeadings, WithStyles, WithMapping
@@ -112,7 +113,7 @@ class ExportDrWithSerial implements FromCollection, WithHeadings, WithStyles, Wi
     {
         $sheet->getStyle('A1:K1')->applyFromArray([
             'fill' => [
-                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'fillType' => Fill::FILL_SOLID,
                 'color' => ['argb' => 'FFFF00'],
             ],
             'font' => [

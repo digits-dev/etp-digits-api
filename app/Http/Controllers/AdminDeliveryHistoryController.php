@@ -31,8 +31,8 @@ use Maatwebsite\Excel\Facades\Excel;
 			$this->table = "deliveries";
 
 			$this->col = [];
-			$this->col[] = ["label"=>"Order #","name"=>"order_number"];
 			$this->col[] = ["label"=>"DR #","name"=>"dr_number"];
+			$this->col[] = ["label"=>"ST #","name"=>"document_number"];
 			$this->col[] = ["label"=>"Customer Name","name"=>"customer_name"];
 			$this->col[] = ["label"=>"Transaction Type","name"=>"transaction_type"];
 			$this->col[] = ["label"=>"Order Date","name"=>"transaction_date"];
@@ -72,7 +72,7 @@ use Maatwebsite\Excel\Facades\Excel;
         }
 
         public function exportDrWithSerial(Request $request) {
-            $fileName = 'Export DR with Serial- ' . now()->format('Ymdhis') . '.xlsx';
+            $fileName = 'Export DR with Serial-' . now()->format('Ymdhis') . '.xlsx';
             $query_filter_params = Helper::generateDrParams();
             $filter_column = [
                 'filter_column' => $request->get('filter_column'),
@@ -82,7 +82,7 @@ use Maatwebsite\Excel\Facades\Excel;
         }
 
         public function exportDr(Request $request) {
-            $fileName = 'Export DR without Serial- ' . now()->format('Ymdhis') . '.xlsx';
+            $fileName = 'Export DR without Serial-' . now()->format('Ymdhis') . '.xlsx';
             $query_filter_params = Helper::generateDrParams();
             $filter_column = [
                 'filter_column' => $request->get('filter_column'),
