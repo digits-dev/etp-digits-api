@@ -42,6 +42,11 @@ class Pullout extends Model
         'interface_flag'
     ];
 
+    public function setDocumentNumberAttribute($value)
+    {
+        $this->attributes['document_number'] = str_pad($value, 11, '0', STR_PAD_LEFT);
+    }
+
     public function calculateTotals(){
         $this->total_qty = $this->lines->sum('qty');
         $this->total_amount = $this->lines->sum(function ($line) {
