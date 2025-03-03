@@ -331,6 +331,7 @@ class OraclePushController extends Controller
                 $details['REASON_ID'] = $data['reason_id'];
                 $details['SHIPMENT_NUMBER'] = $data['document_number'];
                 $ref['SHIPMENT_NUMBER'] = $data['document_number'];
+                $ref['INVENTORY_ITEM_ID'] = $data['item_id'];
             break;
             case 'SIT':
                 $details['SOURCE_CODE'] = 'INV';
