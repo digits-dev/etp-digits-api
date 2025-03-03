@@ -103,10 +103,9 @@ class Pullout extends Model
             ->orderBy('created_at', 'asc');
     }
 
-    public function scopeGetPendingLines(){
-        return $this->where('pullouts.status', self::PENDING)
-            //add not fra, fbd
-            ->join('pullout_lines', 'pullouts.id', 'pullout_lines.pullouts_id')
+    public function scopeGetPendingLines($query){
+        //add not fra, fbd
+        return $query->join('pullout_lines', 'pullouts.id', 'pullout_lines.pullouts_id')
             ->join('items', 'pullout_lines.item_code', 'items.digits_code')
             ->join('store_masters as whfrom', 'pullouts.wh_from', 'whfrom.warehouse_code')
             ->join('store_masters as whto', 'pullouts.wh_to', 'whto.warehouse_code')
@@ -125,6 +124,8 @@ class Pullout extends Model
                 'items.beach_item_id as item_id',
                 DB::raw('CAST(pullout_lines.qty AS SIGNED) * -1 as quantity')
             )
+            ->where('pullouts.status', self::PENDING)
+            ->where('pullout_lines.interface_flag', 0)
             ->orderBy('pullouts.transaction_date', 'asc');
     }
 }
