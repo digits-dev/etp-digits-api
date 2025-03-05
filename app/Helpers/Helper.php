@@ -10,7 +10,7 @@ use App\Models\CmsPrivilege;
 
 class Helper
 {
-    private const VIEWREPORT = [CmsPrivilege::SUPERADMIN, CmsPrivilege::AUDIT, CmsPrivilege::IC, CmsPrivilege::MERCH];
+    private const VIEWREPORT = [CmsPrivilege::SUPERADMIN, CmsPrivilege::AUDIT, CmsPrivilege::IC, CmsPrivilege::MERCH, CmsPrivilege::REPORTS];
 	private const VIEWREPORTLOGISTIC = [CmsPrivilege::LOGISTICS, CmsPrivilege::LOGISTICSTM];
 	private const VIEWREPORTAPPROVER = [CmsPrivilege::APPROVER];
 	private const VIEWREPORTWHRMA = [CmsPrivilege::RMA, CmsPrivilege::WHTM, CmsPrivilege::WHTL];

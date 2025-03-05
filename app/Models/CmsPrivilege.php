@@ -30,5 +30,5 @@ class CmsPrivilege extends Model
     public const RTLFRAOPS = 17;
     public const FRAVIEWER = 18;
     public const WHTL = 19;
-
+    public const REPORTS = 20;
 }
