@@ -7,11 +7,9 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Illuminate\Support\Facades\DB;
-use App\Models\CmsPrivilege;
-use App\Helpers\Helper;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithStyles, WithMapping
 {
@@ -42,6 +40,8 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
             'TRANSACTION TYPE',
             'PROBLEM DETAILS',
             'MEMO',
+            'APPROVED BY',
+            'APPROVED DATE',
             'CREATED DATE',
             'STATUS'
         ];
@@ -124,15 +124,17 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
             $storePullout->transaction_type,
             $storePullout->problem_details,
             $storePullout->memo,
+            $storePullout->approver ?? '',
+            $storePullout->approved_at ?? '',
             $storePullout->created_at ?? '',
             $storePullout->order_status ?? ''
         ];
     }
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1:Q1')->applyFromArray([
+        $sheet->getStyle('A1:S1')->applyFromArray([
             'fill' => [
-                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'fillType' => Fill::FILL_SOLID,
                 'color' => ['argb' => 'FFFF00'],
             ],
             'font' => [
@@ -140,7 +142,7 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
             ]
         ]);
 
-        foreach (range('A', 'Q') as $column) {
+        foreach (range('A', 'S') as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 

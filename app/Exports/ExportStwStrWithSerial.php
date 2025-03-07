@@ -7,11 +7,9 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Illuminate\Support\Facades\DB;
-use App\Models\CmsPrivilege;
-use App\Helpers\Helper;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class ExportStwStrWithSerial implements FromCollection, WithHeadings, WithStyles, WithMapping
 {
@@ -136,7 +134,7 @@ class ExportStwStrWithSerial implements FromCollection, WithHeadings, WithStyles
     {
         $sheet->getStyle('A1:R1')->applyFromArray([
             'fill' => [
-                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'fillType' => Fill::FILL_SOLID,
                 'color' => ['argb' => 'FFFF00'],
             ],
             'font' => [
