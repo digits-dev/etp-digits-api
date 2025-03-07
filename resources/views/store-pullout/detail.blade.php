@@ -39,7 +39,7 @@ table.table.table-bordered th {
     @endif
 
     <div class='panel panel-default'>
-        <div class='panel-heading'>  
+        <div class='panel-heading'>
         <h3 class="box-title text-center"><b>PULLOUT DETAILS</b></h3>
         </div>
 
@@ -78,16 +78,16 @@ table.table.table-bordered th {
                                     <td style="width: 30%">
                                         @if(!empty($store_pullout->approved_at))
                                         <b>Approved Date:</b>
-                                        @elseif(!empty($store_pullout->rejected_at)) 
+                                        @elseif(!empty($store_pullout->rejected_at))
                                         <b>Rejected Date:</b>
                                         @endif
-                                        
+
                                     </td>
                                     <td>
                                         @if(!empty($store_pullout->approved_at))
-                                            {{ $store_pullout->approved_at }} / {{ $store_pullout->approvedBy->name }} 
-                                        @elseif(!empty($store_pullout->rejected_at)) 
-                                            {{ $store_pullout->rejected_at }} / {{ $store_pullout->rejectedBy->name }} 
+                                            {{ $store_pullout->approved_at }} / {{ $store_pullout->approvedBy->name }}
+                                        @elseif(!empty($store_pullout->rejected_at))
+                                            {{ $store_pullout->rejected_at }} / {{ $store_pullout->rejectedBy->name }}
                                         @endif
                                     </td>
                                 </tr>
@@ -97,7 +97,7 @@ table.table.table-bordered th {
                                     <b>Reason:</b>
                                 </td>
                                 <td>
-                                    {{ $store_pullout->reasons->pullout_reason }} 
+                                    {{ $store_pullout->reasons->pullout_reason }}
                                 </td>
                             </tr>
 
@@ -118,7 +118,7 @@ table.table.table-bordered th {
                                     <b>Pullout Date:</b>
                                 </td>
                                 <td>
-                                    @if(!empty($store_pullout->pullout_schedule_date)) {{ $store_pullout->pullout_schedule_date }} / {{ $store_pullout->scheduledBy->name }} @else {{ $store_pullout->pullout_date }} @endif 
+                                    @if(!empty($store_pullout->pullout_schedule_date)) {{ $store_pullout->pullout_schedule_date }} / {{ $store_pullout->scheduledBy->name }} @else {{ $store_pullout->pullout_date }} @endif
                                 </td>
                             </tr>
                             <tr>
@@ -134,7 +134,7 @@ table.table.table-bordered th {
                                     <b>From:</b>
                                 </td>
                                 <td>
-                                    {{ $store_pullout->storesfrom->store_name }} 
+                                    {{ $store_pullout->storesfrom->store_name }}
                                 </td>
                             </tr>
                             <tr>
@@ -142,7 +142,7 @@ table.table.table-bordered th {
                                     <b>To:</b>
                                 </td>
                                 <td>
-                                    {{ $store_pullout->storesto->store_name }} 
+                                    {{ $store_pullout->storesto->store_name }}
                                 </td>
                             </tr>
                         </tbody>
@@ -181,18 +181,22 @@ table.table.table-bordered th {
                                                 <td class="text-center">{{$lines->qty}}</td>
                                                 <td>
                                                     @foreach ($lines->serials as $serial)
-                                                        <input type="text" class="form-control serial-input mb-1" name="serial[]" style="text-align:center; margin-top: 5px;" readonly value=" {{$serial->serial_number}}">
+                                                        <span class="text-center">{{$serial->serial_number}}</span>
                                                     @endforeach
-                                                </td>  
-                                            </tr>    
+                                                </td>
+                                            </tr>
                                         @endforeach
                                     @endif
                                     <tr class="tableInfo">
                                         <td colspan="4" align="right"><strong>Total Qty</strong></td>
-                                        <td align="center" colspan="1"><input type='text' name="total_quantity" class="form-control text-center" id="totalQuantity" value="{{$store_pullout->calculateTotals()}}" readonly> </td>
+                                        <td align="center" colspan="1">
+                                            <span class="text-center">
+                                                <strong>{{$store_pullout->calculateTotals()}}</strong>
+                                            </span>
+                                        </td>
                                         <td colspan="1"></td>
                                     </tr>
-                            
+
                                 </tbody>
                             </table>
                         </div>
@@ -238,11 +242,11 @@ table.table.table-bordered th {
                                                     @foreach ($lines->serials as $serial)
                                                         <input type="text" class="form-control serial-input mb-1" name="serial[]" style="text-align:center; margin-top: 5px;" readonly value=" {{$serial->serial_number}}">
                                                     @endforeach
-                                                </td>  
-                                            </tr>    
+                                                </td>
+                                            </tr>
                                         @endforeach
                                     @endif
-                                
+
                                     <tr class="tableInfo">
                                         <td colspan="5" align="right"><strong>Total Qty</strong></td>
                                         <td align="left" colspan="1">
@@ -250,15 +254,15 @@ table.table.table-bordered th {
                                         </td>
                                         <td colspan="1"></td>
                                     </tr>
-                            
+
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 @endif
-                
+
             </div>
-            
+
             @if(!empty($store_pullout->memo))
                 <div class="col-md-12">
                     <table class="table table-bordered" id="st-header">
@@ -307,7 +311,7 @@ $(document).ready(function() {
     @elseif($store_pullout->statuses->order_status == "CLOSED")
         $("#pullout-details").attr("style",'background-image: url("https://dms.digitstrading.ph/public/images/closed.png"); background-repeat: no-repeat; background-position: top center; background-size: 500px 300px;');
     @else
-    
+
     @endif
 
 });
