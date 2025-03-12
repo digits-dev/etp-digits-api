@@ -23,7 +23,7 @@ class SecurityHeaders
         $response->headers->set('X-XSS-Protection', '1; mode=block'); // Prevent XSS attacks
         $response->headers->set('Referrer-Policy', 'no-referrer-when-downgrade'); // Control referrer information
         $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload'); // Enforce HTTPS
-        $response->headers->set('Content-Security-Policy', "default-src 'self'; style-src 'self' 'unsafe-inline' https://code.jquery.com https://cdnjs.cloudflare.com https://fonts.googleapis.com; script-src 'self' https://cdnjs.cloudflare.com https://code.jquery.com;"); // Restrict resource loading
+        $response->headers->set('Content-Security-Policy', "default-src 'self'; style-src 'self' 'unsafe-inline' https://code.jquery.com https://cdnjs.cloudflare.com https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://code.jquery.com;"); // Restrict resource loading
         $response->headers->set('Permissions-Policy', 'geolocation=(), microphone=()'); // Restrict browser features
 
         return $response;
