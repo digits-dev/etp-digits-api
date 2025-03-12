@@ -136,7 +136,7 @@ class StorePullout extends Model
         ->leftJoin('items', 'store_pullout_lines.item_code', '=', 'items.digits_code')
         ->leftJoin('serial_numbers', 'store_pullout_lines.id', '=', 'serial_numbers.store_pullout_lines_id')
         ->leftJoin('cms_users as logistics', 'store_pullouts.scheduled_by', '=', 'logistics.id')
-        ->leftJoin('cms_users as approver', 'store_pullouts.scheduled_by', '=', 'approver.id');
+        ->leftJoin('cms_users as approver', 'store_pullouts.approved_by', '=', 'approver.id');
     }
 
     public function scopeExport($query){
@@ -175,6 +175,6 @@ class StorePullout extends Model
         ->leftJoin('store_pullout_lines', 'store_pullouts.id', '=', 'store_pullout_lines.store_pullouts_id')
         ->leftJoin('items', 'store_pullout_lines.item_code', '=', 'items.digits_code')
         ->leftJoin('cms_users as logistics', 'store_pullouts.scheduled_by', '=', 'logistics.id')
-        ->leftJoin('cms_users as approver', 'store_pullouts.scheduled_by', '=', 'approver.id');
+        ->leftJoin('cms_users as approver', 'store_pullouts.approved_by', '=', 'approver.id');
     }
 }
