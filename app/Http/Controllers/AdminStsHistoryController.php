@@ -51,6 +51,7 @@ class AdminStsHistoryController extends \crocodicstudio\crudbooster\controllers\
 		$this->col[] = ["label" => "To WH", "name" => "wh_to", "join" => "store_masters,store_name", "join_id" => "warehouse_code"];
 		$this->col[] = ["label" => "Status", "name" => "status", "join" => "order_statuses,style"];
 		$this->col[] = ["label" => "Transport Type", "name" => "transport_types_id", "join" => "transport_types,style"];
+        $this->col[] = ["label" => "Reason", "name"=>"reasons_id", "join"=>"reasons,pullout_reason"];
 		$this->col[] = ["label" => "Created By", "name" => "created_by", "join" => "cms_users,name"];
 		$this->col[] = ["label" => "Created Date", "name" => "created_at"];
 		# END COLUMNS DO NOT REMOVE THIS LINE
