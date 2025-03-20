@@ -42,8 +42,7 @@ class Pullout extends Model
         'interface_flag'
     ];
 
-    public function setDocumentNumberAttribute($value)
-    {
+    public function setDocumentNumberAttribute($value) {
         $this->attributes['document_number'] = str_pad($value, 11, '0', STR_PAD_LEFT);
     }
 
@@ -90,8 +89,8 @@ class Pullout extends Model
             ->orderBy('created_at', 'asc')->get();
     }
 
-    public function scopeGetReceivingReturns(){
-        return $this->where('transaction_type', 'STR')
+    public function scopeGetReceivingReturns($query, $returnType='STR'){
+        return $query->where('transaction_type', $returnType)
             ->where('status', self::FOR_RECEIVING)
             ->select('sor_mor_number', 'document_number')
             ->orderBy('created_at', 'asc')->get();

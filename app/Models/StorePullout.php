@@ -111,7 +111,7 @@ class StorePullout extends Model
             'transport_types.transport_type',
             'stores_from.bea_so_store_name AS source',
             'stores_to.store_name AS destination',
-            DB::raw('1 AS qty'),
+            'store_pullout_lines.qty',
             'serial_numbers.serial_number AS serial_numbers',
             'order_statuses.order_status',
             'items.digits_code',
