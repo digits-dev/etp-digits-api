@@ -123,10 +123,12 @@ class StorePullout extends Model
             'transaction_types.transaction_type',
             'store_pullout_lines.problem_details'
         )
-        ->join('reasons', function($join) {
-            $join->on('store_pullouts.reasons_id', '=', 'reasons.bea_mo_reason')
-                 ->orOn('store_pullouts.reasons_id', '=', 'reasons.bea_so_reason');
-        })
+        ->leftJoin('reasons', 'pullout.reasons_id', '=', 'reasons.bea_mo_reason')
+		->leftJoin('reasons as so_reason', 'pullout.reasons_id', '=', 'so_reason.bea_so_reason')
+        // ->join('reasons', function($join) {
+        //     $join->on('store_pullouts.reasons_id', '=', 'reasons.bea_mo_reason')
+        //          ->orOn('store_pullouts.reasons_id', '=', 'reasons.bea_so_reason');
+        // })
         ->join('transport_types', 'store_pullouts.transport_types_id', '=', 'transport_types.id')
         ->join('transaction_types', 'store_pullouts.transaction_type', '=', 'transaction_types.id')
         ->leftJoin('store_masters AS stores_from', 'store_pullouts.wh_from', '=', 'stores_from.warehouse_code')
