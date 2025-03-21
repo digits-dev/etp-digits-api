@@ -44,10 +44,10 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 		$this->col[] = ["label" => "From WH", "name" => "wh_from", "join" => "store_masters,store_name", "join_id" => "warehouse_code"];
 		$this->col[] = ["label" => "To WH", "name" => "wh_to", "join" => "store_masters,store_name", "join_id" => "warehouse_code"];
 		$this->col[] = ["label" => "Transaction Type", "name" => "transaction_type", "join" => "transaction_types,transaction_type", "join_id" => "id"];
-		$this->col[] = ["label" => "Reason", "name"=>"reasons_id", "join"=>"reasons,pullout_reason"];
+		$this->col[] = ["label" => "Reason", "name"=>"reasons_id", "join"=>"reasons,pullout_reason","join_id"=>"bea_mo_reason"];
         $this->col[] = ["label" => "Status", "name" => "status", "join" => "order_statuses,style"];
 		$this->col[] = ["label" => "Transport Type", "name" => "transport_types_id", "join" => "transport_types,style"];
-		$this->col[] = ["label"=>"Created By","name"=>"created_by","join"=>"cms_users,name"];
+		$this->col[] = ["label" => "Created By","name"=>"created_by","join"=>"cms_users,name"];
         $this->col[] = ["label" => "Created Date", "name" => "created_at"];
 
 		$this->form = [];
