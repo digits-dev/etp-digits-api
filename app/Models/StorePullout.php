@@ -123,7 +123,7 @@ class StorePullout extends Model
             'store_pullouts.pullout_schedule_date',
             'transaction_types.transaction_type',
             'store_pullout_lines.problem_details'
-        )
+        )->distinct()
         ->leftJoin('reasons', 'store_pullouts.reasons_id', '=', 'reasons.bea_mo_reason')
 		->leftJoin('reasons as so_reason', 'store_pullouts.reasons_id', '=', 'so_reason.bea_so_reason')
         // ->join('reasons', function($join) {

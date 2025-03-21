@@ -21,4 +21,9 @@ class SerialNumber extends Model
     {
         return self::whereRaw('BINARY serial_number = ?', [$serial])->exists();
     }
+
+    public function storePulloutLine()
+    {
+        return $this->belongsTo(StorePulloutLine::class, 'store_pullout_lines_id');
+    }
 }
