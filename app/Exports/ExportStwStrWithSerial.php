@@ -105,7 +105,7 @@ class ExportStwStrWithSerial implements FromQuery, WithHeadings, WithStyles, Wit
 		}
 
         // Execute the query and map results for export
-        return $query->get();
+        return $query;
     }
 
     public function map($storePullout) : array {
