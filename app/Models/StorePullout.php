@@ -105,6 +105,7 @@ class StorePullout extends Model
             'store_pullouts.sor_mor_number',
             'store_pullouts.memo',
             'reasons.pullout_reason',
+            'so_reason.pullout_reason as so_pullout_reason',
             'store_pullouts.created_at',
             'approver.name as approver',
             'store_pullouts.approved_at',
