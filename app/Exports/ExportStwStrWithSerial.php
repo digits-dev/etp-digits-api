@@ -3,15 +3,15 @@
 namespace App\Exports;
 
 use App\Models\StorePullout;
-use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class ExportStwStrWithSerial implements FromCollection, WithHeadings, WithStyles, WithMapping
+class ExportStwStrWithSerial implements FromQuery, WithHeadings, WithStyles, WithMapping
 {
     protected $filterColumn;
     protected $filter;
@@ -48,7 +48,7 @@ class ExportStwStrWithSerial implements FromCollection, WithHeadings, WithStyles
         ];
     }
 
-    public function collection()
+    public function query()
     {
         $query = StorePullout::exportWithSerial();
 
