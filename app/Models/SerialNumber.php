@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SerialNumber extends Model
 {
@@ -22,8 +23,7 @@ class SerialNumber extends Model
         return self::whereRaw('BINARY serial_number = ?', [$serial])->exists();
     }
 
-    public function storePulloutLine()
-    {
+    public function pulloutLines() : BelongsTo {
         return $this->belongsTo(StorePulloutLine::class, 'store_pullout_lines_id');
     }
 }

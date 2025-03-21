@@ -91,7 +91,13 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 
 		$data = [];
 		$data['page_title'] = "Pullout Details";
-		$data['store_pullout'] = StorePullout::with(['transportTypes', 'approvedBy', 'rejectedBy', 'scheduledBy', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
+		$data['store_pullout'] = StorePullout::with([
+            'transportTypes', 'approvedBy', 
+            'rejectedBy', 'scheduledBy', 
+            'reasons', 'lines', 'statuses', 
+            'storesFrom', 'storesTo', 
+            'lines.serials', 'lines.item'
+        ])->find($id);
 
 		return view('store-pullout.detail', $data);
 	}
