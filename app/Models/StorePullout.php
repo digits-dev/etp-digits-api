@@ -123,8 +123,8 @@ class StorePullout extends Model
             'transaction_types.transaction_type',
             'store_pullout_lines.problem_details'
         )
-        ->leftJoin('reasons', 'pullout.reasons_id', '=', 'reasons.bea_mo_reason')
-		->leftJoin('reasons as so_reason', 'pullout.reasons_id', '=', 'so_reason.bea_so_reason')
+        ->leftJoin('reasons', 'store_pullouts.reasons_id', '=', 'reasons.bea_mo_reason')
+		->leftJoin('reasons as so_reason', 'store_pullouts.reasons_id', '=', 'so_reason.bea_so_reason')
         // ->join('reasons', function($join) {
         //     $join->on('store_pullouts.reasons_id', '=', 'reasons.bea_mo_reason')
         //          ->orOn('store_pullouts.reasons_id', '=', 'reasons.bea_so_reason');
