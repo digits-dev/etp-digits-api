@@ -50,7 +50,7 @@ class ExportStwStrWithSerial implements FromQuery, WithHeadings, WithStyles, Wit
 
     public function query()
     {
-        $query = StorePullout::exportWithSerial();
+        $query = StorePullout::query()->exportWithSerial();
 
         // Apply filters
         if ($this->filterColumn) {
