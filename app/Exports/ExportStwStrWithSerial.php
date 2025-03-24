@@ -3,17 +3,15 @@
 namespace App\Exports;
 
 use App\Models\StorePullout;
-use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use Illuminate\Support\Facades\DB;
-use App\Models\CmsPrivilege;
-use App\Helpers\Helper;
 use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-class ExportStwStrWithSerial implements FromCollection, WithHeadings, WithStyles, WithMapping
+class ExportStwStrWithSerial implements FromQuery, WithHeadings, WithStyles, WithMapping
 {
     protected $filterColumn;
     protected $filter;
@@ -41,6 +39,7 @@ class ExportStwStrWithSerial implements FromCollection, WithHeadings, WithStyles
             'SERIAL #',
             'TRANSPORT BY',
             'SCHEDULED DATE/BY',
+            'APPROVED DATE/BY',
             'TRANSACTION TYPE',
             'PROBLEM DETAILS',
             'MEMO',
@@ -49,9 +48,9 @@ class ExportStwStrWithSerial implements FromCollection, WithHeadings, WithStyles
         ];
     }
 
-    public function collection()
+    public function query()
     {
-        $query = StorePullout::exportWithSerial();
+        $query = StorePullout::query()->exportWithSerial();
 
         // Apply filters
         if ($this->filterColumn) {
@@ -106,7 +105,7 @@ class ExportStwStrWithSerial implements FromCollection, WithHeadings, WithStyles
 		}
 
         // Execute the query and map results for export
-        return $query->get();
+        return $query;
     }
 
     public function map($storePullout) : array {
@@ -114,16 +113,17 @@ class ExportStwStrWithSerial implements FromCollection, WithHeadings, WithStyles
             $storePullout->ref_number,
             $storePullout->document_number,
             $storePullout->sor_mor_number ?? '',
-            $storePullout->pullout_reason ?? '',
+            (empty($storePullout->pullout_reason)) ? $storePullout->so_pullout_reason : $storePullout->pullout_reason,
             $storePullout->digits_code ?? '',
             $storePullout->upc_code ?? '',
             $storePullout->item_description ?? '',
             $storePullout->source ?? '',
             $storePullout->destination ?? '',
-            $storePullout->qty ?? 0,
-            $storePullout->serial_numbers ?: '',
+            ($storePullout->serial_numbers) ? 1 : $storePullout->qty,
+            $storePullout->serial_numbers ?? '',
             $storePullout->transport_type ?? '',
             !empty($storePullout->pullout_schedule_date) ? $storePullout->pullout_schedule_date .' / '. $storePullout->scheduler : $storePullout->pullout_date,
+            !empty($storePullout->approved_at) ? $storePullout->approved_at .' / '. $storePullout->approver : $storePullout->approved_at,
             $storePullout->transaction_type,
             $storePullout->problem_details,
             $storePullout->memo,
@@ -134,9 +134,9 @@ class ExportStwStrWithSerial implements FromCollection, WithHeadings, WithStyles
 
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1:R1')->applyFromArray([
+        $sheet->getStyle('A1:S1')->applyFromArray([
             'fill' => [
-                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'fillType' => Fill::FILL_SOLID,
                 'color' => ['argb' => 'FFFF00'],
             ],
             'font' => [
@@ -144,7 +144,7 @@ class ExportStwStrWithSerial implements FromCollection, WithHeadings, WithStyles
             ]
         ]);
 
-        foreach (range('A', 'R') as $column) {
+        foreach (range('A', 'S') as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 

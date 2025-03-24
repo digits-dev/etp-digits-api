@@ -24,7 +24,7 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 		$this->orderby = "ref_number,desc";
 		$this->global_privilege = false;
 		$this->button_table_action = true;
-		$this->button_bulk_action = true;
+		$this->button_bulk_action = false;
 		$this->button_action_style = "button_icon";
 		$this->button_add = false;
 		$this->button_edit = false;
@@ -44,9 +44,10 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 		$this->col[] = ["label" => "From WH", "name" => "wh_from", "join" => "store_masters,store_name", "join_id" => "warehouse_code"];
 		$this->col[] = ["label" => "To WH", "name" => "wh_to", "join" => "store_masters,store_name", "join_id" => "warehouse_code"];
 		$this->col[] = ["label" => "Transaction Type", "name" => "transaction_type", "join" => "transaction_types,transaction_type", "join_id" => "id"];
-		$this->col[] = ["label" => "Status", "name" => "status", "join" => "order_statuses,style"];
+		// $this->col[] = ["label" => "Reason", "name"=>"reasons_id", "join"=>"reasons,pullout_reason","join_id"=>"bea_mo_reason"];
+        $this->col[] = ["label" => "Status", "name" => "status", "join" => "order_statuses,style"];
 		$this->col[] = ["label" => "Transport Type", "name" => "transport_types_id", "join" => "transport_types,style"];
-		$this->col[] = ["label"=>"Created By","name"=>"created_by","join"=>"cms_users,name"];
+		$this->col[] = ["label" => "Created By","name"=>"created_by","join"=>"cms_users,name"];
         $this->col[] = ["label" => "Created Date", "name" => "created_at"];
 
 		$this->form = [];
@@ -90,7 +91,13 @@ class AdminPulloutHistoryController extends \crocodicstudio\crudbooster\controll
 
 		$data = [];
 		$data['page_title'] = "Pullout Details";
-		$data['store_pullout'] = StorePullout::with(['transportTypes', 'approvedBy', 'rejectedBy', 'scheduledBy', 'reasons', 'lines', 'statuses', 'storesFrom', 'storesTo', 'lines.serials', 'lines.item'])->find($id);
+		$data['store_pullout'] = StorePullout::with([
+            'transportTypes', 'approvedBy', 
+            'rejectedBy', 'scheduledBy', 
+            'reasons', 'lines', 'statuses', 
+            'storesFrom', 'storesTo', 
+            'lines.serials', 'lines.item'
+        ])->find($id);
 
 		return view('store-pullout.detail', $data);
 	}
