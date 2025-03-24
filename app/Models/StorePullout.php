@@ -134,7 +134,9 @@ class StorePullout extends Model
         ->join('items', 'store_pullout_lines.item_code', '=', 'items.digits_code')
         ->leftJoin('serial_numbers', 'store_pullout_lines.id', '=', 'serial_numbers.store_pullout_lines_id')
         ->leftJoin('cms_users as logistics', 'store_pullouts.scheduled_by', '=', 'logistics.id')
-        ->leftJoin('cms_users as approver', 'store_pullouts.approved_by', '=', 'approver.id');
+        ->leftJoin('cms_users as approver', 'store_pullouts.approved_by', '=', 'approver.id')
+        ->whereNull('reasons.deleted_at')
+        ->whereNull('so_reason.deleted_at');
     }
 
     public function scopeExport($query){
@@ -144,6 +146,7 @@ class StorePullout extends Model
             'store_pullouts.sor_mor_number',
             'store_pullouts.memo',
             'reasons.pullout_reason',
+            'so_reason.pullout_reason as so_pullout_reason',
             'store_pullouts.created_at',
             'approver.name as approver',
             'store_pullouts.approved_at',
@@ -161,10 +164,8 @@ class StorePullout extends Model
             'transaction_types.transaction_type',
             'store_pullout_lines.problem_details'
         )
-        ->leftJoin('reasons', function($join) {
-            $join->on('store_pullouts.reasons_id', '=', 'reasons.bea_mo_reason')
-                 ->orOn('store_pullouts.reasons_id', '=', 'reasons.bea_so_reason');
-        })
+        ->leftJoin('reasons', 'store_pullouts.reasons_id', '=', 'reasons.bea_mo_reason')
+		->leftJoin('reasons as so_reason', 'store_pullouts.reasons_id', '=', 'so_reason.bea_so_reason')
         ->leftJoin('transport_types', 'store_pullouts.transport_types_id', '=', 'transport_types.id')
         ->leftJoin('transaction_types', 'store_pullouts.transaction_type', '=', 'transaction_types.id')
         ->leftJoin('store_masters AS stores_from', 'store_pullouts.wh_from', '=', 'stores_from.warehouse_code')
@@ -173,6 +174,8 @@ class StorePullout extends Model
         ->leftJoin('store_pullout_lines', 'store_pullouts.id', '=', 'store_pullout_lines.store_pullouts_id')
         ->leftJoin('items', 'store_pullout_lines.item_code', '=', 'items.digits_code')
         ->leftJoin('cms_users as logistics', 'store_pullouts.scheduled_by', '=', 'logistics.id')
-        ->leftJoin('cms_users as approver', 'store_pullouts.approved_by', '=', 'approver.id');
+        ->leftJoin('cms_users as approver', 'store_pullouts.approved_by', '=', 'approver.id')
+        ->whereNull('reasons.deleted_at')
+        ->whereNull('so_reason.deleted_at');
     }
 }
