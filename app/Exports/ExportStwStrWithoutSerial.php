@@ -37,6 +37,7 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
             'QTY',
             'TRANSPORT BY',
             'SCHEDULED DATE/BY',
+            'APPROVED DATE/BY',
             'TRANSACTION TYPE',
             'PROBLEM DETAILS',
             'MEMO',
@@ -112,7 +113,7 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
             $storePullout->ref_number,
             $storePullout->document_number,
             $storePullout->sor_mor_number ?? '',
-            $storePullout->pullout_reason ?? '',
+            (empty($storePullout->pullout_reason)) ? $storePullout->so_pullout_reason : $storePullout->pullout_reason,
             $storePullout->digits_code ?? '',
             $storePullout->upc_code ?? '',
             $storePullout->item_description ?? '',
@@ -121,6 +122,7 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
             $storePullout->qty ?? '',
             $storePullout->transport_type ?? '',
             !empty($storePullout->pullout_schedule_date) ? $storePullout->pullout_schedule_date .' / '. $storePullout->scheduler : $storePullout->pullout_date,
+            !empty($storePullout->approved_at) ? $storePullout->approved_at .' / '. $storePullout->approver : $storePullout->approved_at,
             $storePullout->transaction_type,
             $storePullout->problem_details,
             $storePullout->memo,
@@ -132,7 +134,7 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
     }
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1:S1')->applyFromArray([
+        $sheet->getStyle('A1:T1')->applyFromArray([
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
                 'color' => ['argb' => 'FFFF00'],
@@ -142,7 +144,7 @@ class ExportStwStrWithoutSerial implements FromCollection, WithHeadings, WithSty
             ]
         ]);
 
-        foreach (range('A', 'S') as $column) {
+        foreach (range('A', 'T') as $column) {
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
 
