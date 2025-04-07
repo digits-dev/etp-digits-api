@@ -23,7 +23,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 {
 
 	private const SCHEDULER = [CmsPrivilege::SUPERADMIN, CmsPrivilege::LOGISTICS, CmsPrivilege::LOGISTICSTM];
-	private const DOCREATOR = [CmsPrivilege::SUPERADMIN, CmsPrivilege::CASHIER, CmsPrivilege::CSA];
+	private const DOCREATOR = [CmsPrivilege::SUPERADMIN, CmsPrivilege::CASHIER, CmsPrivilege::CSA, CmsPrivilege::STOREHEAD];
 	private const CANVOID = [CmsPrivilege::SUPERADMIN, CmsPrivilege::CASHIER];
 
 	public function cbInit()
