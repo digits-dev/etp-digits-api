@@ -239,7 +239,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 		$ref_number = $counter->reference_number;
 		$combined_ref = $counter->reference_code . '-' . $ref_number;
 		$hand_carrier = $validatedData['transport_type'] == 2 ? $request->input('hand_carrier') : "";
-
+		$status = $validatedData['transport_type'] == 1 ? OrderStatus::CONFIRMED : OrderStatus::FORCONFIRMATION;
 		// sts headers
 		$storeTransfer = StoreTransfer::firstOrCreate([
 			'ref_number' => $combined_ref,
@@ -254,7 +254,7 @@ class AdminStoreTransfersController extends \crocodicstudio\crudbooster\controll
 			'channels_id' => Helper::myChannel(),
 			'stores_id' => Helper::myStore(),
 			'stores_id_destination' => $validatedData['stores_id_destination_to'],
-			'status' => OrderStatus::FORCONFIRMATION,
+			'status' => $status,
 			'created_by' => CRUDBooster::myId(),
 			'created_at' => now(),
 		]);
